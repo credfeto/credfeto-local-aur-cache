@@ -85,7 +85,6 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
-    <PackageReference Include="Credfeto.Enumeration.Source.Generation.Attributes" Version="1.2.127.1366" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
