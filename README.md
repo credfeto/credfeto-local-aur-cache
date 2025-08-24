@@ -21,32 +21,34 @@ Config to point to sites:
         "aururl": "https://aur.markridgwell.com",
         "aurrpcurl": "https://aur.markridgwell.com/rpc?"
 }
+```
 
 https://aur.archlinux.org/rpc?arg[]=afetch-git&by=provides&type=search&v=5
 
+```json        
 {
-"resultcount":1,
-"results":[
-{
-"Description":"Fast and simple system info written in C, that can be configured at compile time by editing the config.h file",
-"FirstSubmitted":1603171383,
-"ID":849486,
-"LastModified":1610998028,
-"Maintainer":"McFranko",
-"Name":"afetch-git",
-"NumVotes":3,
-"OutOfDate":1687880376,
-"PackageBase":"afetch-git",
-"PackageBaseID":158933,
-"Popularity":0,
-"URL":"https://github.com/13-CF/afetch",
-"URLPath":"/cgit/aur.git/snapshot/afetch-git.tar.gz","Version":"1-1"
+    "resultcount":1,
+    "results":[
+        {
+            "Description":"Fast and simple system info written in C, that can be configured at compile time by editing the config.h file",
+            "FirstSubmitted":1603171383,
+            "ID":849486,
+            "LastModified":1610998028,
+            "Maintainer":"McFranko",
+            "Name":"afetch-git",
+            "NumVotes":3,
+            "OutOfDate":1687880376,
+            "PackageBase":"afetch-git",
+            "PackageBaseID":158933,
+            "Popularity":0,
+            "URL":"https://github.com/13-CF/afetch",
+            "URLPath":"/cgit/aur.git/snapshot/afetch-git.tar.gz","Version":"1-1"
+        }
+    ],
+    "type":"search",
+    "version":5
 }
-],
-"type":"search",
-"version":5
-}
-
+```
 
 // so could cache each result by ID 
 // when no result git clone --bare https://aur.archlinux.org/{Name}.git 
