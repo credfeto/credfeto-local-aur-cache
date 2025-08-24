@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -49,22 +51,71 @@ public sealed class AurRpc : IAurRpc
 
             if (File.Exists(metadataFileName))
             {
-                // Read file
-                // if updated then update the local repo
-                // Save package over the top of the metadata
+                SearchResult? existing = await ReadPackageFromMetadataAsync(metadataFileName);
+
+                bool changed = existing is null || existing.LastModified != package.LastModified;
+                EnsureRepositoryHasBeenCloned(repoPath: repoPath, upstreamRepo: upstreamRepo, changed: changed);
+
+                if (changed)
+                {
+                    await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName);
+                }
             }
             else
             {
-                // Clone Repo
-                Repository.Clone(sourceUrl: upstreamRepo, workdirPath: repoPath, new() { IsBare = true });
-
-                // Save package to metadata.
+                EnsureRepositoryHasBeenCloned(repoPath: repoPath, upstreamRepo: upstreamRepo, changed: true);
 
                 await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName);
             }
         }
 
         return upstream;
+    }
+
+    private static async ValueTask<SearchResult?> ReadPackageFromMetadataAsync(string metadataFileName)
+    {
+        byte[] bytes = await File.ReadAllBytesAsync(path: metadataFileName, cancellationToken: DoNotCancelEarly);
+
+        return JsonSerializer.Deserialize(Encoding.UTF8.GetString(bytes), jsonTypeInfo: AppJsonContexts.Default.SearchResult);
+    }
+
+    private static void EnsureRepositoryHasBeenCloned(string repoPath, string upstreamRepo, bool changed)
+    {
+        if (Directory.Exists(repoPath))
+        {
+            string? repoFolder = Repository.Discover(repoPath);
+
+            if (repoFolder is null)
+            {
+                CloneRepository(upstreamRepo: upstreamRepo, repoPath: repoPath);
+            }
+            else if (changed)
+            {
+                UpdateRepository(repoFolder);
+            }
+        }
+        else
+        {
+            CloneRepository(upstreamRepo: upstreamRepo, repoPath: repoPath);
+        }
+    }
+
+    private static void UpdateRepository(string repoFolder)
+    {
+        using (Repository repo = new(repoFolder))
+        {
+            FetchOptions options = new() { Prune = true, TagFetchMode = TagFetchMode.Auto };
+
+            Remote? remote = repo.Network.Remotes["origin"];
+            const string msg = "Fetching remote";
+            IEnumerable<string> refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+            Commands.Fetch(repository: repo, remote: remote.Name, refspecs: refSpecs, options: options, logMessage: msg);
+        }
+    }
+
+    private static void CloneRepository(string upstreamRepo, string repoPath)
+    {
+        Repository.Clone(sourceUrl: upstreamRepo, workdirPath: repoPath, new() { IsBare = true });
     }
 
     private async ValueTask SavePackageToMetadataAsync(SearchResult package, string metadataFileName)
