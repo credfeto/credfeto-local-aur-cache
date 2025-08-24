@@ -5,7 +5,9 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using Credfeto.Aur.Mirror.Server.Config;
+using Credfeto.Aur.Mirror.Server.Interfaces;
 using Credfeto.Aur.Mirror.Server.Models;
+using Credfeto.Aur.Mirror.Server.Services;
 using Credfeto.Date;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -78,11 +80,12 @@ internal static class ServerStartup
         builder
             .Services.Configure<ServerConfig>(section)
             .AddDate()
+            .AddSingleton<IAurRpc, AurRpc>()
             // .AddSingleton<CacheMiddleware>()
             // .AddSingleton<IPackageStorage, FileSystemPackageStorage>()
             // .AddSingleton<IContentDownloader, ContentDownloader>()
             // .AddSingleton<IContentSource, ContentSource>()
-            // .AddContentClient()
+            .AddRpcClient()
             .ConfigureHttpJsonOptions(options =>
                 options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
             );

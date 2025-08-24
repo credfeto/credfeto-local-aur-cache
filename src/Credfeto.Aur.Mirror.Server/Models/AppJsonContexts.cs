@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Credfeto.Aur.Mirror.Server.Models.AurRpc;
 
 namespace Credfeto.Aur.Mirror.Server.Models;
 
@@ -10,4 +11,6 @@ namespace Credfeto.Aur.Mirror.Server.Models;
     IncludeFields = false
 )]
 [JsonSerializable(typeof(PongDto))]
+[JsonSerializable(typeof(RpcResponse))]
+[JsonSerializable(typeof(SearchResult))]
 public sealed partial class AppJsonContexts : JsonSerializerContext;
