@@ -83,8 +83,8 @@ internal static class ServerStartup
             // .AddSingleton<IContentDownloader, ContentDownloader>()
             // .AddSingleton<IContentSource, ContentSource>()
             // .AddContentClient()
-             .ConfigureHttpJsonOptions(options =>
-                 options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
+            .ConfigureHttpJsonOptions(options =>
+                options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
             );
 
         return builder;
