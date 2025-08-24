@@ -10,6 +10,8 @@
  - any: [ 'CHANGELOG.md' ]
 "Config Change":
  - any: [ 'src/**/*.json', '!src/global.json' ]
+"credfeto-aur-mirror-server":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Server/**/*' ]
 "github-actions":
  - any: [ '.github/workflows/*.yml' ]
 "Markdown":

@@ -30,6 +30,10 @@
    color: "d8bb50"
    description: "Configuration files changes"
 
+ - name: "credfeto-aur-mirror-server"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Aur.Mirror.Server project"
+
  - name: "dependencies"
    color: "0366d6"
    description: "Updates to dependencies"
