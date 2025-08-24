@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -8,11 +9,17 @@ namespace Credfeto.Aur.Mirror.Server.Models.AurRpc;
 public sealed class SearchResult
 {
     [JsonConstructor]
-    public SearchResult(string description, long firstSubmitted, int id, long lastModified, string maintainer, string name, string numVotes, long outOfDate, string packageBase, int packageBaseId, int popularity, string url, string urlPath, string version)
+    public SearchResult(string description, long firstSubmitted, int id,
+                        IReadOnlyList<string>? keywords,
+                        IReadOnlyList<string>? license,
+
+    long lastModified, string maintainer, string name, int numVotes, long? outOfDate, string packageBase, int packageBaseId, double popularity, string url, string urlPath, string version)
     {
         this.Description = description;
         this.FirstSubmitted = firstSubmitted;
         this.Id = id;
+        this.Keywords = keywords;
+        this.License = license;
         this.LastModified = lastModified;
         this.Maintainer = maintainer;
         this.Name = name;
@@ -38,6 +45,14 @@ public sealed class SearchResult
     [JsonPropertyName("ID")]
     public int Id { get; }
 
+    [JsonPropertyName("Keywords")]
+    public IReadOnlyList<string>? Keywords { get; }
+
+    [JsonPropertyName("License")]
+    public IReadOnlyList<string>? License { get; }
+
+
+
     // "LastModified":1610998028
     [JsonPropertyName("LastModified")]
     public long LastModified { get; }
@@ -52,11 +67,11 @@ public sealed class SearchResult
 
     // "NumVotes":3
     [JsonPropertyName("NumVotes")]
-    public string NumVotes { get; }
+    public int NumVotes { get; }
 
     // "OutOfDate":1687880376
     [JsonPropertyName("OutOfDate")]
-    public long OutOfDate { get; }
+    public long? OutOfDate { get; }
 
     // "PackageBase":"afetch-git"
     [JsonPropertyName("PackageBase")]
@@ -69,7 +84,7 @@ public sealed class SearchResult
 
     // "Popularity":0
     [JsonPropertyName("Popularity")]
-    public int Popularity { get; }
+    public double Popularity { get; }
 
     // "URL":"https://github.com/13-CF/afetch"
     [SuppressMessage(

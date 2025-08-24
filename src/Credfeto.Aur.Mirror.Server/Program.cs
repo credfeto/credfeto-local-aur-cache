@@ -1,8 +1,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Server.Helpers;
+using Credfeto.Aur.Mirror.Server.Models;
+using Credfeto.Aur.Mirror.Server.Models.AurRpc;
 using Credfeto.Docker.HealthCheck.Http.Client;
 using Microsoft.AspNetCore.Builder;
 
@@ -30,8 +33,14 @@ public static class Program
 
         ServerStartup.SetThreads(MIN_THREADS);
 
+
+
+
+
         try
         {
+            TestDeserialization();
+
             await using (WebApplication app = ServerStartup.CreateApp(args))
             {
                 await RunAsync(app);
@@ -47,6 +56,39 @@ public static class Program
 
             return 1;
         }
+    }
+
+    private static void TestDeserialization()
+    {
+        const string s = @"{
+                ""resultcount"":1,
+                ""results"":[
+                    {
+                        ""Description"":""A fetch program written in C"",
+                        ""FirstSubmitted"":1616899975,
+                        ""ID"":922314,
+                        ""Keywords"":[""fetch"",""neofetch"",""screenfetch""],
+                        ""LastModified"":1623952808,
+                        ""License"":[""GPL3""],
+                        ""Maintainer"":""carlosal1015"",
+                        ""Name"":""afetch"",
+                        ""NumVotes"":2,
+                        ""OutOfDate"":null,
+                        ""PackageBase"":""afetch"",
+                        ""PackageBaseID"":164969,
+                        ""Popularity"":0.319567,
+                        ""Submitter"":""lmartinez-mirror"",
+                        ""URL"":""https://github.com/13-CF/afetch"",
+                        ""URLPath"":""/cgit/aur.git/snapshot/afetch.tar.gz"",
+                        ""Version"":""2.2.0-1""
+                    }
+                ],
+                ""type"":""multiinfo"",
+                ""version"":5
+            }";
+        RpcResponse rpcResponse = JsonSerializer.Deserialize<RpcResponse>(s, AppJsonContexts.Default.RpcResponse)?? throw new JsonException("Could not deserialize response");
+
+        Console.WriteLine(rpcResponse.Count);
     }
 
     private static Task RunAsync(WebApplication application)
