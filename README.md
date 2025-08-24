@@ -2,6 +2,17 @@
 
 Experiment to cache Arch AUR locally (or use the github AUR mirror transparently)
 
+
+## Notes
+
+* https://archive.esc.sh/blog/setting-up-a-git-http-server-with-nginx/
+* https://linuxhint.com/setup_git_http_server_docker/
+* https://github.com/rockstorm101/gitweb-docker?tab=readme-ov-file  (gitweb)
+
+```bash
+docker run -v /path/to/repos:/srv/git:ro -p 80:80 rockstorm/gitweb
+```
+
 ## Build Status
 
 | Branch  | Status                                                                                                                                                                                                                                |
