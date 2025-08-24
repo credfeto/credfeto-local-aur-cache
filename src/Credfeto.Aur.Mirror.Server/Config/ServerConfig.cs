@@ -1,18 +1,17 @@
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Credfeto.Aur.Mirror.Server.Config;
 
-[DebuggerDisplay("Storage: {Storage} Sites: {Sites.Count} ")]
+[DebuggerDisplay("Storage: {Storage} Upstream: {Upstream} ")]
 public sealed class ServerConfig
 {
     public ServerConfig()
     {
-        this.Sites = [];
-        this.Storage = "/data";
+        this.Upstream = new();
+        this.Storage = new();
     }
 
-    public List<CacheServerConfig> Sites { get; set; }
+    public UpstreamConfig Upstream { get; set; }
 
-    public string Storage { get; set; }
+    public StorageConfig Storage { get; set; }
 }
