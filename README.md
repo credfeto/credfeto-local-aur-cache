@@ -13,6 +13,18 @@ Experiment to cache Arch AUR locally (or use the github AUR mirror transparently
 docker run -v /path/to/repos:/srv/git:ro -p 80:80 rockstorm/gitweb
 ```
 
+Config to point to sites:
+* aururl => where the repos are
+* aurrpcurl => where the RPC to get packages live
+```json
+{
+        "aururl": "https://aur.markridgwell.com",
+        "aurrpcurl": "https://aur.markridgwell.com/rpc?"
+}
+
+
+```
+
 ## Build Status
 
 | Branch  | Status                                                                                                                                                                                                                                |
