@@ -1,0 +1,32 @@
+".NET update":
+ - any: [ 'src/global.json' ]
+"C#":
+ - any: [ './**/*.cs', './**/*.csproj' ]
+"C# Project":
+ - any: [ './**/*.csproj' ]
+"C# Solution":
+ - any: [ './**/*.sln' ]
+"Change Log":
+ - any: [ 'CHANGELOG.md' ]
+"Config Change":
+ - any: [ 'src/**/*.json', '!src/global.json' ]
+"github-actions":
+ - any: [ '.github/workflows/*.yml' ]
+"Markdown":
+ - any: [ './**/*.md' ]
+"Migration Script":
+ - any: [ 'tools/MigrationScripts/**/*' ]
+"Powershell":
+ - any: [ './**/*.ps1', './**/*.psm1' ]
+"Read Me":
+ - any: [ 'README.md' ]
+"Setup":
+ - any: [ 'SETUP.md' ]
+"Solidity":
+ - any: [ './**/*.sol' ]
+"SQL":
+ - any: [ './**/*.sql', 'db/**/*' ]
+"Static Code Analysis Rules":
+ - any: [ 'src/CodeAnalysis.ruleset' ]
+"Unit Tests":
+ - any: [ 'src/*.Tests.*/**/*', 'src/*.Tests.Integration.*/**/*', 'src/*.Tests.Integration/**/*', 'src/*.Tests/**/*' ]
