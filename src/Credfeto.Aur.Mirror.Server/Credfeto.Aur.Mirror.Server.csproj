@@ -88,6 +88,7 @@
     <PackageReference Include="NonBlocking" Version="2.1.2" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.8" />
     <PackageReference Include="Credfeto.Enumeration.Source.Generation.Attributes" Version="1.2.127.1366" />
+    <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
 
   </ItemGroup>
   <ItemGroup>
