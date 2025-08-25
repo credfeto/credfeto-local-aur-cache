@@ -55,7 +55,7 @@ internal static partial class Endpoints
                 cancellationToken: cancellationToken
             );
 
-            return Results.Ok((object?)result);
+            return Results.Ok(result);
         }
         catch (Exception exception)
         {

@@ -62,7 +62,7 @@ public sealed class AurRpc : IAurRpc
 
             if (File.Exists(metadataFileName))
             {
-                SearchResult? existing = await ReadPackageFromMetadataAsync(metadataFileName);
+                SearchResult? existing = await this.ReadPackageFromMetadataAsync(metadataFileName);
 
                 bool changed = existing is null || existing.LastModified != package.LastModified;
                 EnsureRepositoryHasBeenCloned(repoPath: repoPath, upstreamRepo: upstreamRepo, changed: changed);
@@ -83,14 +83,23 @@ public sealed class AurRpc : IAurRpc
         return upstream;
     }
 
-    private static async ValueTask<SearchResult?> ReadPackageFromMetadataAsync(string metadataFileName)
+    private async ValueTask<SearchResult?> ReadPackageFromMetadataAsync(string metadataFileName)
     {
-        byte[] bytes = await File.ReadAllBytesAsync(path: metadataFileName, cancellationToken: DoNotCancelEarly);
+        try
+        {
+            string json = await File.ReadAllTextAsync(path: metadataFileName,
+                                                      encoding:Encoding.UTF8,
+                                                      cancellationToken: DoNotCancelEarly);
 
-        return JsonSerializer.Deserialize(
-            Encoding.UTF8.GetString(bytes),
-            jsonTypeInfo: AppJsonContexts.Default.SearchResult
-        );
+            return JsonSerializer.Deserialize(json, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
+        }
+        catch (Exception exception)
+        {
+            this._logger.FailedToReadSavedMetadata(metadataFileName, exception.Message, exception);
+            File.Delete(metadataFileName);
+
+            return null;
+        }
     }
 
     private static void EnsureRepositoryHasBeenCloned(string repoPath, string upstreamRepo, bool changed)
