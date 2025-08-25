@@ -6,10 +6,12 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Server.Extensions;
+using Credfeto.Aur.Mirror.Server.Helpers.LoggingExtensions;
 using Credfeto.Aur.Mirror.Server.Interfaces;
 using Credfeto.Aur.Mirror.Server.Models.AurRpc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
@@ -24,8 +26,8 @@ internal static partial class Endpoints
 
         app.MapGet(
             pattern: "/rpc",
-            handler: static (HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
-                ExecuteRpcAsync(httpContext: httpContext, aurRpc: aurRpc, cancellationToken: cancellationToken)
+            handler: static (HttpContext httpContext, IAurRpc aurRpc, ILogger<IAurRpc> logger, CancellationToken cancellationToken) =>
+                ExecuteRpcAsync(httpContext: httpContext, aurRpc: aurRpc, logger:logger, cancellationToken: cancellationToken)
         );
 
         return app;
@@ -34,19 +36,19 @@ internal static partial class Endpoints
     private static async Task<IResult> ExecuteRpcAsync(
         HttpContext httpContext,
         IAurRpc aurRpc,
+        ILogger<IAurRpc> logger,
         CancellationToken cancellationToken
     )
     {
+        string query = GetPathWithQuery(httpContext.Request.Query);
+        logger.Query(query);
+
         try
         {
             ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
             httpContext.Response.Headers.KeepAlive = "60";
 
-            string query = GetPathWithQuery(httpContext.Request.Query);
-
-            Debug.WriteLine(query);
-            Debug.WriteLine(userAgent?.ToString());
             RpcResponse result = await aurRpc.GetAsync(
                 query: query,
                 userAgent: userAgent,
@@ -57,7 +59,7 @@ internal static partial class Endpoints
         }
         catch (Exception exception)
         {
-            Debug.WriteLine(exception.Message);
+            logger.Failed(query, exception.Message, exception);
 
             return Results.Ok(new RpcResponse(count: 0, [], rpcType: "search", version: 5));
         }
