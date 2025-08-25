@@ -15,19 +15,27 @@ namespace Credfeto.Aur.Mirror.Server.Helpers;
 
 internal static partial class Endpoints
 {
-    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)")]
+    [RequiresUnreferencedCode(
+        "Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)"
+    )]
     private static WebApplication ConfigureAurRpcEndpoints(this WebApplication app)
     {
         Console.WriteLine("Configuring Aur RPC Endpoint");
 
-        app.MapGet(pattern: "/rpc",
-                   handler: static (HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
-                                ExecuteRpcAsync(httpContext: httpContext, aurRpc: aurRpc, cancellationToken: cancellationToken));
+        app.MapGet(
+            pattern: "/rpc",
+            handler: static (HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
+                ExecuteRpcAsync(httpContext: httpContext, aurRpc: aurRpc, cancellationToken: cancellationToken)
+        );
 
         return app;
     }
 
-    private static async Task<IResult> ExecuteRpcAsync(HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken)
+    private static async Task<IResult> ExecuteRpcAsync(
+        HttpContext httpContext,
+        IAurRpc aurRpc,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
@@ -39,7 +47,11 @@ internal static partial class Endpoints
 
             Debug.WriteLine(query);
             Debug.WriteLine(userAgent?.ToString());
-            RpcResponse result = await aurRpc.GetAsync(query: query, userAgent: userAgent, cancellationToken: cancellationToken);
+            RpcResponse result = await aurRpc.GetAsync(
+                query: query,
+                userAgent: userAgent,
+                cancellationToken: cancellationToken
+            );
 
             return Results.Ok((object?)result);
         }
@@ -53,8 +65,6 @@ internal static partial class Endpoints
 
     private static string GetPathWithQuery(IQueryCollection query)
     {
-        return query.Count == 0
-            ? string.Empty
-            : string.Join(separator: '&', query.Select(q => $"{q.Key}={q.Value}"));
+        return query.Count == 0 ? string.Empty : string.Join(separator: '&', query.Select(q => $"{q.Key}={q.Value}"));
     }
 }
