@@ -39,9 +39,17 @@ public sealed class AurRpc : IAurRpc
         this._connections = new(StringComparer.Ordinal);
     }
 
-    public async ValueTask<RpcResponse> GetAsync(string query, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    public async ValueTask<RpcResponse> GetAsync(
+        string query,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    )
     {
-        RpcResponse upstream = await this.RequestUpstreamAsync(query: query, userAgent: userAgent, cancellationToken: cancellationToken);
+        RpcResponse upstream = await this.RequestUpstreamAsync(
+            query: query,
+            userAgent: userAgent,
+            cancellationToken: cancellationToken
+        );
 
         foreach (SearchResult package in upstream.Results)
         {
@@ -76,7 +84,10 @@ public sealed class AurRpc : IAurRpc
     {
         byte[] bytes = await File.ReadAllBytesAsync(path: metadataFileName, cancellationToken: DoNotCancelEarly);
 
-        return JsonSerializer.Deserialize(Encoding.UTF8.GetString(bytes), jsonTypeInfo: AppJsonContexts.Default.SearchResult);
+        return JsonSerializer.Deserialize(
+            Encoding.UTF8.GetString(bytes),
+            jsonTypeInfo: AppJsonContexts.Default.SearchResult
+        );
     }
 
     private static void EnsureRepositoryHasBeenCloned(string repoPath, string upstreamRepo, bool changed)
@@ -109,7 +120,13 @@ public sealed class AurRpc : IAurRpc
             Remote? remote = repo.Network.Remotes["origin"];
             const string msg = "Fetching remote";
             IEnumerable<string> refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-            Commands.Fetch(repository: repo, remote: remote.Name, refspecs: refSpecs, options: options, logMessage: msg);
+            Commands.Fetch(
+                repository: repo,
+                remote: remote.Name,
+                refspecs: refSpecs,
+                options: options,
+                logMessage: msg
+            );
         }
     }
 
@@ -125,15 +142,28 @@ public sealed class AurRpc : IAurRpc
             EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
 
             string json = JsonSerializer.Serialize(value: package, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
-            await File.WriteAllTextAsync(path: metadataFileName, contents: json, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
+            await File.WriteAllTextAsync(
+                path: metadataFileName,
+                contents: json,
+                encoding: Encoding.UTF8,
+                cancellationToken: DoNotCancelEarly
+            );
         }
         catch (Exception exception)
         {
-            this._logger.SaveMetadataFailed(filename: metadataFileName, message: exception.Message, exception: exception);
+            this._logger.SaveMetadataFailed(
+                filename: metadataFileName,
+                message: exception.Message,
+                exception: exception
+            );
         }
     }
 
-    private async ValueTask<RpcResponse> RequestUpstreamAsync(string query, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    private async ValueTask<RpcResponse> RequestUpstreamAsync(
+        string query,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    )
     {
         HttpClient client = this.GetClient(userAgent: userAgent, out Uri baseUri);
 
@@ -143,16 +173,26 @@ public sealed class AurRpc : IAurRpc
 
         try
         {
-            using (HttpResponseMessage result = await client.GetAsync(requestUri: requestUri, cancellationToken: DoNotCancelEarly))
+            using (
+                HttpResponseMessage result = await client.GetAsync(
+                    requestUri: requestUri,
+                    cancellationToken: DoNotCancelEarly
+                )
+            )
             {
                 if (result.IsSuccessStatusCode)
                 {
                     this._logger.SuccessFromUpstream(uri: requestUri, statusCode: result.StatusCode);
 
-                    await using (Stream stream = await result.Content.ReadAsStreamAsync(cancellationToken: DoNotCancelEarly))
+                    await using (
+                        Stream stream = await result.Content.ReadAsStreamAsync(cancellationToken: DoNotCancelEarly)
+                    )
                     {
-                        return await JsonSerializer.DeserializeAsync<RpcResponse>(utf8Json: stream, jsonTypeInfo: AppJsonContexts.Default.RpcResponse, cancellationToken: cancellationToken) ??
-                               throw new JsonException("Could not deserialize response");
+                        return await JsonSerializer.DeserializeAsync<RpcResponse>(
+                                utf8Json: stream,
+                                jsonTypeInfo: AppJsonContexts.Default.RpcResponse,
+                                cancellationToken: cancellationToken
+                            ) ?? throw new JsonException("Could not deserialize response");
                     }
                 }
 
@@ -168,7 +208,11 @@ public sealed class AurRpc : IAurRpc
     [DoesNotReturn]
     private static RpcResponse Failed(Uri requestUri, HttpStatusCode resultStatusCode)
     {
-        throw new HttpRequestException($"Failed to download {requestUri}: {resultStatusCode.GetName()}", inner: null, statusCode: resultStatusCode);
+        throw new HttpRequestException(
+            $"Failed to download {requestUri}: {resultStatusCode.GetName()}",
+            inner: null,
+            statusCode: resultStatusCode
+        );
     }
 
     private static Uri MakeUri(Uri baseUri, string query)
@@ -194,9 +238,7 @@ public sealed class AurRpc : IAurRpc
     {
         baseUri = new(uriString: this._serverConfig.Upstream.Rpc, uriKind: UriKind.Absolute);
 
-        return this._httpClientFactory.CreateClient(nameof(AurRpc))
-                   .WithBaseAddress(baseUri)
-                   .WithUserAgent(userAgent);
+        return this._httpClientFactory.CreateClient(nameof(AurRpc)).WithBaseAddress(baseUri).WithUserAgent(userAgent);
     }
 
     private async ValueTask<SemaphoreSlim?> GetSemaphoreAsync(Uri baseUri, CancellationToken cancellationToken)
