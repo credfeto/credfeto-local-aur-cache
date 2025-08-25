@@ -37,6 +37,9 @@ public sealed class AurRpc : IAurRpc
         this._logger = logger;
         this._serverConfig = config.Value;
         this._connections = new(StringComparer.Ordinal);
+
+        EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
+        EnsureDirectoryExists(this._serverConfig.Storage.Repos);
     }
 
     public async ValueTask<RpcResponse> GetAsync(
