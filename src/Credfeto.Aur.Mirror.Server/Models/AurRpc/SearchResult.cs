@@ -9,11 +9,24 @@ namespace Credfeto.Aur.Mirror.Server.Models.AurRpc;
 public sealed class SearchResult
 {
     [JsonConstructor]
-    public SearchResult(string description, long firstSubmitted, int id,
-                        IReadOnlyList<string>? keywords,
-                        IReadOnlyList<string>? license,
-
-    long lastModified, string maintainer, string name, int numVotes, long? outOfDate, string packageBase, int packageBaseId, double popularity, string url, string urlPath, string version)
+    public SearchResult(
+        string description,
+        long firstSubmitted,
+        int id,
+        IReadOnlyList<string>? keywords,
+        IReadOnlyList<string>? license,
+        long lastModified,
+        string maintainer,
+        string name,
+        int numVotes,
+        long? outOfDate,
+        string packageBase,
+        int packageBaseId,
+        double popularity,
+        string url,
+        string urlPath,
+        string version
+    )
     {
         this.Description = description;
         this.FirstSubmitted = firstSubmitted;
@@ -51,8 +64,6 @@ public sealed class SearchResult
     [JsonPropertyName("License")]
     public IReadOnlyList<string>? License { get; }
 
-
-
     // "LastModified":1610998028
     [JsonPropertyName("LastModified")]
     public long LastModified { get; }
@@ -80,7 +91,6 @@ public sealed class SearchResult
     // "PackageBaseID":158933
     [JsonPropertyName("PackageBaseID")]
     public int PackageBaseId { get; }
-
 
     // "Popularity":0
     [JsonPropertyName("Popularity")]
