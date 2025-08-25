@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -94,25 +95,28 @@ internal static partial class Endpoints
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            Debug.WriteLine(repository.Info.Message);
             await ValueTask.CompletedTask;
+#if FALSE
 
-            // repository.Info.
-            // IGitService GitService;
-            //
-            // GitService.ExecuteGitUploadPack(
-            //     Guid.NewGuid().ToString("N"),
-            //     repo,
-            //     GetInputStream(),
-            //     outStream);
-            //
-            //
-            // GitService.ExecuteServiceByName(
-            //     correlationId: Guid.NewGuid().ToString("N"),
-            //     repositoryName: repo,
-            //     "upload-pack",
-            //     new ExecutionOptions() { AdvertiseRefs = false, endStreamWithClose = true },
-            //     GetInputStream(),
-            //     outStream);
+            repository.Info.
+            IGitService GitService;
+
+            GitService.ExecuteGitUploadPack(
+                Guid.NewGuid().ToString("N"),
+                repo,
+                GetInputStream(),
+                outStream);
+
+
+            GitService.ExecuteServiceByName(
+                correlationId: Guid.NewGuid().ToString("N"),
+                repositoryName: repo,
+                "upload-pack",
+                new ExecutionOptions() { AdvertiseRefs = false, endStreamWithClose = true },
+                GetInputStream(),
+                outStream);
+#endif
 
             return Results.NoContent();
         }
