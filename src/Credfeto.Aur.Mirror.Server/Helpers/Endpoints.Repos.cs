@@ -18,37 +18,54 @@ internal static partial class Endpoints
     const string REPOS_PREFIX = "/repos";
     private static readonly int PrefixLength = REPOS_PREFIX.Length + 1;
 
-    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)")]
+    [RequiresUnreferencedCode(
+        "Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)"
+    )]
     private static WebApplication ConfigureAurRepoEndpoints(this WebApplication app)
     {
         Console.WriteLine("Configuring Aur Repo Endpoint");
 
         RouteGroupBuilder group = app.MapGroup(REPOS_PREFIX);
 
-        group.MapGet(pattern: "{repo}/info/refs",
-                     handler: ([FromRoute] string repo, [FromQuery] string service, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                                  GetServiceRefsFileAsync(
-                                      repo, service,  config: config, cancellationToken: cancellationToken));
+        group.MapGet(
+            pattern: "{repo}/info/refs",
+            handler: (
+                [FromRoute] string repo,
+                [FromQuery] string service,
+                IOptions<ServerConfig> config,
+                CancellationToken cancellationToken
+            ) => GetServiceRefsFileAsync(repo, service, config: config, cancellationToken: cancellationToken)
+        );
 
-        group.MapGet(pattern: "{repo}/{file}",
-                     handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                                  GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken));
+        group.MapGet(
+            pattern: "{repo}/{file}",
+            handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
+                GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
+        );
 
-        group.MapGet(pattern: "{repo}/{folder1}/{file}",
-                     handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                                  GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken));
+        group.MapGet(
+            pattern: "{repo}/{folder1}/{file}",
+            handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
+                GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
+        );
 
-        group.MapGet(pattern: "{repo}/{folder1}/{folder2}/{file}",
-                     handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                                  GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken));
+        group.MapGet(
+            pattern: "{repo}/{folder1}/{folder2}/{file}",
+            handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
+                GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
+        );
 
-        group.MapGet(pattern: "{repo}/{folder1}/{folder2}/{folder3}/{file}",
-                     handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                                  GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken));
+        group.MapGet(
+            pattern: "{repo}/{folder1}/{folder2}/{folder3}/{file}",
+            handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
+                GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
+        );
 
-        group.MapGet(pattern: "{repo}/{folder1}/{folder2}/{folder3}/{folder4}/{file}",
-                     handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                                  GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken));
+        group.MapGet(
+            pattern: "{repo}/{folder1}/{folder2}/{folder3}/{folder4}/{file}",
+            handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
+                GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
+        );
 
         // app.MapGet(pattern: "/rpc",
         //            handler: static (HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
@@ -57,7 +74,12 @@ internal static partial class Endpoints
         return app;
     }
 
-    private static async ValueTask<IResult> GetServiceRefsFileAsync(string repo, string service, IOptions<ServerConfig> config, CancellationToken cancellationToken)
+    private static async ValueTask<IResult> GetServiceRefsFileAsync(
+        string repo,
+        string service,
+        IOptions<ServerConfig> config,
+        CancellationToken cancellationToken
+    )
     {
         string path = Path.Combine(path1: config.Value.Storage.Repos, path2: repo, path3: service);
 
@@ -96,16 +118,28 @@ internal static partial class Endpoints
         }
     }
 
-    private static ValueTask<IResult> GetFileAsync(HttpContext httpContext, IOptions<ServerConfig> config, in CancellationToken cancellationToken)
+    private static ValueTask<IResult> GetFileAsync(
+        HttpContext httpContext,
+        IOptions<ServerConfig> config,
+        in CancellationToken cancellationToken
+    )
     {
         string relativeRequestPath = httpContext.Request.Path.Value?[PrefixLength..] ?? string.Empty;
 
-        return GetFileContentsAsync(config: config, relativeRequestPath: relativeRequestPath, cancellationToken: cancellationToken);
+        return GetFileContentsAsync(
+            config: config,
+            relativeRequestPath: relativeRequestPath,
+            cancellationToken: cancellationToken
+        );
     }
 
     [SuppressMessage(category: "Microsoft.Security", checkId: "CA3003", Justification = "Explicit checks here")]
     [SuppressMessage(category: "SecurityCodeScan.VS2019", checkId: "SCS0018", Justification = "Explicit checks here")]
-    private static async ValueTask<IResult> GetFileContentsAsync(IOptions<ServerConfig> config, string relativeRequestPath, CancellationToken cancellationToken)
+    private static async ValueTask<IResult> GetFileContentsAsync(
+        IOptions<ServerConfig> config,
+        string relativeRequestPath,
+        CancellationToken cancellationToken
+    )
     {
         string path = Path.Combine(path1: config.Value.Storage.Repos, path2: relativeRequestPath);
 
