@@ -60,12 +60,12 @@ could also trigger clone and update on fetch of http://local-aur-url/{Name}.git/
 
 http://localhost:8080/afetch-git.git/info/refs
 
-
 LibGit2Sharp
+
+```csharp
 Repository.Clone("https://example.com", workDir, new CloneOptions() { IsBare = true });
-
-
 ```
+
 
 ## Build Status
 
