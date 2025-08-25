@@ -28,6 +28,10 @@ internal static partial class Endpoints
 
         RouteGroupBuilder group = app.MapGroup(REPOS_PREFIX);
 
+        // needed: add packages.gz endopoint that
+        //        if available upstream get list of packages from upstream, cache locally
+        //        if upstream not available get a list of cached packages from metadata and return
+
         group.MapGet(
             pattern: "{repo}/info/refs",
             handler: (
