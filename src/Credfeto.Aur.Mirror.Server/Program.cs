@@ -33,10 +33,6 @@ public static class Program
 
         ServerStartup.SetThreads(MIN_THREADS);
 
-
-
-
-
         try
         {
             TestDeserialization();
@@ -60,7 +56,8 @@ public static class Program
 
     private static void TestDeserialization()
     {
-        const string s = @"{
+        const string s =
+            @"{
                 ""resultcount"":1,
                 ""results"":[
                     {
@@ -86,7 +83,9 @@ public static class Program
                 ""type"":""multiinfo"",
                 ""version"":5
             }";
-        RpcResponse rpcResponse = JsonSerializer.Deserialize<RpcResponse>(s, AppJsonContexts.Default.RpcResponse)?? throw new JsonException("Could not deserialize response");
+        RpcResponse rpcResponse =
+            JsonSerializer.Deserialize<RpcResponse>(s, AppJsonContexts.Default.RpcResponse)
+            ?? throw new JsonException("Could not deserialize response");
 
         Console.WriteLine(rpcResponse.Count);
     }
