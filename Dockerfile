@@ -6,6 +6,11 @@ WORKDIR /usr/src/app
 COPY Credfeto.Aur.Mirror.Server .
 COPY appsettings.json .
 
+CMD mkdir /data && \
+    mkdir /data/metadata && \
+    mkdir /data/metadata && \
+    chmod -R 1654:1654 /data
+
 EXPOSE 8080
 ENTRYPOINT [ "/usr/src/app/Credfeto.Aur.Mirror.Server" ]
  
