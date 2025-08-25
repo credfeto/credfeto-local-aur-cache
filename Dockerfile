@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-noble-chiseled
 WORKDIR /usr/src/app
 
 # Bundle App and basic config
-COPY Credfeto.Cache.Proxy.Server .
+COPY Credfeto.Aur.Mirror.Server .
 COPY appsettings.json .
 
 EXPOSE 8080
