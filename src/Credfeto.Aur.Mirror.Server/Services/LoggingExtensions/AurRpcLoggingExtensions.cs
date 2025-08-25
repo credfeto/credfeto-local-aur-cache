@@ -13,5 +13,10 @@ internal static partial class AurRpcLoggingExtensions
     public static partial void SuccessFromUpstream(this ILogger<AurRpc> logger, Uri uri, HttpStatusCode statusCode);
 
     [LoggerMessage(LogLevel.Error, EventId = 3, Message = "Failed to save metadata: {filename}: {message}")]
-    public static partial void SaveMetadataFailed(this ILogger<AurRpc> logger, string filename, string message, Exception exception);
+    public static partial void SaveMetadataFailed(
+        this ILogger<AurRpc> logger,
+        string filename,
+        string message,
+        Exception exception
+    );
 }
