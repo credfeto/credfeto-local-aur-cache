@@ -9,6 +9,8 @@ ProjectSection(SolutionItems) = preProject
 	global.json = global.json
 	..\CHANGELOG.md = ..\CHANGELOG.md
 	..\README.md = ..\README.md
+	..\Dockerfile = ..\Dockerfile
+	publish = publish
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Credfeto.Aur.Mirror.Server", "Credfeto.Aur.Mirror.Server\Credfeto.Aur.Mirror.Server.csproj", "{759F530C-EFCE-48D6-95B1-B174A89FFAB9}"
