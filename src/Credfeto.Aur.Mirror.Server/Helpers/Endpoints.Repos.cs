@@ -68,11 +68,7 @@ internal static partial class Endpoints
                 GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
         );
 
-        // app.MapGet(pattern: "/rpc",
-        //            handler: static (HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
-        //                         ExecuteRpcAsync(httpContext: httpContext, aurRpc: aurRpc, cancellationToken: cancellationToken));
-
-        return app;
+       return app;
     }
 
     private static async ValueTask<IResult> GetServiceRefsFileAsync(

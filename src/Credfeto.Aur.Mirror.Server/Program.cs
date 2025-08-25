@@ -102,6 +102,5 @@ public static class Program
         WebApplication app = (WebApplication)application.UseForwardedHeaders();
 
         return app.ConfigureEndpoints();
-        // return (WebApplication)app.ConfigureEndpoints().UseMiddleware<CacheMiddleware>();
     }
 }
