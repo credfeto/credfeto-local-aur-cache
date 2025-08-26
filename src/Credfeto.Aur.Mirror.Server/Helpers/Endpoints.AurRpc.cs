@@ -26,8 +26,18 @@ internal static partial class Endpoints
 
         app.MapGet(
             pattern: "/rpc",
-            handler: static (HttpContext httpContext, IAurRpc aurRpc, ILogger<IAurRpc> logger, CancellationToken cancellationToken) =>
-                ExecuteRpcAsync(httpContext: httpContext, aurRpc: aurRpc, logger:logger, cancellationToken: cancellationToken)
+            handler: static (
+                HttpContext httpContext,
+                IAurRpc aurRpc,
+                ILogger<IAurRpc> logger,
+                CancellationToken cancellationToken
+            ) =>
+                ExecuteRpcAsync(
+                    httpContext: httpContext,
+                    aurRpc: aurRpc,
+                    logger: logger,
+                    cancellationToken: cancellationToken
+                )
         );
 
         return app;
