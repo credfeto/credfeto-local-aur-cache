@@ -87,9 +87,11 @@ public sealed class AurRpc : IAurRpc
     {
         try
         {
-            string json = await File.ReadAllTextAsync(path: metadataFileName,
-                                                      encoding:Encoding.UTF8,
-                                                      cancellationToken: DoNotCancelEarly);
+            string json = await File.ReadAllTextAsync(
+                path: metadataFileName,
+                encoding: Encoding.UTF8,
+                cancellationToken: DoNotCancelEarly
+            );
 
             return JsonSerializer.Deserialize(json, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
         }
