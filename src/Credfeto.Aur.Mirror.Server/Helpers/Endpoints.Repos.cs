@@ -72,7 +72,7 @@ internal static partial class Endpoints
                 GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
         );
 
-       return app;
+        return app;
     }
 
     private static async ValueTask<IResult> GetServiceRefsFileAsync(
