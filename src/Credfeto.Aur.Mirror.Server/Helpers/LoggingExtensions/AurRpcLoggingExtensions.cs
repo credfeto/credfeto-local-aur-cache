@@ -11,5 +11,4 @@ internal static partial class AurRpcLoggingExtensions
 
     [LoggerMessage(LogLevel.Error, EventId = 2, Message = "Failed query: {query}  => {message}")]
     public static partial void Failed(this ILogger<IAurRpc> logger, string query, string message, Exception exception);
-
 }
