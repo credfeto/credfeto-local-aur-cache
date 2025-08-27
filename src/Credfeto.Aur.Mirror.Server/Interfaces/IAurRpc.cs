@@ -16,7 +16,7 @@ public interface IAurRpc
     );
 
     ValueTask<RpcResponse> InfoAsync(
-        IReadOnlyList<string> package,
+        IReadOnlyList<string> packages,
         ProductInfoHeaderValue? userAgent,
         CancellationToken cancellationToken
     );

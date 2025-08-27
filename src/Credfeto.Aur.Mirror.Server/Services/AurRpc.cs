@@ -49,7 +49,7 @@ public sealed class AurRpc : IAurRpc
         {
             RpcResponse upstream = await this.RequestSearchUpstreamAsync(keyword: keyword, by: by, userAgent: userAgent, cancellationToken: cancellationToken);
 
-            await this.SyncUpstreamReposAsync(upstream);
+            await this.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent, new(false));
 
             return upstream;
         }
@@ -61,12 +61,52 @@ public sealed class AurRpc : IAurRpc
         }
     }
 
-    public async ValueTask<RpcResponse> InfoAsync(IReadOnlyList<string> package, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    public async ValueTask<RpcResponse> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        await ValueTask.CompletedTask;
+        try
+        {
+            if (packages is [])
+            {
+                return RpcResults.InfoNotFound;
+            }
 
-        return RpcResults.InfoNotFound;
+            RpcResponse upstream = await this.RequestInfoUpstreamAsync(packages: packages, userAgent: userAgent, cancellationToken: cancellationToken);
+
+            await this.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent, new(true));
+
+            return upstream;
+        }
+        catch (HttpRequestException exception)
+        {
+            Debug.WriteLine(exception.Message);
+
+            return await this.ExecuteLocalInfoQueryAsync(package: packages, cancellationToken: cancellationToken);
+        }
+    }
+
+    private async Task<RpcResponse> ExecuteLocalInfoQueryAsync(IReadOnlyList<string> package, CancellationToken cancellationToken)
+    {
+        List<SearchResult> results = [];
+        string[] files = Directory.GetFiles("*.json");
+
+        foreach (string metadataFileName in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            SearchResult? existing = await this.ReadPackageFromMetadataAsync(metadataFileName);
+
+            if (existing is null)
+            {
+                continue;
+            }
+
+            if (package.Any(p => StringComparer.OrdinalIgnoreCase.Equals(x: existing.Name, y: p)))
+            {
+                results.Add(existing);
+            }
+        }
+
+        return new(count: results.Count, results: results, rpcType: "multiinfo", version: RpcResults.RpcVersion);
     }
 
     private async ValueTask<RpcResponse> ExecuteLocalSearchQueryAsync(string keyword, string by, CancellationToken cancellationToken)
@@ -113,7 +153,7 @@ public sealed class AurRpc : IAurRpc
         };
     }
 
-    private async ValueTask SyncUpstreamReposAsync(RpcResponse upstream)
+    private async ValueTask SyncUpstreamReposAsync(RpcResponse upstream, ProductInfoHeaderValue? userAgent, SearchTracking tracking)
     {
         foreach (SearchResult package in upstream.Results)
         {
@@ -130,15 +170,40 @@ public sealed class AurRpc : IAurRpc
 
                 if (changed)
                 {
-                    await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName);
+                    tracking.AppendRepoSyncSearchResult(package);
                 }
             }
             else
             {
                 EnsureRepositoryHasBeenCloned(repoPath: repoPath, upstreamRepo: upstreamRepo, changed: true);
 
-                await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName);
+                tracking.AppendRepoSyncSearchResult(package);
             }
+        }
+
+        if (tracking.ToSave is not [])
+        {
+            await this.SaveSearchResultsAsync(tracking.ToSave);
+
+            return;
+        }
+
+        await this.SaveUpstreamAsync(packages: tracking.Packages, userAgent: userAgent);
+    }
+
+    private async ValueTask SaveUpstreamAsync(List<string> packages, ProductInfoHeaderValue? userAgent)
+    {
+        RpcResponse packageInfo = await this.RequestInfoUpstreamAsync(packages: packages, userAgent: userAgent, cancellationToken: DoNotCancelEarly);
+
+        await this.SaveSearchResultsAsync(packageInfo.Results);
+    }
+
+    private async ValueTask SaveSearchResultsAsync(IReadOnlyList<SearchResult> packagesToSave)
+    {
+        foreach (SearchResult package in packagesToSave)
+        {
+            string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
+            await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName);
         }
     }
 
@@ -213,11 +278,16 @@ public sealed class AurRpc : IAurRpc
         }
     }
 
-    private async ValueTask<RpcResponse> RequestSearchUpstreamAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    private ValueTask<RpcResponse> RequestInfoUpstreamAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, in CancellationToken cancellationToken)
     {
         HttpClient client = this.GetClient(userAgent: userAgent, out Uri baseUri);
 
-        Uri requestUri = MakeUri(baseUri: baseUri, $"/v5/search/{keyword}?by={by}");
+        Uri requestUri = MakeInfoUri(baseUri: baseUri, packages: packages);
+        return this.RequestUpstreamCommonAsync(client: client, requestUri: requestUri, cancellationToken: cancellationToken);
+    }
+
+    private async ValueTask<RpcResponse> RequestUpstreamCommonAsync(HttpClient client, Uri requestUri, CancellationToken cancellationToken)
+    {
         this._logger.RequestingUpstream(requestUri);
         SemaphoreSlim? wait = await this.GetSemaphoreAsync(baseUri: requestUri, cancellationToken: cancellationToken);
 
@@ -245,6 +315,14 @@ public sealed class AurRpc : IAurRpc
         }
     }
 
+    private ValueTask<RpcResponse> RequestSearchUpstreamAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, in CancellationToken cancellationToken)
+    {
+        HttpClient client = this.GetClient(userAgent: userAgent, out Uri baseUri);
+
+        Uri requestUri = MakeUri(baseUri: baseUri, $"/v5/search/{keyword}?by={by}");
+        return this.RequestUpstreamCommonAsync(client: client, requestUri: requestUri, cancellationToken: cancellationToken);
+    }
+
     [DoesNotReturn]
     private static RpcResponse Failed(Uri requestUri, HttpStatusCode resultStatusCode)
     {
@@ -270,24 +348,15 @@ public sealed class AurRpc : IAurRpc
         return new(uriString: full, uriKind: UriKind.Absolute);
     }
 
-    // private static Uri MakeUri(Uri baseUri, IReadOnlyDictionary<string, StringValues> query)
-    // {
-    //     string urlBase = baseUri.ToString();
-    //
-    //     if (urlBase.EndsWith('?'))
-    //     {
-    //         urlBase = urlBase[..^1];
-    //     }
-    //
-    //     if (urlBase.EndsWith('/'))
-    //     {
-    //         urlBase = urlBase[..^1];
-    //     }
-    //
-    //     string full = urlBase + "?" + string.Join(separator: '&', query.Select(q => $"{q.Key}={q.Value}"));
-    //
-    //     return new(uriString: full, uriKind: UriKind.Absolute);
-    // }
+    private static Uri MakeInfoUri(Uri baseUri, IReadOnlyList<string> packages)
+    {
+        if (packages.Count == 1)
+        {
+            return MakeUri(baseUri: baseUri, pathAndQuery: "/v5/info/{packages[0]}");
+        }
+
+        return MakeUri(baseUri: baseUri, "/v5/info?" + string.Join(separator: '&', packages.Select(p => $"arg[]={p}")));
+    }
 
     private HttpClient GetClient(ProductInfoHeaderValue? userAgent, out Uri baseUri)
     {
@@ -325,6 +394,34 @@ public sealed class AurRpc : IAurRpc
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
+        }
+    }
+
+    private sealed class SearchTracking
+    {
+        private readonly bool _fromInfo;
+
+        public SearchTracking(bool fromInfo)
+        {
+            this._fromInfo = fromInfo;
+            this.Packages = [];
+            this.ToSave = [];
+        }
+
+        public List<string> Packages { get; }
+
+        public List<SearchResult> ToSave { get; }
+
+        public void AppendRepoSyncSearchResult(SearchResult package)
+        {
+            if (this._fromInfo)
+            {
+                this.ToSave.Add(package);
+            }
+            else
+            {
+                this.Packages.Add(package.Name);
+            }
         }
     }
 }

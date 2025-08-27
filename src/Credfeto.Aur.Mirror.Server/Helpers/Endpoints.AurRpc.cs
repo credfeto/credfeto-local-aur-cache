@@ -78,7 +78,7 @@ internal static partial class Endpoints
 
         ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
-        RpcResponse result = await aurRpc.InfoAsync(package: splitPackages, userAgent: userAgent, cancellationToken: cancellationToken);
+        RpcResponse result = await aurRpc.InfoAsync(packages: splitPackages, userAgent: userAgent, cancellationToken: cancellationToken);
 
         return Results.Ok(result);
     }
