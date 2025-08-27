@@ -50,11 +50,13 @@ public sealed class AurRpc : IAurRpc
         CancellationToken cancellationToken
     )
     {
-
-
         try
         {
-            RpcResponse upstream = await this.RequestUpstreamAsync(query: query, userAgent: userAgent, cancellationToken: cancellationToken);
+            RpcResponse upstream = await this.RequestUpstreamAsync(
+                query: query,
+                userAgent: userAgent,
+                cancellationToken: cancellationToken
+            );
 
             await this.SyncUpstreamReposAsync(upstream);
 
@@ -67,7 +69,10 @@ public sealed class AurRpc : IAurRpc
         }
     }
 
-    private async ValueTask<RpcResponse> ExecuteLocalQueryAsync(IReadOnlyDictionary<string, string> query, CancellationToken cancellationToken)
+    private async ValueTask<RpcResponse> ExecuteLocalQueryAsync(
+        IReadOnlyDictionary<string, string> query,
+        CancellationToken cancellationToken
+    )
     {
         bool multi = query.ContainsKey("args[]");
         int version = int.Parse(query["v"] ?? "5", CultureInfo.InvariantCulture);
@@ -88,9 +93,7 @@ public sealed class AurRpc : IAurRpc
             }
         }
 
-
-        return new(count: results.Count, results: results, rpcType:
-                   multi ? "multiinfo" : "search", version: version);
+        return new(count: results.Count, results: results, rpcType: multi ? "multiinfo" : "search", version: version);
     }
 
     private async ValueTask SyncUpstreamReposAsync(RpcResponse upstream)
