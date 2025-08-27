@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -50,8 +51,12 @@ internal static partial class Endpoints
         CancellationToken cancellationToken
     )
     {
-        string query = GetPathWithQuery(httpContext.Request.Query);
-        logger.Query(query);
+        IReadOnlyDictionary<string, string> query1 = httpContext.Request.Query.ToDictionary(x => x.Key, x => x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
+
+        bool multi = httpContext.Request.Query.ContainsKey("args[]");
+
+        string queryText = GetPathWithQuery(httpContext.Request.Query);
+        logger.Query(queryText);
 
         try
         {
@@ -60,7 +65,7 @@ internal static partial class Endpoints
             httpContext.Response.Headers.KeepAlive = "60";
 
             RpcResponse result = await aurRpc.GetAsync(
-                query: query,
+                query: query1,
                 userAgent: userAgent,
                 cancellationToken: cancellationToken
             );
@@ -69,9 +74,10 @@ internal static partial class Endpoints
         }
         catch (Exception exception)
         {
-            logger.Failed(query, exception.Message, exception);
+            logger.Failed(queryText, exception.Message, exception);
 
-            return Results.Ok(new RpcResponse(count: 0, [], rpcType: "search", version: 5));
+            return Results.Ok(new RpcResponse(count: 0, [], rpcType:
+                                              multi ? "multiinfo" : "search", version: 5));
         }
     }
 

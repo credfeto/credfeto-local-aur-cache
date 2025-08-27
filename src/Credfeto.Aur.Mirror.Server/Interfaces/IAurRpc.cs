@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace Credfeto.Aur.Mirror.Server.Interfaces;
 public interface IAurRpc
 {
     ValueTask<RpcResponse> GetAsync(
-        string query,
+        IReadOnlyDictionary<string, string> query,
         ProductInfoHeaderValue? userAgent,
         CancellationToken cancellationToken
     );

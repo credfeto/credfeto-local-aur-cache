@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -43,17 +45,54 @@ public sealed class AurRpc : IAurRpc
     }
 
     public async ValueTask<RpcResponse> GetAsync(
-        string query,
+        IReadOnlyDictionary<string, string> query,
         ProductInfoHeaderValue? userAgent,
         CancellationToken cancellationToken
     )
     {
-        RpcResponse upstream = await this.RequestUpstreamAsync(
-            query: query,
-            userAgent: userAgent,
-            cancellationToken: cancellationToken
-        );
+        try
+        {
+            RpcResponse upstream = await this.RequestUpstreamAsync(query: query, userAgent: userAgent, cancellationToken: cancellationToken);
 
+            await this.SyncUpstreamReposAsync(upstream);
+
+            return upstream;
+        }
+        catch (HttpRequestException exception)
+        {
+            Debug.WriteLine(exception.Message);
+            return await this.ExecuteLocalQueryAsync(query: query, cancellationToken: cancellationToken);
+        }
+    }
+
+    private async ValueTask<RpcResponse> ExecuteLocalQueryAsync(IReadOnlyDictionary<string, string> query, CancellationToken cancellationToken)
+    {
+        bool multi = query.ContainsKey("args[]");
+        int version = int.Parse(query["v"] ?? "5", CultureInfo.InvariantCulture);
+
+        List<SearchResult> results = [];
+        string[] files = Directory.GetFiles("*.json");
+
+        foreach (string metadataFileName in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            SearchResult? existing = await this.ReadPackageFromMetadataAsync(metadataFileName);
+
+            if (existing is not null)
+            {
+                // Check filtering
+                results.Add(existing);
+            }
+        }
+
+
+        return new(count: results.Count, results: results, rpcType:
+                   multi ? "multiinfo" : "search", version: version);
+    }
+
+    private async ValueTask SyncUpstreamReposAsync(RpcResponse upstream)
+    {
         foreach (SearchResult package in upstream.Results)
         {
             string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
@@ -79,8 +118,6 @@ public sealed class AurRpc : IAurRpc
                 await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName);
             }
         }
-
-        return upstream;
     }
 
     private async ValueTask<SearchResult?> ReadPackageFromMetadataAsync(string metadataFileName)
@@ -174,7 +211,7 @@ public sealed class AurRpc : IAurRpc
     }
 
     private async ValueTask<RpcResponse> RequestUpstreamAsync(
-        string query,
+        IReadOnlyDictionary<string, string> query,
         ProductInfoHeaderValue? userAgent,
         CancellationToken cancellationToken
     )
@@ -229,7 +266,7 @@ public sealed class AurRpc : IAurRpc
         );
     }
 
-    private static Uri MakeUri(Uri baseUri, string query)
+    private static Uri MakeUri(Uri baseUri, IReadOnlyDictionary<string, string> query)
     {
         string urlBase = baseUri.ToString();
 
@@ -243,7 +280,7 @@ public sealed class AurRpc : IAurRpc
             urlBase = urlBase[..^1];
         }
 
-        string full = urlBase + "?" + query;
+        string full = urlBase + "?" + string.Join(separator: '&', query.Select(q => $"{q.Key}={q.Value}"));
 
         return new(uriString: full, uriKind: UriKind.Absolute);
     }
