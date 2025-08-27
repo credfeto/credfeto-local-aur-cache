@@ -50,6 +50,32 @@ internal static partial class Endpoints
                 )
         );
 
+
+        RouteGroupBuilder v5Group = group.MapGroup("v5");
+        v5Group.MapGet("search/{keyword}", handler: static () =>
+                                                       {
+                                                           // name (search by package name only)
+                                                           // name-desc (search by package name and description)
+                                                           // maintainer (search by package maintainer)
+                                                           // depends (search for packages that depend on keywords)
+                                                           // makedepends (search for packages that makedepend on keywords)
+                                                           // optdepends (search for packages that optdepend on keywords)
+                                                           // checkdepends (search for packages that checkdepend on keywords)
+
+                                                           // return types: search or error
+
+                                                           return Results.Ok(new RpcResponse(count: 0, [], rpcType: "search", version: 5));
+                                                       });
+
+        group.MapGet("info/{keyword}", handler: static () =>
+                                                     {
+                                                         //?arg%5B%5D=pkg1&arg%5B%5D=pkg2&…
+
+                                                         // return types: multiInfo or error
+
+                                                         return Results.Ok(new RpcResponse(count: 0, [], rpcType: "multiInfo", version: 5));
+                                                     });
+
         return app;
     }
 
@@ -89,7 +115,11 @@ internal static partial class Endpoints
         {
             logger.Failed(queryText, exception.Message, exception);
 
-            return Results.Ok(new RpcResponse(count: 0, [], rpcType: multi ? "multiinfo" : "search", version: 5));
+            string type = multi
+                ? "multiinfo"
+                : "search";
+
+            return Results.Ok(new RpcResponse(count: 0, [], rpcType: type, version: 5));
         }
     }
 

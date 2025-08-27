@@ -15,6 +15,8 @@ public sealed class SearchResult
         int id,
         IReadOnlyList<string>? keywords,
         IReadOnlyList<string>? license,
+        IReadOnlyList<string>?  depends,
+        IReadOnlyList<string>?  makeDepends,
         long lastModified,
         string maintainer,
         string name,
@@ -33,6 +35,8 @@ public sealed class SearchResult
         this.Id = id;
         this.Keywords = keywords;
         this.License = license;
+        this.Depends = depends;
+        this.MakeDepends = makeDepends;
         this.LastModified = lastModified;
         this.Maintainer = maintainer;
         this.Name = name;
@@ -60,6 +64,10 @@ public sealed class SearchResult
 
     [JsonPropertyName("License")]
     public IReadOnlyList<string>? License { get; }
+
+    public IReadOnlyList<string>? Depends { get; }
+
+    public IReadOnlyList<string>? MakeDepends { get; }
 
     [JsonPropertyName("LastModified")]
     public long LastModified { get; }
