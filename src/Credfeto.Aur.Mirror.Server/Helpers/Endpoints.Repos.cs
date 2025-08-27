@@ -1,166 +1,43 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Aur.Mirror.Server.Config;
-using LibGit2Sharp;
+using Credfeto.Aur.Mirror.Server.Extensions;
+using Credfeto.Aur.Mirror.Server.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Options;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
 internal static partial class Endpoints
 {
-    const string REPOS_PREFIX = "/repos";
-    private static readonly int PrefixLength = REPOS_PREFIX.Length + 1;
-
-    [RequiresUnreferencedCode(
-        "Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)"
-    )]
+    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)")]
     private static WebApplication ConfigureAurRepoEndpoints(this WebApplication app)
     {
         Console.WriteLine("Configuring Aur Repo Endpoint");
 
-        RouteGroupBuilder group = app.MapGroup(REPOS_PREFIX);
+        RouteGroupBuilder group = app.MapGroup("/repos");
 
-        // needed: add packages.gz endopoint that
-        //        if available upstream get list of packages from upstream, cache locally
-        //        if upstream not available get a list of cached packages from metadata and return
-
-        group.MapGet(
-            pattern: "{repo}/info/refs",
-            handler: (
-                [FromRoute] string repo,
-                [FromQuery] string service,
-                IOptions<ServerConfig> config,
-                CancellationToken cancellationToken
-            ) => GetServiceRefsFileAsync(repo, service, config: config, cancellationToken: cancellationToken)
-        );
-
-        group.MapGet(
-            pattern: "{repo}/{file}",
-            handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
-        );
-
-        group.MapGet(
-            pattern: "{repo}/{folder1}/{file}",
-            handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
-        );
-
-        group.MapGet(
-            pattern: "{repo}/{folder1}/{folder2}/{file}",
-            handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
-        );
-
-        group.MapGet(
-            pattern: "{repo}/{folder1}/{folder2}/{folder3}/{file}",
-            handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
-        );
-
-        group.MapGet(
-            pattern: "{repo}/{folder1}/{folder2}/{folder3}/{folder4}/{file}",
-            handler: (HttpContext httpContext, IOptions<ServerConfig> config, CancellationToken cancellationToken) =>
-                GetFileAsync(httpContext: httpContext, config: config, cancellationToken: cancellationToken)
-        );
+        group.MapGet(pattern: "packages.gz",
+                     handler: static (IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  GetPackagesAsync(httpContext: httpContext, aurRepos: aurRepos, cancellationToken: cancellationToken));
 
         return app;
     }
 
-    private static async ValueTask<IResult> GetServiceRefsFileAsync(
-        string repo,
-        string service,
-        IOptions<ServerConfig> config,
-        CancellationToken cancellationToken
-    )
+    private static async ValueTask<IResult> GetPackagesAsync(HttpContext httpContext, IAurRepos aurRepos, CancellationToken cancellationToken)
     {
-        string path = Path.Combine(path1: config.Value.Storage.Repos, path2: repo, path3: service);
+        ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
-        string? repoPath = Repository.Discover(path);
+        byte[]? result = await aurRepos.GetPackagesAsync(userAgent: userAgent, cancellationToken: cancellationToken);
 
-        if (repoPath is null)
+        if (result is null)
         {
             return Results.NotFound();
         }
 
-        using (Repository repository = new(repoPath))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            Debug.WriteLine(repository.Info.Message);
-            await ValueTask.CompletedTask;
-#if FALSE
-
-            repository.Info.
-            IGitService GitService;
-
-            GitService.ExecuteGitUploadPack(
-                Guid.NewGuid().ToString("N"),
-                repo,
-                GetInputStream(),
-                outStream);
-
-
-            GitService.ExecuteServiceByName(
-                correlationId: Guid.NewGuid().ToString("N"),
-                repositoryName: repo,
-                "upload-pack",
-                new ExecutionOptions() { AdvertiseRefs = false, endStreamWithClose = true },
-                GetInputStream(),
-                outStream);
-#endif
-
-            return Results.NoContent();
-        }
-    }
-
-    private static ValueTask<IResult> GetFileAsync(
-        HttpContext httpContext,
-        IOptions<ServerConfig> config,
-        in CancellationToken cancellationToken
-    )
-    {
-        string relativeRequestPath = httpContext.Request.Path.Value?[PrefixLength..] ?? string.Empty;
-
-        return GetFileContentsAsync(
-            config: config,
-            relativeRequestPath: relativeRequestPath,
-            cancellationToken: cancellationToken
-        );
-    }
-
-    [SuppressMessage(category: "Microsoft.Security", checkId: "CA3003", Justification = "Explicit checks here")]
-    [SuppressMessage(category: "SecurityCodeScan.VS2019", checkId: "SCS0018", Justification = "Explicit checks here")]
-    private static async ValueTask<IResult> GetFileContentsAsync(
-        IOptions<ServerConfig> config,
-        string relativeRequestPath,
-        CancellationToken cancellationToken
-    )
-    {
-        string path = Path.Combine(path1: config.Value.Storage.Repos, path2: relativeRequestPath);
-
-        DirectoryInfo d = new(path);
-
-        if (!d.FullName.StartsWith(config.Value.Storage.Repos + "/", comparisonType: StringComparison.Ordinal))
-        {
-            return Results.NotFound();
-        }
-
-        if (File.Exists(path))
-        {
-            byte[] content = await File.ReadAllBytesAsync(path: path, cancellationToken: cancellationToken);
-
-            return Results.File(content);
-        }
-
-        return Results.NotFound();
+        return Results.File(fileContents: result, contentType: "application/gzip");
     }
 }

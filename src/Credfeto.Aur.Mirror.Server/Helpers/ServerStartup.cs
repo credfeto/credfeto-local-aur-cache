@@ -81,11 +81,9 @@ internal static class ServerStartup
             .Services.Configure<ServerConfig>(section)
             .AddDate()
             .AddSingleton<IAurRpc, AurRpc>()
-            // .AddSingleton<CacheMiddleware>()
-            // .AddSingleton<IPackageStorage, FileSystemPackageStorage>()
-            // .AddSingleton<IContentDownloader, ContentDownloader>()
-            // .AddSingleton<IContentSource, ContentSource>()
+            .AddSingleton<IAurRepos, AurRepos>()
             .AddRpcClient()
+            .AddReposClient()
             .ConfigureHttpJsonOptions(options =>
                 options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
             );
