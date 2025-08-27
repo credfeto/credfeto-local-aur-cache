@@ -9,9 +9,16 @@ namespace Credfeto.Aur.Mirror.Server.Interfaces;
 
 public interface IAurRpc
 {
-    ValueTask<RpcResponse> GetAsync(
+    ValueTask<RpcResponse> SearchAsync(
         IReadOnlyDictionary<string, StringValues> query,
         ProductInfoHeaderValue? userAgent,
         CancellationToken cancellationToken
     );
+
+    ValueTask<RpcResponse> InfoAsync(
+        IReadOnlyDictionary<string, StringValues> query,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    );
+
 }

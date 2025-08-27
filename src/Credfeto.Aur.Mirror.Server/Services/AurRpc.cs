@@ -45,7 +45,7 @@ public sealed class AurRpc : IAurRpc
         EnsureDirectoryExists(this._serverConfig.Storage.Repos);
     }
 
-    public async ValueTask<RpcResponse> GetAsync(
+    public async ValueTask<RpcResponse> SearchAsync(
         IReadOnlyDictionary<string, StringValues> query,
         ProductInfoHeaderValue? userAgent,
         CancellationToken cancellationToken
@@ -66,11 +66,19 @@ public sealed class AurRpc : IAurRpc
         catch (HttpRequestException exception)
         {
             Debug.WriteLine(exception.Message);
-            return await this.ExecuteLocalQueryAsync(query: query, cancellationToken: cancellationToken);
+            return await this.ExecuteLocalSearchQueryAsync(query: query, cancellationToken: cancellationToken);
         }
     }
 
-    private async ValueTask<RpcResponse> ExecuteLocalQueryAsync(
+    public async ValueTask<RpcResponse> InfoAsync(IReadOnlyDictionary<string, StringValues> query, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await ValueTask.CompletedTask;
+
+        return RpcResults.InfoNotFound;
+    }
+
+    private async ValueTask<RpcResponse> ExecuteLocalSearchQueryAsync(
         IReadOnlyDictionary<string, StringValues> query,
         CancellationToken cancellationToken
     )

@@ -10,6 +10,7 @@ using Credfeto.Aur.Mirror.Server.Extensions;
 using Credfeto.Aur.Mirror.Server.Helpers.LoggingExtensions;
 using Credfeto.Aur.Mirror.Server.Interfaces;
 using Credfeto.Aur.Mirror.Server.Models.AurRpc;
+using Credfeto.Aur.Mirror.Server.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -64,7 +65,7 @@ internal static partial class Endpoints
 
                                                            // return types: search or error
 
-                                                           return Results.Ok(new RpcResponse(count: 0, [], rpcType: "search", version: 5));
+                                                           return Results.Ok(RpcResults.SearchNotFound);
                                                        });
 
         group.MapGet("info/{keyword}", handler: static () =>
@@ -73,7 +74,7 @@ internal static partial class Endpoints
 
                                                          // return types: multiInfo or error
 
-                                                         return Results.Ok(new RpcResponse(count: 0, [], rpcType: "multiInfo", version: 5));
+                                                         return Results.Ok(RpcResults.InfoNotFound);
                                                      });
 
         return app;
@@ -103,7 +104,7 @@ internal static partial class Endpoints
 
             httpContext.Response.Headers.KeepAlive = "60";
 
-            RpcResponse result = await aurRpc.GetAsync(
+            RpcResponse result = await aurRpc.SearchAsync(
                 query: query1,
                 userAgent: userAgent,
                 cancellationToken: cancellationToken
