@@ -1,29 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Server.Extensions;
-using Credfeto.Aur.Mirror.Server.Helpers.LoggingExtensions;
 using Credfeto.Aur.Mirror.Server.Interfaces;
 using Credfeto.Aur.Mirror.Server.Models.AurRpc;
 using Credfeto.Aur.Mirror.Server.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
 internal static partial class Endpoints
 {
-    [RequiresUnreferencedCode(
-        "Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)"
-    )]
+    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)")]
     private static WebApplication ConfigureAurRpcEndpoints(this WebApplication app)
     {
         Console.WriteLine("Configuring Aur RPC Endpoint");
@@ -35,97 +31,127 @@ internal static partial class Endpoints
 
         RouteGroupBuilder group = app.MapGroup("/rpc");
 
-        group.MapGet(
-            pattern: "",
-            handler: static (
-                HttpContext httpContext,
-                IAurRpc aurRpc,
-                ILogger<IAurRpc> logger,
-                CancellationToken cancellationToken
-            ) =>
-                ExecuteRpcAsync(
-                    httpContext: httpContext,
-                    aurRpc: aurRpc,
-                    logger: logger,
-                    cancellationToken: cancellationToken
-                )
-        );
-
+        group.MapGet(pattern: "",
+                     handler: static (HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
+                                  ExecuteLegacyRpcAsync(httpContext: httpContext, aurRpc: aurRpc, cancellationToken: cancellationToken));
 
         RouteGroupBuilder v5Group = group.MapGroup("v5");
-        v5Group.MapGet("search/{keyword}", handler: static () =>
-                                                       {
-                                                           // name (search by package name only)
-                                                           // name-desc (search by package name and description)
-                                                           // maintainer (search by package maintainer)
-                                                           // depends (search for packages that depend on keywords)
-                                                           // makedepends (search for packages that makedepend on keywords)
-                                                           // optdepends (search for packages that optdepend on keywords)
-                                                           // checkdepends (search for packages that checkdepend on keywords)
 
-                                                           // return types: search or error
+        // https://aur.archlinux.org/rpc/v5/search/fetch?by=name
+        v5Group.MapGet(pattern: "search/{keyword}",
+                       handler: async static (string keyword, [FromQuery] string by, HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
+                                    await SearchUserAgentAsync(keyword: keyword, by: by, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken));
 
-                                                           return Results.Ok(RpcResults.SearchNotFound);
-                                                       });
+        // Single
+        // https://aur.archlinux.org/rpc/v5/info/afetch-git
+        v5Group.MapGet(pattern: "info/{package}",
+                       handler: async static (string package, HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
+                                {
+                                    return await PackageInfoSingleAsync(package: package, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
+                                });
 
-        group.MapGet("info/{keyword}", handler: static () =>
-                                                     {
-                                                         //?arg%5B%5D=pkg1&arg%5B%5D=pkg2&…
-
-                                                         // return types: multiInfo or error
-
-                                                         return Results.Ok(RpcResults.InfoNotFound);
-                                                     });
+        // Multiple
+        // 'https://aur.archlinux.org/rpc/v5/info?arg%5B%5D=afetch-git&arg%5B%5D=brave-bin' \
+        v5Group.MapGet(pattern: "info",
+                       handler: static ([FromQuery(Name = "arg[]")] string packages, HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
+                                    PackageInfoMultiAsync(packages: packages, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken));
 
         return app;
     }
 
-    private static async Task<IResult> ExecuteRpcAsync(
-        HttpContext httpContext,
-        IAurRpc aurRpc,
-        ILogger<IAurRpc> logger,
-        CancellationToken cancellationToken
-    )
+    private static async ValueTask<IResult> PackageInfoMultiAsync(string packages, IAurRpc aurRpc, HttpContext httpContext, CancellationToken cancellationToken)
     {
-        IReadOnlyDictionary<string, StringValues> query1 = httpContext.Request.Query.ToDictionary(
-            x => x.Key,
-            x => x.Value,
-            StringComparer.OrdinalIgnoreCase
-        );
+        // Multi
+        // curl -X 'GET' \
+        // 'https://aur.archlinux.org/rpc/v5/info?arg%5B%5D=afetch-git&arg%5B%5D=brave-bin' \
+        // -H 'accept: application/json'
 
-        bool multi = httpContext.Request.Query.ContainsKey("args[]");
+        //?arg%5B%5D=pkg1&arg%5B%5D=pkg2&…
 
-        string queryText = GetPathWithQuery(httpContext.Request.Query);
-        logger.Query(queryText);
+        // return types: multiInfo or error
 
-        try
-        {
-            ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
+        IReadOnlyList<string> splitPackages =
+        [
+            ..packages.Split(',')
+                      .Distinct(StringComparer.OrdinalIgnoreCase)
+        ];
 
-            httpContext.Response.Headers.KeepAlive = "60";
+        ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
-            RpcResponse result = await aurRpc.SearchAsync(
-                query: query1,
-                userAgent: userAgent,
-                cancellationToken: cancellationToken
-            );
+        RpcResponse result = await aurRpc.InfoAsync(package: splitPackages, userAgent: userAgent, cancellationToken: cancellationToken);
 
-            return Results.Ok(result);
-        }
-        catch (Exception exception)
-        {
-            logger.Failed(queryText, exception.Message, exception);
-
-            string type = multi
-                ? "multiinfo"
-                : "search";
-
-            return Results.Ok(new RpcResponse(count: 0, [], rpcType: type, version: 5));
-        }
+        return Results.Ok(result);
     }
 
-    private static string GetPathWithQuery(IQueryCollection query)
+    private static async Task<IResult> PackageInfoSingleAsync(string package, IAurRpc aurRpc, HttpContext httpContext, CancellationToken cancellationToken)
     {
-        return query.Count == 0 ? string.Empty : string.Join(separator: '&', query.Select(q => $"{q.Key}={q.Value}"));
+        ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
+
+        RpcResponse result = await aurRpc.InfoAsync([package], userAgent: userAgent, cancellationToken: cancellationToken);
+
+        return Results.Ok(result);
     }
+
+    private static async Task<IResult> SearchUserAgentAsync(string keyword, string by, IAurRpc aurRpc, HttpContext httpContext, CancellationToken cancellationToken)
+    {
+        ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
+
+        // name (search by package name only)
+        // name-desc (search by package name and description)
+        // maintainer (search by package maintainer)
+        // depends (search for packages that depend on keywords)
+        // makedepends (search for packages that makedepend on keywords)
+        // optdepends (search for packages that optdepend on keywords)
+        // checkdepends (search for packages that checkdepend on keywords)
+
+        // return types: search or error
+
+        RpcResponse result = await aurRpc.SearchAsync(keyword: keyword, by: by, userAgent: userAgent, cancellationToken: cancellationToken);
+
+        return Results.Ok(result);
+    }
+
+    private static async ValueTask<IResult> ExecuteLegacyRpcAsync(HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken)
+    {
+        IQueryCollection query = httpContext.Request.Query;
+
+        if (!query.TryGetValue(key: "type", out StringValues queryType))
+        {
+            return Results.Ok(RpcResults.SearchNotFound);
+        }
+
+        if (queryType == "search")
+        {
+            string by = "name-desc";
+
+            if (query.TryGetValue(key: "by", out StringValues byValue))
+            {
+                by = byValue.ToString();
+            }
+
+            if (query.TryGetValue(key: "arg", out StringValues keyword))
+            {
+                return await SearchUserAgentAsync(keyword.ToString(), by: by, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
+            }
+
+            return Results.Ok(RpcResults.SearchNotFound);
+        }
+
+        if (queryType == "multiinfo")
+        {
+            if (query.TryGetValue(key: "arg", out StringValues package))
+            {
+                return await PackageInfoSingleAsync(package.ToString(), aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
+            }
+
+            if (query.TryGetValue(key: "arg[]", out StringValues packages))
+            {
+                return await PackageInfoMultiAsync(packages.ToString(), aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
+            }
+
+        }
+
+        return Results.Ok(RpcResults.InfoNotFound);
+    }
+
 }

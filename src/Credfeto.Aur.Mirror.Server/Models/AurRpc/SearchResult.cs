@@ -9,26 +9,30 @@ namespace Credfeto.Aur.Mirror.Server.Models.AurRpc;
 public sealed class SearchResult
 {
     [JsonConstructor]
-    public SearchResult(
-        string description,
-        long firstSubmitted,
-        int id,
-        IReadOnlyList<string>? keywords,
-        IReadOnlyList<string>? license,
-        IReadOnlyList<string>?  depends,
-        IReadOnlyList<string>?  makeDepends,
-        long lastModified,
-        string maintainer,
-        string name,
-        int numVotes,
-        long? outOfDate,
-        string packageBase,
-        int packageBaseId,
-        double popularity,
-        string url,
-        string urlPath,
-        string version
-    )
+    public SearchResult(string description,
+                        long firstSubmitted,
+                        int id,
+                        IReadOnlyList<string>? keywords,
+                        IReadOnlyList<string>? license,
+                        IReadOnlyList<string>? depends,
+                        IReadOnlyList<string>? makeDepends,
+                        IReadOnlyList<string>? optDepends,
+                        IReadOnlyList<string>? checkDepends,
+                        IReadOnlyList<string>? conflicts,
+                        IReadOnlyList<string>? replaces,
+                        IReadOnlyList<string>? groups,
+                        IReadOnlyList<string>? coMaintainers,
+                        long lastModified,
+                        string maintainer,
+                        string name,
+                        int numVotes,
+                        long? outOfDate,
+                        string packageBase,
+                        int packageBaseId,
+                        double popularity,
+                        string url,
+                        string urlPath,
+                        string version)
     {
         this.Description = description;
         this.FirstSubmitted = firstSubmitted;
@@ -37,6 +41,12 @@ public sealed class SearchResult
         this.License = license;
         this.Depends = depends;
         this.MakeDepends = makeDepends;
+        this.OptDepends = optDepends;
+        this.CheckDepends = checkDepends;
+        this.Conflicts = conflicts;
+        this.Replaces = replaces;
+        this.Groups = groups;
+        this.CoMaintainers = coMaintainers;
         this.LastModified = lastModified;
         this.Maintainer = maintainer;
         this.Name = name;
@@ -65,9 +75,29 @@ public sealed class SearchResult
     [JsonPropertyName("License")]
     public IReadOnlyList<string>? License { get; }
 
+    [JsonPropertyName("Depends")]
     public IReadOnlyList<string>? Depends { get; }
 
+    [JsonPropertyName("MakeDepends")]
     public IReadOnlyList<string>? MakeDepends { get; }
+
+    [JsonPropertyName("OptDepends")]
+    public IReadOnlyList<string>? OptDepends { get; }
+
+    [JsonPropertyName("CheckDepends")]
+    public IReadOnlyList<string>? CheckDepends { get; }
+
+    [JsonPropertyName("Conflicts")]
+    public IReadOnlyList<string>? Conflicts { get; }
+
+    [JsonPropertyName("Replaces")]
+    public IReadOnlyList<string>? Replaces { get; }
+
+    [JsonPropertyName("Groups")]
+    public IReadOnlyList<string>? Groups { get; }
+
+    [JsonPropertyName("CoMaintainers")]
+    public IReadOnlyList<string>? CoMaintainers { get; }
 
     [JsonPropertyName("LastModified")]
     public long LastModified { get; }
@@ -93,19 +123,11 @@ public sealed class SearchResult
     [JsonPropertyName("Popularity")]
     public double Popularity { get; }
 
-    [SuppressMessage(
-        category: "Microsoft.Naming",
-        checkId: "CA1056: Uri properties should not be strings",
-        Justification = "RPC Property"
-    )]
+    [SuppressMessage(category: "Microsoft.Naming", checkId: "CA1056: Uri properties should not be strings", Justification = "RPC Property")]
     [JsonPropertyName("URL")]
     public string Url { get; }
 
-    [SuppressMessage(
-        category: "Microsoft.Naming",
-        checkId: "CA1056: Uri properties should not be strings",
-        Justification = "RPC Property"
-    )]
+    [SuppressMessage(category: "Microsoft.Naming", checkId: "CA1056: Uri properties should not be strings", Justification = "RPC Property")]
     [JsonPropertyName("URLPath")]
     public string UrlPath { get; }
 
