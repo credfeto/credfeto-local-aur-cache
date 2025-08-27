@@ -50,7 +50,8 @@ public sealed class AurRpc : IAurRpc
         CancellationToken cancellationToken
     )
     {
-        // https://wiki.archlinux.org/title/Aurweb_RPC_interface
+
+
         try
         {
             RpcResponse upstream = await this.RequestUpstreamAsync(query: query, userAgent: userAgent, cancellationToken: cancellationToken);

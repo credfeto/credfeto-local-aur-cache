@@ -25,6 +25,12 @@ internal static partial class Endpoints
     {
         Console.WriteLine("Configuring Aur RPC Endpoint");
 
+        // https://wiki.archlinux.org/title/Aurweb_RPC_interface
+
+
+        // note Yay is using the old interface
+        // https://aur.archlinux.org/rpc/olddoc.html so ideally need to understand that and forward to the new interface
+
         app.MapGet(
             pattern: "/rpc",
             handler: static (
