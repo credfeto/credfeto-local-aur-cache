@@ -188,7 +188,10 @@ public sealed class AurRpc : IAurRpc
             return;
         }
 
-        await this.SaveUpstreamAsync(packages: tracking.Packages, userAgent: userAgent);
+        if (tracking.Packages is not [])
+        {
+            await this.SaveUpstreamAsync(packages: tracking.Packages, userAgent: userAgent);
+        }
     }
 
     private async ValueTask SaveUpstreamAsync(List<string> packages, ProductInfoHeaderValue? userAgent)
@@ -352,7 +355,7 @@ public sealed class AurRpc : IAurRpc
     {
         if (packages.Count == 1)
         {
-            return MakeUri(baseUri: baseUri, pathAndQuery: "/v5/info/{packages[0]}");
+            return MakeUri(baseUri: baseUri, pathAndQuery: $"/v5/info/{packages[0]}");
         }
 
         return MakeUri(baseUri: baseUri, "/v5/info?" + string.Join(separator: '&', packages.Select(p => $"arg[]={p}")));

@@ -120,7 +120,7 @@ internal static partial class Endpoints
             return Results.Ok(RpcResults.SearchNotFound);
         }
 
-        if (queryType == "search")
+        if (IsSearchQuery(queryType))
         {
             string by = "name-desc";
 
@@ -137,7 +137,7 @@ internal static partial class Endpoints
             return Results.Ok(RpcResults.SearchNotFound);
         }
 
-        if (queryType == "multiinfo")
+        if (IsInfoQuery(queryType))
         {
             if (query.TryGetValue(key: "arg", out StringValues package))
             {
@@ -152,6 +152,23 @@ internal static partial class Endpoints
         }
 
         return Results.Ok(RpcResults.InfoNotFound);
+
+        static bool IsSearchQuery(in StringValues queryType)
+        {
+            return IsMatch(queryType: queryType, match: "search");
+        }
+
+        static bool IsInfoQuery(in StringValues queryType)
+        {
+
+            return IsMatch(queryType, "info") || IsMatch(queryType, "multiinfo");
+        }
+
+        static bool IsMatch(in StringValues queryType, string match)
+        {
+            return queryType == match;
+        }
     }
+
 
 }
