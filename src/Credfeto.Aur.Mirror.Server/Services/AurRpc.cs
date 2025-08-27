@@ -296,13 +296,13 @@ public sealed class AurRpc : IAurRpc
 
         try
         {
-            using (HttpResponseMessage result = await client.GetAsync(requestUri: requestUri, cancellationToken: DoNotCancelEarly))
+            using (HttpResponseMessage result = await client.GetAsync(requestUri: requestUri, cancellationToken: cancellationToken))
             {
                 if (result.IsSuccessStatusCode)
                 {
                     this._logger.SuccessFromUpstream(uri: requestUri, statusCode: result.StatusCode);
 
-                    await using (Stream stream = await result.Content.ReadAsStreamAsync(cancellationToken: DoNotCancelEarly))
+                    await using (Stream stream = await result.Content.ReadAsStreamAsync(cancellationToken: cancellationToken))
                     {
                         return await JsonSerializer.DeserializeAsync<RpcResponse>(utf8Json: stream, jsonTypeInfo: AppJsonContexts.Default.RpcResponse, cancellationToken: cancellationToken) ??
                                throw new JsonException("Could not deserialize response");
