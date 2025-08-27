@@ -12,7 +12,9 @@ using Credfeto.Aur.Mirror.Server.Interfaces;
 using Credfeto.Aur.Mirror.Server.Models.AurRpc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
@@ -30,8 +32,10 @@ internal static partial class Endpoints
         // note Yay is using the old interface
         // https://aur.archlinux.org/rpc/olddoc.html so ideally need to understand that and forward to the new interface
 
-        app.MapGet(
-            pattern: "/rpc",
+        RouteGroupBuilder group = app.MapGroup("/rpc");
+
+        group.MapGet(
+            pattern: "",
             handler: static (
                 HttpContext httpContext,
                 IAurRpc aurRpc,
@@ -56,9 +60,9 @@ internal static partial class Endpoints
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyDictionary<string, string> query1 = httpContext.Request.Query.ToDictionary(
+        IReadOnlyDictionary<string, StringValues> query1 = httpContext.Request.Query.ToDictionary(
             x => x.Key,
-            x => x.Value.ToString(),
+            x => x.Value,
             StringComparer.OrdinalIgnoreCase
         );
 

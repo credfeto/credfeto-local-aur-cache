@@ -21,6 +21,7 @@ using Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using NonBlocking;
 
 namespace Credfeto.Aur.Mirror.Server.Services;
@@ -45,7 +46,7 @@ public sealed class AurRpc : IAurRpc
     }
 
     public async ValueTask<RpcResponse> GetAsync(
-        IReadOnlyDictionary<string, string> query,
+        IReadOnlyDictionary<string, StringValues> query,
         ProductInfoHeaderValue? userAgent,
         CancellationToken cancellationToken
     )
@@ -70,12 +71,12 @@ public sealed class AurRpc : IAurRpc
     }
 
     private async ValueTask<RpcResponse> ExecuteLocalQueryAsync(
-        IReadOnlyDictionary<string, string> query,
+        IReadOnlyDictionary<string, StringValues> query,
         CancellationToken cancellationToken
     )
     {
         bool multi = query.ContainsKey("args[]");
-        int version = int.Parse(query["v"] ?? "5", CultureInfo.InvariantCulture);
+        int version = int.Parse(query["v"].ToString(), CultureInfo.InvariantCulture);
 
         List<SearchResult> results = [];
         string[] files = Directory.GetFiles("*.json");
@@ -216,7 +217,7 @@ public sealed class AurRpc : IAurRpc
     }
 
     private async ValueTask<RpcResponse> RequestUpstreamAsync(
-        IReadOnlyDictionary<string, string> query,
+        IReadOnlyDictionary<string, StringValues> query,
         ProductInfoHeaderValue? userAgent,
         CancellationToken cancellationToken
     )
@@ -271,7 +272,7 @@ public sealed class AurRpc : IAurRpc
         );
     }
 
-    private static Uri MakeUri(Uri baseUri, IReadOnlyDictionary<string, string> query)
+    private static Uri MakeUri(Uri baseUri, IReadOnlyDictionary<string, StringValues> query)
     {
         string urlBase = baseUri.ToString();
 

@@ -1,0 +1,11 @@
+@Server=http://localhost:8080
+
+### Search
+GET {{Server}}/rpc?v=5&type=search&arg=foobar
+
+
+### Seach Multiple
+GET {{Server}}/rpc?arg[]=firejail-handler-extra&arg[]=firejail-handler-http&arg[]=go-sqlcmd&arg[]=pacman-cleanup-hook&arg[]=systemd-cleanup-pacman-hook&arg[]=xlapit-cli&type=info&v=5
+
+### info
+GET {{Server}}/rpc?arg%5B%5D=firejail-handler-extra&arg%5B%5D=firejail-handler-http&type=info&v=5 
