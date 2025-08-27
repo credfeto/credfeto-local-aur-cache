@@ -27,7 +27,6 @@ internal static partial class Endpoints
 
         // https://wiki.archlinux.org/title/Aurweb_RPC_interface
 
-
         // note Yay is using the old interface
         // https://aur.archlinux.org/rpc/olddoc.html so ideally need to understand that and forward to the new interface
 
@@ -57,7 +56,11 @@ internal static partial class Endpoints
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyDictionary<string, string> query1 = httpContext.Request.Query.ToDictionary(x => x.Key, x => x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
+        IReadOnlyDictionary<string, string> query1 = httpContext.Request.Query.ToDictionary(
+            x => x.Key,
+            x => x.Value.ToString(),
+            StringComparer.OrdinalIgnoreCase
+        );
 
         bool multi = httpContext.Request.Query.ContainsKey("args[]");
 
@@ -82,8 +85,7 @@ internal static partial class Endpoints
         {
             logger.Failed(queryText, exception.Message, exception);
 
-            return Results.Ok(new RpcResponse(count: 0, [], rpcType:
-                                              multi ? "multiinfo" : "search", version: 5));
+            return Results.Ok(new RpcResponse(count: 0, [], rpcType: multi ? "multiinfo" : "search", version: 5));
         }
     }
 
