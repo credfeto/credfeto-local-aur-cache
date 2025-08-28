@@ -13,21 +13,29 @@ namespace Credfeto.Aur.Mirror.Server.Helpers;
 
 internal static partial class Endpoints
 {
-    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)")]
+    [RequiresUnreferencedCode(
+        "Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)"
+    )]
     private static WebApplication ConfigureAurRepoEndpoints(this WebApplication app)
     {
         Console.WriteLine("Configuring Aur Repo Endpoint");
 
         RouteGroupBuilder group = app.MapGroup("/repos");
 
-        group.MapGet(pattern: "packages.gz",
-                     handler: static (IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
-                                  GetPackagesAsync(httpContext: httpContext, aurRepos: aurRepos, cancellationToken: cancellationToken));
+        group.MapGet(
+            pattern: "packages.gz",
+            handler: static (IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
+                GetPackagesAsync(httpContext: httpContext, aurRepos: aurRepos, cancellationToken: cancellationToken)
+        );
 
         return app;
     }
 
-    private static async ValueTask<IResult> GetPackagesAsync(HttpContext httpContext, IAurRepos aurRepos, CancellationToken cancellationToken)
+    private static async ValueTask<IResult> GetPackagesAsync(
+        HttpContext httpContext,
+        IAurRepos aurRepos,
+        CancellationToken cancellationToken
+    )
     {
         ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
