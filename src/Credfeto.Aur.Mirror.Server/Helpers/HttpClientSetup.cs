@@ -36,18 +36,18 @@ internal static class HttpClientSetup
     public static IServiceCollection AddReposClient(this IServiceCollection services)
     {
         return services
-               .AddHttpClient(
-                   nameof(AurRepos),
-                   configureClient: httpClient => InitializeContentClient(httpClient: httpClient, httpTimeout: HttpTimeout)
-               )
-               .SetHandlerLifetime(HandlerTimeout)
-               .ConfigurePrimaryHttpMessageHandler(configureHandler: _ => new HttpClientHandler
-                                                                          {
-                                                                              AutomaticDecompression = DecompressionMethods.All,
-                                                                          })
-               .AddPolicyHandler(Policy.BulkheadAsync<HttpResponseMessage>(CONCURRENT_ACTIONS * 2, QUEUED_ACTIONS * 2))
-               .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(PollyTimeout))
-               .Services;
+            .AddHttpClient(
+                nameof(AurRepos),
+                configureClient: httpClient => InitializeContentClient(httpClient: httpClient, httpTimeout: HttpTimeout)
+            )
+            .SetHandlerLifetime(HandlerTimeout)
+            .ConfigurePrimaryHttpMessageHandler(configureHandler: _ => new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.All,
+            })
+            .AddPolicyHandler(Policy.BulkheadAsync<HttpResponseMessage>(CONCURRENT_ACTIONS * 2, QUEUED_ACTIONS * 2))
+            .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(PollyTimeout))
+            .Services;
     }
 
     private static void InitializeContentClient(HttpClient httpClient, in TimeSpan httpTimeout)
