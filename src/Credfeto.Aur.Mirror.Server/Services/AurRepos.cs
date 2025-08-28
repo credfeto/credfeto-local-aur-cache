@@ -27,13 +27,19 @@ public sealed class AurRepos : IAurRepos
         this._logger = logger;
     }
 
-    public async ValueTask<byte[]?> GetPackagesAsync(ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    public async ValueTask<byte[]?> GetPackagesAsync(
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    )
     {
         string filename = Path.Combine(path1: this._serverConfig.Storage.Repos, path2: "packages.gz");
 
         try
         {
-            byte[] fileContent = await this.RequestPackagesUpstreamAsync(userAgent: userAgent, cancellationToken: cancellationToken);
+            byte[] fileContent = await this.RequestPackagesUpstreamAsync(
+                userAgent: userAgent,
+                cancellationToken: cancellationToken
+            );
 
             await File.WriteAllBytesAsync(path: filename, bytes: fileContent, cancellationToken: DoNotCancelEarly);
 
@@ -53,13 +59,20 @@ public sealed class AurRepos : IAurRepos
         }
     }
 
-    private async ValueTask<byte[]> RequestPackagesUpstreamAsync(ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    private async ValueTask<byte[]> RequestPackagesUpstreamAsync(
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    )
     {
         HttpClient httpClient = this.GetClient(userAgent: userAgent, out Uri baseUri);
 
         Uri requestUri = MakeUri(baseUri: baseUri, pathAndQuery: "/packages.gz");
 
-        using (HttpResponseMessage result = (await httpClient.GetAsync(requestUri: requestUri, cancellationToken: cancellationToken)).EnsureSuccessStatusCode())
+        using (
+            HttpResponseMessage result = (
+                await httpClient.GetAsync(requestUri: requestUri, cancellationToken: cancellationToken)
+            ).EnsureSuccessStatusCode()
+        )
         {
             return await result.Content.ReadAsByteArrayAsync(cancellationToken);
         }
@@ -88,8 +101,6 @@ public sealed class AurRepos : IAurRepos
     {
         baseUri = new(uriString: this._serverConfig.Upstream.Repos, uriKind: UriKind.Absolute);
 
-        return this._httpClientFactory.CreateClient(nameof(AurRpc))
-                   .WithBaseAddress(baseUri)
-                   .WithUserAgent(userAgent);
+        return this._httpClientFactory.CreateClient(nameof(AurRpc)).WithBaseAddress(baseUri).WithUserAgent(userAgent);
     }
 }
