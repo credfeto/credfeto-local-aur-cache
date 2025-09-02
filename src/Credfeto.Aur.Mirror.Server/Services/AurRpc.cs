@@ -112,7 +112,7 @@ public sealed class AurRpc : IAurRpc
     )
     {
         List<SearchResult> results = [];
-        string[] files = Directory.GetFiles("*.json");
+        IReadOnlyList<string> files = this.GetMetadataFiles();
 
         foreach (string metadataFileName in files)
         {
@@ -134,6 +134,21 @@ public sealed class AurRpc : IAurRpc
         return new(count: results.Count, results: results, rpcType: "multiinfo", version: RpcResults.RpcVersion);
     }
 
+    private IReadOnlyList<string> GetMetadataFiles()
+    {
+        try
+        {
+            EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
+
+            return Directory.GetFiles(this._serverConfig.Storage.Metadata, "*.json");
+        }
+        catch (Exception exception)
+        {
+            this._logger.CouldNotFindMetadataFiles(this._serverConfig.Storage.Metadata, exception.Message, exception: exception);
+            return [];
+        }
+    }
+
     private async ValueTask<RpcResponse> ExecuteLocalSearchQueryAsync(
         string keyword,
         string by,
@@ -141,7 +156,7 @@ public sealed class AurRpc : IAurRpc
     )
     {
         List<SearchResult> results = [];
-        string[] files = Directory.GetFiles("*.json");
+        IReadOnlyList<string> files = this.GetMetadataFiles();
 
         foreach (string metadataFileName in files)
         {

@@ -27,4 +27,12 @@ internal static partial class AurRpcLoggingExtensions
         string message,
         Exception exception
     );
+
+    [LoggerMessage(LogLevel.Error, EventId = 4, Message = "Failed to read saved metadata from folder: {directory}: {message}")]
+    public static partial void CouldNotFindMetadataFiles(
+        this ILogger<AurRpc> logger,
+        string directory,
+        string message,
+        Exception exception
+    );
 }
