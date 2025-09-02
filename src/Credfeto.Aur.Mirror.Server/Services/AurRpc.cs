@@ -144,7 +144,11 @@ public sealed class AurRpc : IAurRpc
         }
         catch (Exception exception)
         {
-            this._logger.CouldNotFindMetadataFiles(this._serverConfig.Storage.Metadata, exception.Message, exception: exception);
+            this._logger.CouldNotFindMetadataFiles(
+                this._serverConfig.Storage.Metadata,
+                exception.Message,
+                exception: exception
+            );
             return [];
         }
     }
