@@ -10,6 +10,7 @@ using Credfeto.Aur.Mirror.Server.Extensions;
 using Credfeto.Aur.Mirror.Server.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NonBlocking;
 
 namespace Credfeto.Aur.Mirror.Server.Services;
 
@@ -19,12 +20,14 @@ public sealed class AurRepos : IAurRepos
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<AurRepos> _logger;
     private readonly ServerConfig _serverConfig;
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _updateLock;
 
     public AurRepos(IOptions<ServerConfig> serverConfig, IHttpClientFactory httpClientFactory, ILogger<AurRepos> logger)
     {
         this._serverConfig = serverConfig.Value;
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;
+        this._updateLock = new(StringComparer.Ordinal);
     }
 
     public async ValueTask<byte[]?> GetPackagesAsync(
@@ -34,6 +37,7 @@ public sealed class AurRepos : IAurRepos
     {
         string filename = Path.Combine(path1: this._serverConfig.Storage.Repos, path2: "packages.gz");
 
+
         try
         {
             byte[] fileContent = await this.RequestPackagesUpstreamAsync(
@@ -41,9 +45,18 @@ public sealed class AurRepos : IAurRepos
                 cancellationToken: cancellationToken
             );
 
-            await File.WriteAllBytesAsync(path: filename, bytes: fileContent, cancellationToken: DoNotCancelEarly);
+            SemaphoreSlim wait = await this.GetSemaphoreAsync(fileName: filename, cancellationToken: cancellationToken);
 
-            return fileContent;
+            try
+            {
+                await File.WriteAllBytesAsync(path: filename, bytes: fileContent, cancellationToken: DoNotCancelEarly);
+
+                return fileContent;
+            }
+            finally
+            {
+                wait.Release();
+            }
         }
         catch (Exception exception)
         {
@@ -102,5 +115,20 @@ public sealed class AurRepos : IAurRepos
         baseUri = new(uriString: this._serverConfig.Upstream.Repos, uriKind: UriKind.Absolute);
 
         return this._httpClientFactory.CreateClient(nameof(AurRpc)).WithBaseAddress(baseUri).WithUserAgent(userAgent);
+    }
+
+    private async ValueTask<SemaphoreSlim> GetSemaphoreAsync(string fileName, CancellationToken cancellationToken)
+    {
+        if (this._updateLock.TryGetValue(key: fileName, out SemaphoreSlim? semaphore))
+        {
+            await semaphore.WaitAsync(cancellationToken);
+
+            return semaphore;
+        }
+
+        semaphore = this._updateLock.GetOrAdd(key: fileName, new SemaphoreSlim(1));
+        await semaphore.WaitAsync(cancellationToken);
+
+        return semaphore;
     }
 }
