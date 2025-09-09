@@ -10,7 +10,6 @@ using Credfeto.Aur.Mirror.Server.Extensions;
 using Credfeto.Aur.Mirror.Server.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NonBlocking;
 
 namespace Credfeto.Aur.Mirror.Server.Services;
 
@@ -20,14 +19,14 @@ public sealed class AurRepos : IAurRepos
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<AurRepos> _logger;
     private readonly ServerConfig _serverConfig;
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _updateLock;
+    private readonly IUpdateLock _updateLock;
 
-    public AurRepos(IOptions<ServerConfig> serverConfig, IHttpClientFactory httpClientFactory, ILogger<AurRepos> logger)
+    public AurRepos(IOptions<ServerConfig> serverConfig, IHttpClientFactory httpClientFactory, IUpdateLock updateLock, ILogger<AurRepos> logger)
     {
         this._serverConfig = serverConfig.Value;
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;
-        this._updateLock = new(StringComparer.Ordinal);
+        this._updateLock = updateLock;
     }
 
     public async ValueTask<byte[]?> GetPackagesAsync(
@@ -45,7 +44,7 @@ public sealed class AurRepos : IAurRepos
                 cancellationToken: cancellationToken
             );
 
-            SemaphoreSlim wait = await this.GetSemaphoreAsync(fileName: filename, cancellationToken: cancellationToken);
+            SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: filename, cancellationToken: cancellationToken);
 
             try
             {
@@ -117,18 +116,5 @@ public sealed class AurRepos : IAurRepos
         return this._httpClientFactory.CreateClient(nameof(AurRpc)).WithBaseAddress(baseUri).WithUserAgent(userAgent);
     }
 
-    private async ValueTask<SemaphoreSlim> GetSemaphoreAsync(string fileName, CancellationToken cancellationToken)
-    {
-        if (this._updateLock.TryGetValue(key: fileName, out SemaphoreSlim? semaphore))
-        {
-            await semaphore.WaitAsync(cancellationToken);
 
-            return semaphore;
-        }
-
-        semaphore = this._updateLock.GetOrAdd(key: fileName, new SemaphoreSlim(1));
-        await semaphore.WaitAsync(cancellationToken);
-
-        return semaphore;
-    }
 }

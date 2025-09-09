@@ -20,7 +20,6 @@ using Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NonBlocking;
 
 namespace Credfeto.Aur.Mirror.Server.Services;
 
@@ -30,14 +29,14 @@ public sealed class AurRpc : IAurRpc
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<AurRpc> _logger;
     private readonly ServerConfig _serverConfig;
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _updateLock;
+    private readonly IUpdateLock _updateLock;
 
-    public AurRpc(IHttpClientFactory httpClientFactory, IOptions<ServerConfig> config, ILogger<AurRpc> logger)
+    public AurRpc(IHttpClientFactory httpClientFactory, IOptions<ServerConfig> config, IUpdateLock updateLock, ILogger<AurRpc> logger)
     {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;
         this._serverConfig = config.Value;
-        this._updateLock = new(StringComparer.Ordinal);
+        this._updateLock = updateLock;
 
         EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
         EnsureDirectoryExists(this._serverConfig.Storage.Repos);
@@ -248,7 +247,7 @@ public sealed class AurRpc : IAurRpc
 
     private async ValueTask EnsureRepositoryHasBeenClonedAsync(string repoPath, string upstreamRepo, bool changed, CancellationToken cancellationToken)
     {
-        SemaphoreSlim wait = await this.GetSemaphoreAsync(fileName: repoPath, cancellationToken: cancellationToken);
+        SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: repoPath, cancellationToken: cancellationToken);
 
         try
         {
@@ -296,7 +295,7 @@ public sealed class AurRpc : IAurRpc
 
     private async ValueTask SavePackageToMetadataAsync(SearchResult package, string metadataFileName, CancellationToken cancellationToken)
     {
-        SemaphoreSlim wait = await this.GetSemaphoreAsync(fileName: metadataFileName, cancellationToken: cancellationToken);
+        SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: metadataFileName, cancellationToken: cancellationToken);
 
         try
         {
@@ -398,20 +397,7 @@ public sealed class AurRpc : IAurRpc
                    .WithUserAgent(userAgent);
     }
 
-    private async ValueTask<SemaphoreSlim> GetSemaphoreAsync(string fileName, CancellationToken cancellationToken)
-    {
-        if (this._updateLock.TryGetValue(key: fileName, out SemaphoreSlim? semaphore))
-        {
-            await semaphore.WaitAsync(cancellationToken);
 
-            return semaphore;
-        }
-
-        semaphore = this._updateLock.GetOrAdd(key: fileName, new SemaphoreSlim(1));
-        await semaphore.WaitAsync(cancellationToken);
-
-        return semaphore;
-    }
 
     private static void EnsureDirectoryExists(string directory)
     {
