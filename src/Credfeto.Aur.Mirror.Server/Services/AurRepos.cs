@@ -21,7 +21,12 @@ public sealed class AurRepos : IAurRepos
     private readonly ServerConfig _serverConfig;
     private readonly IUpdateLock _updateLock;
 
-    public AurRepos(IOptions<ServerConfig> serverConfig, IHttpClientFactory httpClientFactory, IUpdateLock updateLock, ILogger<AurRepos> logger)
+    public AurRepos(
+        IOptions<ServerConfig> serverConfig,
+        IHttpClientFactory httpClientFactory,
+        IUpdateLock updateLock,
+        ILogger<AurRepos> logger
+    )
     {
         this._serverConfig = serverConfig.Value;
         this._httpClientFactory = httpClientFactory;
@@ -36,7 +41,6 @@ public sealed class AurRepos : IAurRepos
     {
         string filename = Path.Combine(path1: this._serverConfig.Storage.Repos, path2: "packages.gz");
 
-
         try
         {
             byte[] fileContent = await this.RequestPackagesUpstreamAsync(
@@ -44,7 +48,10 @@ public sealed class AurRepos : IAurRepos
                 cancellationToken: cancellationToken
             );
 
-            SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: filename, cancellationToken: cancellationToken);
+            SemaphoreSlim wait = await this._updateLock.GetLockAsync(
+                fileName: filename,
+                cancellationToken: cancellationToken
+            );
 
             try
             {
@@ -115,6 +122,4 @@ public sealed class AurRepos : IAurRepos
 
         return this._httpClientFactory.CreateClient(nameof(AurRpc)).WithBaseAddress(baseUri).WithUserAgent(userAgent);
     }
-
-
 }
