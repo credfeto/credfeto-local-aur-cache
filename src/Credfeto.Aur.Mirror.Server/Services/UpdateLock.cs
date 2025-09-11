@@ -12,7 +12,7 @@ public sealed class UpdateLock : IUpdateLock
 
     public UpdateLock()
     {
-        this._locks =  new(StringComparer.Ordinal);
+        this._locks = new(StringComparer.Ordinal);
     }
 
     public async ValueTask<SemaphoreSlim> GetLockAsync(string fileName, CancellationToken cancellationToken)
