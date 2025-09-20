@@ -1,45 +1,27 @@
 using System;
-using System.IO;
+using System.Diagnostics;
 using System.Text;
-using LibGit2Sharp;
 
 namespace Credfeto.Aur.Mirror.Server.Git;
 
-public sealed class GitCommandOptions
+[DebuggerDisplay("Repo:{Repository}, Service: {Service} Refs: {AdvertiseRefs} {EndStreamWithNull}")]
+public readonly record struct GitCommandOptions(string Repository, string Service, bool AdvertiseRefs, bool EndStreamWithNull)
 {
-    public bool AdvertiseRefs { get; set; }
-    public bool EndStreamWithNull { get; set; }
-    public string Service { get; set; }
-    public Repository Repository { get; set; }
-
-    public GitCommandOptions(
-        Repository repo,
-        string service,
-        bool advertiseRefs,
-        bool endStreamWithNull = true
-    )
+    public string BuildCommand()
     {
-        Repository = repo;
-        Service = service;
-        AdvertiseRefs = advertiseRefs;
-        EndStreamWithNull = endStreamWithNull;
-    }
-
-    public override string ToString()
-    {
-        if (!Service.StartsWith("git-"))
+        if (!this.Service.StartsWith("git-", StringComparison.Ordinal))
+        {
             throw new InvalidOperationException();
+        }
 
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder().Append(this.Service, 4, this.Service.Length - 4).Append(" --stateless-rpc");
 
-        builder.Append(Service.Substring(4));
-        builder.Append(" --stateless-rpc");
+        if (this.AdvertiseRefs)
+        {
+            builder = builder.Append(" --advertise-refs");
+        }
 
-        if (AdvertiseRefs)
-            builder.Append(" --advertise-refs");
-
-        builder.Append($@" ""{Repository.Info.Path.TrimEnd(Path.DirectorySeparatorChar)}""");
-
-        return builder.ToString();
+        return builder.Append($@" ""{this.Repository}""")
+                      .ToString();
     }
 }

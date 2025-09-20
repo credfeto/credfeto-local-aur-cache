@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
@@ -54,6 +55,7 @@ public static class Program
         }
     }
 
+    [Conditional("DEBUG")]
     private static void TestDeserialization()
     {
         const string s =

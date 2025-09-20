@@ -1,6 +1,6 @@
 using System;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,45 +9,48 @@ using Credfeto.Aur.Mirror.Server.Git;
 using Credfeto.Aur.Mirror.Server.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
 internal static partial class Endpoints
 {
-    [RequiresUnreferencedCode(
-        "Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)"
-    )]
+    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)")]
     private static WebApplication ConfigureAurRepoEndpoints(this WebApplication app)
     {
         Console.WriteLine("Configuring Aur Repo Endpoint");
 
         RouteGroupBuilder group = app.MapGroup("/repos");
 
-        group.MapGet(
-            pattern: "packages.gz",
-            handler: static (IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
-                GetPackagesAsync(httpContext: httpContext, aurRepos: aurRepos, cancellationToken: cancellationToken)
-        );
+        group.MapGet(pattern: "packages.gz",
+                     handler: static (IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  GetPackagesAsync(httpContext: httpContext, aurRepos: aurRepos, cancellationToken: cancellationToken));
 
-        group.MapGet(pattern: "/{repoName}.git/git-upload-pack",
-                     handler: static (string repoName, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
-                                  GitUploadPackAsync(repoName, aurRepos, httpContext, cancellationToken));
+        group.MapPost(pattern: "/{repoName}.git/git-upload-pack",
+                      handler: static ([FromRoute] string repoName, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                   GitUploadPackAsync(repoName: repoName, aurRepos: aurRepos, httpContext: httpContext, cancellationToken: cancellationToken));
 
         group.MapGet(pattern: "/{repoName}.git/git-receive-pack",
-                     handler: static (string repoName, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
-                                  GitReceivePackAsync(repoName, aurRepos, httpContext, cancellationToken));
+                     handler: static ([FromRoute] string repoName, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  GitReceivePackAsync(repoName: repoName, aurRepos: aurRepos, httpContext: httpContext, cancellationToken: cancellationToken));
 
         group.MapGet(pattern: "/{repoName}.git/info/refs",
-                     handler: static (string repoName, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
-                                  GitInfoRefsAsync(repoName, aurRepos, httpContext, cancellationToken));
+                     handler: static ([FromRoute] string repoName, [FromQuery] string? service, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  GitInfoRefsAsync(repoName: repoName, service: service, aurRepos: aurRepos, httpContext: httpContext, cancellationToken: cancellationToken));
 
         return app;
     }
 
     private static async ValueTask<IResult> GitUploadPackAsync(string repoName, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken)
     {
-        var data = GitCommand(repoName, "git-upload-pack", false, false);
+        await GitCommandAsync(repoName: repoName,
+                              service: "git-upload-pack",
+                              aurRepos: aurRepos,
+                              advertiseRefs: false,
+                              endStreamWithNull: false,
+                              httpContext: httpContext,
+                              cancellationToken: cancellationToken);
 
         await ValueTask.CompletedTask;
         cancellationToken.ThrowIfCancellationRequested();
@@ -57,9 +60,13 @@ internal static partial class Endpoints
 
     private static async ValueTask<IResult> GitReceivePackAsync(string repoName, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken)
     {
-
-
-        var data = GitCommand(repoName, "git-receive-pack", false);
+        await GitCommandAsync(repoName: repoName,
+                              service: "git-receive-pack",
+                              aurRepos: aurRepos,
+                              advertiseRefs: false,
+                              endStreamWithNull: true,
+                              httpContext: httpContext,
+                              cancellationToken: cancellationToken);
 
         await ValueTask.CompletedTask;
         cancellationToken.ThrowIfCancellationRequested();
@@ -67,11 +74,14 @@ internal static partial class Endpoints
         return Results.BadRequest();
     }
 
-    private static async ValueTask<IResult> GitInfoRefsAsync(string repoName, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken)
+    private static async ValueTask<IResult> GitInfoRefsAsync(string repoName, string? service, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrEmpty(service))
+        {
+            throw new DataException("No Service");
+        }
 
-
-        GitCommand(Path.Combine(userName, repoName), service, true));
+        await GitCommandAsync(repoName: repoName, service: service, aurRepos: aurRepos, advertiseRefs: true, endStreamWithNull: true, httpContext: httpContext, cancellationToken: cancellationToken);
 
         await ValueTask.CompletedTask;
         cancellationToken.ThrowIfCancellationRequested();
@@ -79,11 +89,7 @@ internal static partial class Endpoints
         return Results.BadRequest();
     }
 
-    private static async ValueTask<IResult> GetPackagesAsync(
-        HttpContext httpContext,
-        IAurRepos aurRepos,
-        CancellationToken cancellationToken
-    )
+    private static async ValueTask<IResult> GetPackagesAsync(HttpContext httpContext, IAurRepos aurRepos, CancellationToken cancellationToken)
     {
         ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
@@ -97,14 +103,20 @@ internal static partial class Endpoints
         return Results.File(fileContents: result, contentType: "application/gzip");
     }
 
-    private static  GitCommandResult GitCommand(string repoName, string service, bool advertiseRefs, bool endStreamWithNull = true)
+    private static ValueTask GitCommandAsync(string repoName,
+                                             string service,
+                                             IAurRepos aurRepos,
+                                             bool advertiseRefs,
+                                             bool endStreamWithNull /* = true*/,
+                                             HttpContext httpContext,
+                                             in CancellationToken cancellationToken)
     {
         const string gitPath = "/usr/bin/git";
-        return new GitCommandResult(gitPath, new GitCommandOptions(
-                                        RepositoryService.GetRepository(repoName),
-                                        service,
-                                        advertiseRefs,
-                                        endStreamWithNull
-                                    ));
+        string repoBasePath = aurRepos.GetRepoBasePath(repoName);
+
+        return GitCommandResult.ExecuteResultAsync(gitPath: gitPath,
+                                                   new(Repository: repoBasePath, Service: service, AdvertiseRefs: advertiseRefs, EndStreamWithNull: endStreamWithNull),
+                                                   httpContext: httpContext,
+                                                   cancellationToken: cancellationToken);
     }
 }
