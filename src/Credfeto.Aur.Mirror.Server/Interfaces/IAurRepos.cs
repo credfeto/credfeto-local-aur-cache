@@ -7,4 +7,6 @@ namespace Credfeto.Aur.Mirror.Server.Interfaces;
 public interface IAurRepos
 {
     ValueTask<byte[]?> GetPackagesAsync(ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken);
+
+    string GetRepoBasePath(string repoName);
 }
