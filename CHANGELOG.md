@@ -15,6 +15,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Meziantou.Analyzer to 2.0.220
 - Dependencies - Updated Philips.CodeAnalysis.MaintainabilityAnalyzers to 1.9.1
 - Dependencies - Updated Credfeto.Date to 1.1.138.1330
+- Dependencies - Updated Credfeto.Docker.HealthCheck.Http.Client to 0.0.53.355
 ### Removed
 ### Deployment Changes
 
