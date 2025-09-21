@@ -7,6 +7,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ## [Unreleased]
 ### Added
+- Support serving repos over http
 ### Fixed
 ### Changed
 ### Removed
