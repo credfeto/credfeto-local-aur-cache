@@ -19,20 +19,9 @@ public static class GitCommandResult
         HttpResponse response = httpContext.Response;
         Stream responseStream = httpContext.Response.Body;
 
-        string contentType = $"application/x-{options.Service}";
+        AddResponseHeaders(options: options, response: response);
 
-        if (options.AdvertiseRefs)
-        {
-            contentType += "-advertisement";
-        }
-
-        response.ContentType = contentType;
-
-        response.Headers.Append(key: "Expires", value: "Fri, 01 Jan 1980 00:00:00 GMT");
-        response.Headers.Append(key: "Pragma", value: "no-cache");
-        response.Headers.Append(key: "Cache-Control", value: "no-cache, max-age=0, must-revalidate");
-
-        ProcessStartInfo info = new(fileName: gitPath, options.ToString())
+        ProcessStartInfo info = new(fileName: gitPath, options.BuildCommand())
                                 {
                                     UseShellExecute = false,
                                     CreateNoWindow = true,
@@ -40,10 +29,6 @@ public static class GitCommandResult
                                     RedirectStandardOutput = true,
                                     RedirectStandardError = true
                                 };
-
-        //info.Environment.Add("AUTH_USER", userName);
-        //info.Environment.Add("REMOTE_USER", userName);
-        //info.Environment.Add("GIT_COMMITTER_EMAIL", email);
 
         using (Process? process = Process.Start(info))
         {
@@ -76,6 +61,22 @@ public static class GitCommandResult
 
             await process.WaitForExitAsync(cancellationToken);
         }
+    }
+
+    private static void AddResponseHeaders(in GitCommandOptions options, HttpResponse response)
+    {
+        string contentType = $"application/x-{options.Service}";
+
+        if (options.AdvertiseRefs)
+        {
+            contentType += "-advertisement";
+        }
+
+        response.ContentType = contentType;
+
+        response.Headers.Append(key: "Expires", value: "Fri, 01 Jan 1980 00:00:00 GMT");
+        response.Headers.Append(key: "Pragma", value: "no-cache");
+        response.Headers.Append(key: "Cache-Control", value: "no-cache, max-age=0, must-revalidate");
     }
 
     [SuppressMessage(
