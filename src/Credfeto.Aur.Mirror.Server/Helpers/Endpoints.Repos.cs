@@ -1,5 +1,4 @@
 using System;
-using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -42,51 +41,44 @@ internal static partial class Endpoints
         return app;
     }
 
-    private static async ValueTask<IResult> GitUploadPackAsync(string repoName, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken)
+    private static  ValueTask<IResult> GitUploadPackAsync(string repoName, IAurRepos aurRepos, HttpContext httpContext, in CancellationToken cancellationToken)
     {
-        await GitCommandAsync(repoName: repoName,
-                              service: "git-upload-pack",
-                              aurRepos: aurRepos,
-                              advertiseRefs: false,
-                              endStreamWithNull: false,
-                              httpContext: httpContext,
-                              cancellationToken: cancellationToken);
+        return  GitCommandAsync(repoName: repoName,
+                                     service: "git-upload-pack",
+                                     aurRepos: aurRepos,
+                                     advertiseRefs: false,
+                                     endStreamWithNull: false,
+                                     httpContext: httpContext,
+                                     cancellationToken: cancellationToken);
 
-        await ValueTask.CompletedTask;
-        cancellationToken.ThrowIfCancellationRequested();
-
-        return Results.BadRequest();
     }
 
-    private static async ValueTask<IResult> GitReceivePackAsync(string repoName, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken)
+    private static  ValueTask<IResult> GitReceivePackAsync(string repoName, IAurRepos aurRepos, HttpContext httpContext, in CancellationToken cancellationToken)
     {
-        await GitCommandAsync(repoName: repoName,
-                              service: "git-receive-pack",
-                              aurRepos: aurRepos,
-                              advertiseRefs: false,
-                              endStreamWithNull: true,
-                              httpContext: httpContext,
-                              cancellationToken: cancellationToken);
+        return  GitCommandAsync(repoName: repoName,
+                                            service: "git-receive-pack",
+                                            aurRepos: aurRepos,
+                                            advertiseRefs: false,
+                                            endStreamWithNull: true,
+                                            httpContext: httpContext,
+                                            cancellationToken: cancellationToken);
 
-        await ValueTask.CompletedTask;
-        cancellationToken.ThrowIfCancellationRequested();
-
-        return Results.BadRequest();
     }
 
     private static async ValueTask<IResult> GitInfoRefsAsync(string repoName, string? service, IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(service))
         {
-            throw new DataException("No Service");
+            return Results.BadRequest("Missing Service");
         }
 
-        await GitCommandAsync(repoName: repoName, service: service, aurRepos: aurRepos, advertiseRefs: true, endStreamWithNull: true, httpContext: httpContext, cancellationToken: cancellationToken);
-
-        await ValueTask.CompletedTask;
-        cancellationToken.ThrowIfCancellationRequested();
-
-        return Results.BadRequest();
+        return await GitCommandAsync(repoName: repoName,
+                                     service: service,
+                                     aurRepos: aurRepos,
+                                     advertiseRefs: true,
+                                     endStreamWithNull: true,
+                                     httpContext: httpContext,
+                                     cancellationToken: cancellationToken);
     }
 
     private static async ValueTask<IResult> GetPackagesAsync(HttpContext httpContext, IAurRepos aurRepos, CancellationToken cancellationToken)
@@ -103,20 +95,29 @@ internal static partial class Endpoints
         return Results.File(fileContents: result, contentType: "application/gzip");
     }
 
-    private static ValueTask GitCommandAsync(string repoName,
-                                             string service,
-                                             IAurRepos aurRepos,
-                                             bool advertiseRefs,
-                                             bool endStreamWithNull /* = true*/,
-                                             HttpContext httpContext,
-                                             in CancellationToken cancellationToken)
+    private static async ValueTask<IResult> GitCommandAsync(string repoName,
+                                                            string service,
+                                                            IAurRepos aurRepos,
+                                                            bool advertiseRefs,
+                                                            bool endStreamWithNull /* = true*/,
+                                                            HttpContext httpContext,
+                                                            CancellationToken cancellationToken)
     {
         const string gitPath = "/usr/bin/git";
         string repoBasePath = aurRepos.GetRepoBasePath(repoName);
 
-        return GitCommandResult.ExecuteResultAsync(gitPath: gitPath,
-                                                   new(Repository: repoBasePath, Service: service, AdvertiseRefs: advertiseRefs, EndStreamWithNull: endStreamWithNull),
-                                                   httpContext: httpContext,
-                                                   cancellationToken: cancellationToken);
+        GitCommandResponse commandResponse = await GitCommandExecutor.ExecuteResultAsync(gitPath: gitPath,
+                                                                                         new(Repository: repoBasePath,
+                                                                                             Service: service,
+                                                                                             AdvertiseRefs: advertiseRefs,
+                                                                                             EndStreamWithNull: endStreamWithNull),
+                                                                                         httpContext: httpContext,
+                                                                                         cancellationToken: cancellationToken);
+
+        httpContext.Response.Headers.Append(key: "Expires", value: "Fri, 01 Jan 1980 00:00:00 GMT");
+        httpContext.Response.Headers.Append(key: "Pragma", value: "no-cache");
+        httpContext.Response.Headers.Append(key: "Cache-Control", value: "no-cache, max-age=0, must-revalidate");
+
+        return Results.File(fileStream: commandResponse.Content, contentType: commandResponse.ContentType, fileDownloadName: null);
     }
 }
