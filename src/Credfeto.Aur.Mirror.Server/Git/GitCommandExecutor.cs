@@ -69,12 +69,7 @@ internal static class GitCommandExecutor
     {
         string contentType = $"application/x-{options.Service}";
 
-        if (options.AdvertiseRefs)
-        {
-            contentType += "-advertisement";
-        }
-
-        return contentType;
+        return options.AdvertiseRefs ? contentType + "-advertisement" : contentType;
     }
 
     [SuppressMessage(
