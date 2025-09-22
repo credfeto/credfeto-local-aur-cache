@@ -13,18 +13,23 @@ namespace Credfeto.Aur.Mirror.Server.Git;
 
 internal static class GitCommandExecutor
 {
-    public static async ValueTask<GitCommandResponse> ExecuteResultAsync(string gitPath, GitCommandOptions options, HttpContext httpContext, CancellationToken cancellationToken)
+    public static async ValueTask<GitCommandResponse> ExecuteResultAsync(
+        string gitPath,
+        GitCommandOptions options,
+        HttpContext httpContext,
+        CancellationToken cancellationToken
+    )
     {
         string contentType = GetMimeType(options);
 
         ProcessStartInfo info = new(fileName: gitPath, options.BuildCommand())
-                                {
-                                    UseShellExecute = false,
-                                    CreateNoWindow = true,
-                                    RedirectStandardInput = true,
-                                    RedirectStandardOutput = true,
-                                    RedirectStandardError = true
-                                };
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
 
         using (Process? process = Process.Start(info))
         {
@@ -50,12 +55,18 @@ internal static class GitCommandExecutor
                 await using (StreamWriter writer = new(memoryStream, leaveOpen: true))
                 {
                     string service = $"# service={options.Service}\n";
-                    await writer.WriteAsync(new StringBuilder($"{service.Length + 4:x4}{service}0000"), cancellationToken: cancellationToken);
+                    await writer.WriteAsync(
+                        new StringBuilder($"{service.Length + 4:x4}{service}0000"),
+                        cancellationToken: cancellationToken
+                    );
                     await writer.FlushAsync(cancellationToken);
                 }
             }
 
-            await process.StandardOutput.BaseStream.CopyToAsync(destination: memoryStream, cancellationToken: cancellationToken);
+            await process.StandardOutput.BaseStream.CopyToAsync(
+                destination: memoryStream,
+                cancellationToken: cancellationToken
+            );
             memoryStream.Seek(0, SeekOrigin.Begin);
 
             await process.WaitForExitAsync(cancellationToken);
@@ -63,7 +74,6 @@ internal static class GitCommandExecutor
             return new(memoryStream, contentType);
         }
     }
-
 
     private static string GetMimeType(in GitCommandOptions options)
     {
