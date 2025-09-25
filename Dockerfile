@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-noble-chiseled
+FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-noble
 
 WORKDIR /usr/src/app
 
@@ -10,6 +10,8 @@ CMD mkdir /data && \
     mkdir /data/metadata && \
     mkdir /data/metadata && \
     chmod -R 1654:1654 /data
+
+RUN apt-get update && apt-get install -y git
 
 EXPOSE 8080
 ENTRYPOINT [ "/usr/src/app/Credfeto.Aur.Mirror.Server" ]
