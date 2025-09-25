@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Config/">
+    <File Path="../CHANGELOG.md" />
+    <File Path="../Dockerfile" />
+    <File Path="../README.md" />
+    <File Path="CodeAnalysis.ruleset" />
+    <File Path="global.json" />
+    <File Path="publish" />
+  </Folder>
+  <Project Path="Credfeto.Aur.Mirror.Server/Credfeto.Aur.Mirror.Server.csproj" />
+</Solution>
