@@ -21,8 +21,6 @@ namespace Credfeto.Aur.Mirror.Server.Services;
 
 public sealed class GitServer : IGitServer
 {
-    private const string GIT_PATH = "/usr/bin/git";
-
     private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
     private readonly ILogger<GitServer> _logger;
 
@@ -43,7 +41,7 @@ public sealed class GitServer : IGitServer
         string arguments = options.BuildCommand(repoBasePath);
         this._logger.ExecutingCommand(arguments);
 
-        using (Process? process = Process.Start(new ProcessStartInfo(fileName: GIT_PATH, arguments: arguments)
+        using (Process? process = Process.Start(new ProcessStartInfo(fileName: this._repoConfig.GitExecutable, arguments: arguments)
                                                 {
                                                     UseShellExecute = false,
                                                     CreateNoWindow = true,
@@ -55,7 +53,7 @@ public sealed class GitServer : IGitServer
         {
             if (process is null)
             {
-                this._logger.FailedToStartGit(exe: GIT_PATH, arguments: arguments);
+                this._logger.FailedToStartGit(exe: this._repoConfig.GitExecutable, arguments: arguments);
 
                 throw new DataException("Git could not be started.");
             }
