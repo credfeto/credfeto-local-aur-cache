@@ -7,13 +7,15 @@ using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Server.Git;
+using Credfeto.Aur.Mirror.Server.Interfaces;
 using Microsoft.AspNetCore.Http;
 
-namespace Credfeto.Aur.Mirror.Server.Git;
+namespace Credfeto.Aur.Mirror.Server.Services;
 
-internal static class GitCommandExecutor
+public sealed class GitServer : IGitServer
 {
-    public static async ValueTask<GitCommandResponse> ExecuteResultAsync(
+    public async ValueTask<GitCommandResponse> ExecuteResultAsync(
         string gitPath,
         GitCommandOptions options,
         HttpContext httpContext,
