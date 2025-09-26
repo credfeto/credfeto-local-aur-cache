@@ -73,6 +73,7 @@ runs:
     run: |
       {
       [[ -d src && -f src/global.json ]] && echo 'GLOBAL_JSON_EXIST=true' || echo 'GLOBAL_JSON_EXIST=false';
+      } >> "$GITHUB_OUTPUT"
 
   - if: ${{steps.check_dotnet.outputs.GLOBAL_JSON_EXIST == 'true'}}
     name: "Install dotnet (For Build)"
