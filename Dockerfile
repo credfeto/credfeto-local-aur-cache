@@ -1,42 +1,17 @@
-FROM alpine:latest
-
+FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-noble
 
 WORKDIR /usr/src/app
-
-CMD mkdir /data && \
-    mkdir /data/metadata && \
-    mkdir /data/metadata && \
-    chown -R 1654:1654 /data
-    chown -R 1654:1654 /usr/src/app
-
-RUN apk add --no-cache \
-        bash \
-        ca-certificates \
-        curl  \
-        doas \
-        git \
-        gnupg \
-        icu-libs \
-        jq \
-        krb5-libs \
-        libgcc \
-        libintl \
-        libssl3 \
-        libstdc++ \
-        openssh \
-        sed \
-        zlib
-
-RUN rm -fr /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk
-
-SHELL ["/bin/ash", "-o", "pipefail", "-c"]
-
-USER 1654:1654
 
 # Bundle App and basic config
 COPY Credfeto.Aur.Mirror.Server .
 COPY appsettings.json .
 
+CMD mkdir /data && \
+    mkdir /data/metadata && \
+    mkdir /data/metadata && \
+    chmod -R 1654:1654 /data
+
+RUN apt-get update && apt-get install -y git
 
 EXPOSE 8080
 ENTRYPOINT [ "/usr/src/app/Credfeto.Aur.Mirror.Server" ]
