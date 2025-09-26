@@ -18,35 +18,41 @@ namespace Credfeto.Aur.Mirror.Server.Services;
 public sealed class GitServer : IGitServer
 {
     private const string GIT_PATH = "/usr/bin/git";
-
     private readonly ILogger<GitServer> _logger;
 
-    public GitServer(ILogger<GitServer> logger)
+    private readonly IRepoConfig _repoConfig;
+
+    public GitServer(IRepoConfig repoConfig, ILogger<GitServer> logger)
     {
+        this._repoConfig = repoConfig;
         this._logger = logger;
     }
 
     public async ValueTask<GitCommandResponse> ExecuteResultAsync(GitCommandOptions options, HttpContext httpContext, CancellationToken cancellationToken)
     {
-        string arguments = options.BuildCommand();
+        string repoBasePath = this._repoConfig.GetRepoBasePath(options.RepositoryName);
+
+        string arguments = options.BuildCommand(repoBasePath);
         this._logger.ExecutingCommand(arguments);
 
         string contentType = GetMimeType(options);
 
-        ProcessStartInfo info = new(fileName: GIT_PATH, arguments)
+        ProcessStartInfo info = new(fileName: GIT_PATH, arguments: arguments)
                                 {
                                     UseShellExecute = false,
                                     CreateNoWindow = true,
                                     RedirectStandardInput = true,
                                     RedirectStandardOutput = true,
-                                    RedirectStandardError = true
+                                    RedirectStandardError = true,
+                                    WorkingDirectory = repoBasePath
                                 };
 
         using (Process? process = Process.Start(info))
         {
             if (process is null)
             {
-                this._logger.FailedToStartGit(GIT_PATH, arguments);
+                this._logger.FailedToStartGit(exe: GIT_PATH, arguments: arguments);
+
                 throw new DataException("Git could not be started.");
             }
 

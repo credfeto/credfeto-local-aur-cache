@@ -27,22 +27,20 @@ internal static partial class Endpoints
                                   GetPackagesAsync(httpContext: httpContext, aurRepos: aurRepos, cancellationToken: cancellationToken));
 
         group.MapPost(pattern: "/{repoName}.git/git-upload-pack",
-                      handler: static ([FromRoute] string repoName, IRepoConfig repoConfig, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
-                                   GitUploadPackAsync(repoName: repoName, repoConfig: repoConfig, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+                      handler: static ([FromRoute] string repoName,  IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                   GitUploadPackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
 
         group.MapGet(pattern: "/{repoName}.git/git-receive-pack",
-                     handler: static ([FromRoute] string repoName, IRepoConfig repoConfig, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
-                                  GitReceivePackAsync(repoName: repoName, repoConfig: repoConfig, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+                     handler: static ([FromRoute] string repoName, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  GitReceivePackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
 
         group.MapGet(pattern: "/{repoName}.git/info/refs",
                      handler: static ([FromRoute] string repoName,
                                       [FromQuery] string? service,
-                                      IRepoConfig repoConfig,
                                       IGitServer gitServer,
                                       HttpContext httpContext,
                                       CancellationToken cancellationToken) => GitInfoRefsAsync(repoName: repoName,
                                                                                                service: service,
-                                                                                               repoConfig: repoConfig,
                                                                                                gitServer: gitServer,
                                                                                                httpContext: httpContext,
                                                                                                cancellationToken: cancellationToken));
@@ -50,31 +48,29 @@ internal static partial class Endpoints
         return app;
     }
 
-    private static ValueTask<IResult> GitUploadPackAsync(string repoName, IRepoConfig repoConfig, IGitServer gitServer, HttpContext httpContext, in CancellationToken cancellationToken)
+    private static ValueTask<IResult> GitUploadPackAsync(string repoName, IGitServer gitServer, HttpContext httpContext, in CancellationToken cancellationToken)
     {
         return GitCommandAsync(repoName: repoName,
                                service: "git-upload-pack",
                                gitServer: gitServer,
-                               repoConfig: repoConfig,
                                advertiseRefs: false,
                                endStreamWithNull: false,
                                httpContext: httpContext,
                                cancellationToken: cancellationToken);
     }
 
-    private static ValueTask<IResult> GitReceivePackAsync(string repoName, IRepoConfig repoConfig, IGitServer gitServer, HttpContext httpContext, in CancellationToken cancellationToken)
+    private static ValueTask<IResult> GitReceivePackAsync(string repoName, IGitServer gitServer, HttpContext httpContext, in CancellationToken cancellationToken)
     {
         return GitCommandAsync(repoName: repoName,
                                service: "git-receive-pack",
                                gitServer: gitServer,
-                               repoConfig: repoConfig,
                                advertiseRefs: false,
                                endStreamWithNull: true,
                                httpContext: httpContext,
                                cancellationToken: cancellationToken);
     }
 
-    private static async ValueTask<IResult> GitInfoRefsAsync(string repoName, string? service, IRepoConfig repoConfig, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken)
+    private static async ValueTask<IResult> GitInfoRefsAsync(string repoName, string? service, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(service))
         {
@@ -84,7 +80,6 @@ internal static partial class Endpoints
         return await GitCommandAsync(repoName: repoName,
                                      service: service,
                                      gitServer: gitServer,
-                                     repoConfig: repoConfig,
                                      advertiseRefs: true,
                                      endStreamWithNull: true,
                                      httpContext: httpContext,
@@ -107,18 +102,15 @@ internal static partial class Endpoints
 
     private static async ValueTask<IResult> GitCommandAsync(string repoName,
                                                             string service,
-
                                                             IGitServer gitServer,
-                                                            IRepoConfig repoConfig,
                                                             bool advertiseRefs,
                                                             bool endStreamWithNull /* = true*/,
                                                             HttpContext httpContext,
                                                             CancellationToken cancellationToken)
     {
 
-        string repoBasePath = repoConfig.GetRepoBasePath(repoName);
 
-        GitCommandResponse commandResponse = await gitServer.ExecuteResultAsync(new(Repository: repoBasePath, Service: service, AdvertiseRefs: advertiseRefs, EndStreamWithNull: endStreamWithNull),
+        GitCommandResponse commandResponse = await gitServer.ExecuteResultAsync(new(RepositoryName: repoName, Service: service, AdvertiseRefs: advertiseRefs, EndStreamWithNull: endStreamWithNull),
                                                                                 httpContext: httpContext,
                                                                                 cancellationToken: cancellationToken);
 

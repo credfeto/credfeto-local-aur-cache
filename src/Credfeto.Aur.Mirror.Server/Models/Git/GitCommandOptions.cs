@@ -4,15 +4,15 @@ using System.Text;
 
 namespace Credfeto.Aur.Mirror.Server.Models.Git;
 
-[DebuggerDisplay("Repo:{Repository}, Service: {Service} Refs: {AdvertiseRefs} {EndStreamWithNull}")]
+[DebuggerDisplay("Repo:{RepositoryName}, Service: {Service} Refs: {AdvertiseRefs} {EndStreamWithNull}")]
 public readonly record struct GitCommandOptions(
-    string Repository,
+    string RepositoryName,
     string Service,
     bool AdvertiseRefs,
     bool EndStreamWithNull
 )
 {
-    public string BuildCommand()
+    public string BuildCommand(string repositoryBasePath)
     {
         if (!this.Service.StartsWith("git-", StringComparison.Ordinal))
         {
@@ -28,6 +28,6 @@ public readonly record struct GitCommandOptions(
             builder = builder.Append(" --advertise-refs");
         }
 
-        return builder.Append($@" ""{this.Repository}""").ToString();
+        return builder.Append($@" ""{repositoryBasePath}""").ToString();
     }
 }
