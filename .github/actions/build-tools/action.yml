@@ -67,7 +67,14 @@ runs:
     run: rm -fr "${{github.workspace}}/.dotnet"
     shell: bash
 
-  - if: '${{hashFiles("src/global.json")}' != ''
+  - name: "Check file existence"
+    id: check_dotnet
+    shell: bash
+    run: |
+      {
+      [[ -d src && -f src/global.json ]] && echo 'GLOBAL_JSON_EXIST=true' || echo 'GLOBAL_JSON_EXIST=false';
+
+  - if: ${{steps.check_dotnet.outputs.GLOBAL_JSON_EXIST == 'true'}}
     name: "Install dotnet (For Build)"
     uses: actions/setup-dotnet@v5.0.0
     env:
@@ -92,7 +99,7 @@ runs:
           10.0.*
       global-json-file: "${{ github.workspace }}/src/global.json"
 
-  - if: '${{hashFiles("src/global.json")}' == ''
+  - if: ${{steps.check_dotnet.outputs.GLOBAL_JSON_EXIST == 'false'}}
     name: "Install dotnet (Tools)"
     uses: actions/setup-dotnet@v5.0.0
     env:
