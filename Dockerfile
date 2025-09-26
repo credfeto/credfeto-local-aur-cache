@@ -30,7 +30,7 @@ RUN apk add --no-cache \
         sed \
         zlib
 
-RUN rm -f /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk
+RUN rm -fr /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk
 
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
