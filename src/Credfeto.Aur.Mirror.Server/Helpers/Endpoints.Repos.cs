@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,23 +23,176 @@ internal static partial class Endpoints
 
         RouteGroupBuilder group = app.MapGroup("/repos");
 
-        group.MapGet(pattern: "packages.gz",
-                     handler: static (IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
-                                  GetPackagesAsync(httpContext: httpContext, aurRepos: aurRepos, cancellationToken: cancellationToken));
+        RegisterPackagesGz(group);
+        RegisterGitUploadPack(group);
+        RegisterGitReceivePack(group);
+        RegisterInfoRefs(group);
+        RegisterFiles(group);
 
-        group.MapPost(pattern: "/{repoName}.git/git-upload-pack",
-                      handler: static ([FromRoute] string repoName, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
-                                   GitUploadPackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+        return app;
+    }
 
-        group.MapGet(pattern: "/{repoName}.git/git-receive-pack",
-                     handler: static ([FromRoute] string repoName, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
-                                  GitReceivePackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+    private static void RegisterFiles(RouteGroupBuilder group)
+    {
+        group.MapGet(pattern: "/{repoName}.git/{file1}/",
+                     handler: static ([FromRoute] string repoName, [FromRoute] string file1, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  RetrieveFileAsync(repoName: repoName, file1: file1, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
 
+        group.MapGet(pattern: "/{repoName}.git/{file1}/{file2}",
+                     handler: static ([FromRoute] string repoName,
+                                      [FromRoute] string file1,
+                                      [FromRoute] string file2,
+                                      IGitServer gitServer,
+                                      HttpContext httpContext,
+                                      CancellationToken cancellationToken) =>
+                                  RetrieveFileAsync(repoName: repoName, file1: file1, file2: file2, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+
+        group.MapGet(pattern: "/{repoName}.git/{file1}/{file2}/{file3}",
+                     handler: static ([FromRoute] string repoName,
+                                      [FromRoute] string file1,
+                                      [FromRoute] string file2,
+                                      [FromRoute] string file3,
+                                      IGitServer gitServer,
+                                      HttpContext httpContext,
+                                      CancellationToken cancellationToken) => RetrieveFileAsync(repoName: repoName,
+                                                                                                file1: file1,
+                                                                                                file2: file2,
+                                                                                                file3: file3,
+                                                                                                gitServer: gitServer,
+                                                                                                httpContext: httpContext,
+                                                                                                cancellationToken: cancellationToken));
+
+        group.MapGet(pattern: "/{repoName}.git/{file1}/{file2}/{file3}/{file4}",
+                     handler: static ([FromRoute] string repoName,
+                                      [FromRoute] string file1,
+                                      [FromRoute] string file2,
+                                      [FromRoute] string file3,
+                                      [FromRoute] string file4,
+                                      IGitServer gitServer,
+                                      HttpContext httpContext,
+                                      CancellationToken cancellationToken) => RetrieveFileAsync(repoName: repoName,
+                                                                                                file1: file1,
+                                                                                                file2: file2,
+                                                                                                file3: file3,
+                                                                                                file4: file4,
+                                                                                                gitServer: gitServer,
+                                                                                                httpContext: httpContext,
+                                                                                                cancellationToken: cancellationToken));
+
+        group.MapGet(pattern: "/{repoName}.git/{file1}/{file2}/{file3}/{file4}/{file5}",
+                     handler: static ([FromRoute] string repoName,
+                                      [FromRoute] string file1,
+                                      [FromRoute] string file2,
+                                      [FromRoute] string file3,
+                                      [FromRoute] string file4,
+                                      [FromRoute] string file5,
+                                      IGitServer gitServer,
+                                      HttpContext httpContext,
+                                      CancellationToken cancellationToken) => RetrieveFileAsync(repoName: repoName,
+                                                                                                file1: file1,
+                                                                                                file2: file2,
+                                                                                                file3: file3,
+                                                                                                file4: file4,
+                                                                                                file5: file5,
+                                                                                                gitServer: gitServer,
+                                                                                                httpContext: httpContext,
+                                                                                                cancellationToken: cancellationToken));
+    }
+
+    private static void RegisterInfoRefs(RouteGroupBuilder group)
+    {
         group.MapGet(pattern: "/{repoName}.git/info/refs",
                      handler: static ([FromRoute] string repoName, [FromQuery] string? service, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
                                   GitInfoRefsAsync(repoName: repoName, service: service, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+    }
 
-        return app;
+    private static void RegisterGitReceivePack(RouteGroupBuilder group)
+    {
+        group.MapGet(pattern: "/{repoName}.git/git-receive-pack",
+                     handler: static ([FromRoute] string repoName, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  GitReceivePackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+    }
+
+    private static void RegisterGitUploadPack(RouteGroupBuilder group)
+    {
+        group.MapPost(pattern: "/{repoName}.git/git-upload-pack",
+                      handler: static ([FromRoute] string repoName, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                   GitUploadPackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+    }
+
+    private static void RegisterPackagesGz(RouteGroupBuilder group)
+    {
+        group.MapGet(pattern: "packages.gz",
+                     handler: static (IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  GetPackagesAsync(httpContext: httpContext, aurRepos: aurRepos, cancellationToken: cancellationToken));
+    }
+
+    private static ValueTask<IResult> RetrieveFileAsync(string repoName, string file1, IGitServer gitServer, HttpContext httpContext, in CancellationToken cancellationToken)
+    {
+        string path = BuildPath(file1);
+
+        return RetrieveFileCommonAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, path: path, cancellationToken: cancellationToken);
+    }
+
+    private static ValueTask<IResult> RetrieveFileAsync(string repoName, string file1, string file2, IGitServer gitServer, HttpContext httpContext, in CancellationToken cancellationToken)
+    {
+        string path = BuildPath(file1, file2);
+
+        return RetrieveFileCommonAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, path: path, cancellationToken: cancellationToken);
+    }
+
+    private static ValueTask<IResult> RetrieveFileAsync(string repoName,
+                                                        string file1,
+                                                        string file2,
+                                                        string file3,
+                                                        IGitServer gitServer,
+                                                        HttpContext httpContext,
+                                                        in CancellationToken cancellationToken)
+    {
+        string path = BuildPath(file1, file2, file3);
+
+        return RetrieveFileCommonAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, path: path, cancellationToken: cancellationToken);
+    }
+
+    private static ValueTask<IResult> RetrieveFileAsync(string repoName,
+                                                        string file1,
+                                                        string file2,
+                                                        string file3,
+                                                        string file4,
+                                                        IGitServer gitServer,
+                                                        HttpContext httpContext,
+                                                        in CancellationToken cancellationToken)
+    {
+        string path = BuildPath(file1, file2, file3, file4);
+
+        return RetrieveFileCommonAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, path: path, cancellationToken: cancellationToken);
+    }
+
+    private static ValueTask<IResult> RetrieveFileAsync(string repoName,
+                                                        string file1,
+                                                        string file2,
+                                                        string file3,
+                                                        string file4,
+                                                        string file5,
+                                                        IGitServer gitServer,
+                                                        HttpContext httpContext,
+                                                        in CancellationToken cancellationToken)
+    {
+        string path = BuildPath(file1, file2, file3, file4, file5);
+
+        return RetrieveFileCommonAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, path: path, cancellationToken: cancellationToken);
+    }
+
+    private static string BuildPath(params string[] files)
+    {
+        return string.Join(separator: Path.DirectorySeparatorChar, value: files);
+    }
+
+    private static async ValueTask<IResult> RetrieveFileCommonAsync(string repoName, IGitServer gitServer, HttpContext httpContext, string path, CancellationToken cancellationToken)
+    {
+        GitCommandResponse result = await gitServer.GetFileAsync(repoName: repoName, path: path, cancellationToken: cancellationToken);
+
+        return NoCacheResult(httpContext: httpContext, commandResponse: result);
     }
 
     private static ValueTask<IResult> GitUploadPackAsync(string repoName, IGitServer gitServer, HttpContext httpContext, in CancellationToken cancellationToken)
@@ -67,7 +221,7 @@ internal static partial class Endpoints
     {
         if (string.IsNullOrEmpty(service))
         {
-            GitCommandResponse result = await gitServer.GetFileAsync(repoName: repoName, path: "/info/refs", cancellationToken: cancellationToken);
+            GitCommandResponse result = await gitServer.GetFileAsync(repoName: repoName, path: "info/refs", cancellationToken: cancellationToken);
 
             return NoCacheResult(httpContext: httpContext, commandResponse: result);
         }
@@ -116,6 +270,6 @@ internal static partial class Endpoints
         httpContext.Response.Headers.Append(key: "Pragma", value: "no-cache");
         httpContext.Response.Headers.Append(key: "Cache-Control", value: "no-cache, max-age=0, must-revalidate");
 
-        return Results.File(fileStream: commandResponse.Content, contentType: commandResponse.ContentType, fileDownloadName: null);
+        return Results.Bytes(contents: commandResponse.Content, contentType: commandResponse.ContentType, fileDownloadName: null);
     }
 }

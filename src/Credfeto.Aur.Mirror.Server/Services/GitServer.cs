@@ -74,24 +74,24 @@ public sealed class GitServer : IGitServer
 
             await process.StandardInput.DisposeAsync();
 
-            RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream();
-
-            if (options.AdvertiseRefs)
+            await using (RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream())
             {
-                await using (StreamWriter writer = new(stream: memoryStream, leaveOpen: true))
+                if (options.AdvertiseRefs)
                 {
-                    string service = $"# service={options.Service}\n";
-                    await writer.WriteAsync(new StringBuilder($"{service.Length + 4:x4}{service}0000"), cancellationToken: cancellationToken);
-                    await writer.FlushAsync(cancellationToken);
+                    await using (StreamWriter writer = new(stream: memoryStream, leaveOpen: true))
+                    {
+                        string service = $"# service={options.Service}\n";
+                        await writer.WriteAsync(new StringBuilder($"{service.Length + 4:x4}{service}0000"), cancellationToken: cancellationToken);
+                        await writer.FlushAsync(cancellationToken);
+                    }
                 }
+
+                await process.StandardOutput.BaseStream.CopyToAsync(destination: memoryStream, cancellationToken: cancellationToken);
+
+                await process.WaitForExitAsync(cancellationToken);
+
+                return new(memoryStream.ToArray(), ContentType: contentType);
             }
-
-            await process.StandardOutput.BaseStream.CopyToAsync(destination: memoryStream, cancellationToken: cancellationToken);
-            memoryStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-            await process.WaitForExitAsync(cancellationToken);
-
-            return new(Content: memoryStream, ContentType: contentType);
         }
     }
 
@@ -134,16 +134,15 @@ public sealed class GitServer : IGitServer
 
         string fileName = Path.Combine(path1: repoBasePath, path2: path);
 
-        RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream();
-
-        await using (Stream file = File.OpenRead(fileName))
+        await using (RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream())
         {
-            await file.CopyToAsync(destination: memoryStream, cancellationToken: cancellationToken);
+            await using (Stream file = File.OpenRead(fileName))
+            {
+                await file.CopyToAsync(destination: memoryStream, cancellationToken: cancellationToken);
+            }
+
+            return new(memoryStream.ToArray(), ContentType: "application/octet-stream");
         }
-
-        memoryStream.Seek(offset: 0, loc: SeekOrigin.Begin);
-
-        return new(Content: memoryStream, ContentType: "application/octet-stream");
     }
 
     private static string GetMimeType(in GitCommandOptions options)
