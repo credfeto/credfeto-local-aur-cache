@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -58,7 +57,7 @@ public sealed class AurRpc : IAurRpc
         }
         catch (HttpRequestException exception)
         {
-            Debug.WriteLine(exception.Message);
+            this._logger.FailedToSearchUpstreamPackageInfo(keyword: keyword, by: by, message: exception.Message, exception: exception);
 
             return await this.ExecuteLocalSearchQueryAsync(keyword: keyword, by: by, cancellationToken: cancellationToken);
         }
@@ -143,7 +142,7 @@ public sealed class AurRpc : IAurRpc
 
             if (existing is not null && IsSearchMatch(existing: existing, keyword: keyword, by: by))
             {
-                // Check filtering
+                this._logger.OfflineSearchFound(package: existing.Name, keyword: keyword, by: by);
                 results.Add(existing);
             }
         }

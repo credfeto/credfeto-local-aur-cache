@@ -31,4 +31,10 @@ internal static partial class AurRpcLoggingExtensions
     {
         logger.FailedToGetUpstreamPackageInfo(string.Join(separator: ", ", values: packages), message: message, exception: exception);
     }
+
+    [LoggerMessage(LogLevel.Information, EventId = 6, Message = "Search Found: {package} using {keyword} by {by}")]
+    public static partial void OfflineSearchFound(this ILogger<IAurRpc> logger, string package, string keyword, string by);
+
+    [LoggerMessage(LogLevel.Warning, EventId = 7, Message = "Failed Upstream search for: {keyword} by {by} => {message}")]
+    public static partial void FailedToSearchUpstreamPackageInfo(this ILogger<IAurRpc> logger, string keyword, string by, string message, Exception exception);
 }
