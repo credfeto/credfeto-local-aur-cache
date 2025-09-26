@@ -10,4 +10,6 @@ public interface IGitServer
     ValueTask<GitCommandResponse> ExecuteResultAsync(GitCommandOptions options, HttpContext httpContext, CancellationToken cancellationToken);
 
     ValueTask EnsureRepositoryHasBeenClonedAsync(string repoName, string upstreamRepo, bool changed, CancellationToken cancellationToken);
+
+    ValueTask<GitCommandResponse> GetFileAsync(string repoName, string path, CancellationToken cancellationToken);
 }

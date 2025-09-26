@@ -92,36 +92,11 @@ public sealed class GitServer : IGitServer
         }
     }
 
-    private static string GetMimeType(in GitCommandOptions options)
-    {
-        string contentType = $"application/x-{options.Service}";
-
-        return options.AdvertiseRefs
-            ? contentType + "-advertisement"
-            : contentType;
-    }
-
-    [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "For Review")]
-    private static Stream GetInputStream(HttpContext context)
-    {
-        return StringComparer.Ordinal.Equals(context.Request.Headers["Content-Encoding"], y: "gzip")
-            ? new GZipStream(stream: context.Request.Body, mode: CompressionMode.Decompress)
-            : context.Request.Body;
-    }
-
-    public async ValueTask EnsureRepositoryHasBeenClonedAsync(
-        string repoName,
-        string upstreamRepo,
-        bool changed,
-        CancellationToken cancellationToken
-    )
+    public async ValueTask EnsureRepositoryHasBeenClonedAsync(string repoName, string upstreamRepo, bool changed, CancellationToken cancellationToken)
     {
         string repoBasePath = this._repoConfig.GetRepoBasePath(repoName);
 
-        SemaphoreSlim wait = await this._updateLock.GetLockAsync(
-            fileName: repoBasePath,
-            cancellationToken: cancellationToken
-        );
+        SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: repoBasePath, cancellationToken: cancellationToken);
 
         try
         {
@@ -149,6 +124,42 @@ public sealed class GitServer : IGitServer
         }
     }
 
+    public async ValueTask<GitCommandResponse> GetFileAsync(string repoName, string path, CancellationToken cancellationToken)
+    {
+        this._logger.ReadingFile(repo: repoName, path: path);
+        string repoBasePath = this._repoConfig.GetRepoBasePath(repoName);
+
+        string fileName = Path.Combine(path1: repoBasePath, path2: path);
+
+        MemoryStream memoryStream = new();
+
+        await using (Stream file = File.OpenRead(fileName))
+        {
+            await file.CopyToAsync(destination: memoryStream, cancellationToken: cancellationToken);
+        }
+
+        memoryStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+        return new(Content: memoryStream, ContentType: "application/octet-stream");
+    }
+
+    private static string GetMimeType(in GitCommandOptions options)
+    {
+        string contentType = $"application/x-{options.Service}";
+
+        return options.AdvertiseRefs
+            ? contentType + "-advertisement"
+            : contentType;
+    }
+
+    [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "For Review")]
+    private static Stream GetInputStream(HttpContext context)
+    {
+        return StringComparer.Ordinal.Equals(context.Request.Headers["Content-Encoding"], y: "gzip")
+            ? new GZipStream(stream: context.Request.Body, mode: CompressionMode.Decompress)
+            : context.Request.Body;
+    }
+
     private static void UpdateRepository(string repoFolder)
     {
         using (Repository repo = new(repoFolder))
@@ -158,13 +169,7 @@ public sealed class GitServer : IGitServer
             Remote? remote = repo.Network.Remotes["origin"];
             const string msg = "Fetching remote";
             IEnumerable<string> refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-            Commands.Fetch(
-                repository: repo,
-                remote: remote.Name,
-                refspecs: refSpecs,
-                options: options,
-                logMessage: msg
-            );
+            Commands.Fetch(repository: repo, remote: remote.Name, refspecs: refSpecs, options: options, logMessage: msg);
         }
     }
 

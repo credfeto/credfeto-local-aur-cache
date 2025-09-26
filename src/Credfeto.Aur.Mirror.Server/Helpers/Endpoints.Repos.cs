@@ -27,7 +27,7 @@ internal static partial class Endpoints
                                   GetPackagesAsync(httpContext: httpContext, aurRepos: aurRepos, cancellationToken: cancellationToken));
 
         group.MapPost(pattern: "/{repoName}.git/git-upload-pack",
-                      handler: static ([FromRoute] string repoName,  IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                      handler: static ([FromRoute] string repoName, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
                                    GitUploadPackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
 
         group.MapGet(pattern: "/{repoName}.git/git-receive-pack",
@@ -35,15 +35,8 @@ internal static partial class Endpoints
                                   GitReceivePackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
 
         group.MapGet(pattern: "/{repoName}.git/info/refs",
-                     handler: static ([FromRoute] string repoName,
-                                      [FromQuery] string? service,
-                                      IGitServer gitServer,
-                                      HttpContext httpContext,
-                                      CancellationToken cancellationToken) => GitInfoRefsAsync(repoName: repoName,
-                                                                                               service: service,
-                                                                                               gitServer: gitServer,
-                                                                                               httpContext: httpContext,
-                                                                                               cancellationToken: cancellationToken));
+                     handler: static ([FromRoute] string repoName, [FromQuery] string? service, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  GitInfoRefsAsync(repoName: repoName, service: service, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
 
         return app;
     }
@@ -74,7 +67,9 @@ internal static partial class Endpoints
     {
         if (string.IsNullOrEmpty(service))
         {
-            return Results.BadRequest("Missing Service");
+            GitCommandResponse result = await gitServer.GetFileAsync(repoName: repoName, path: "/info/refs", cancellationToken: cancellationToken);
+
+            return NoCacheResult(httpContext: httpContext, commandResponse: result);
         }
 
         return await GitCommandAsync(repoName: repoName,
@@ -108,12 +103,15 @@ internal static partial class Endpoints
                                                             HttpContext httpContext,
                                                             CancellationToken cancellationToken)
     {
-
-
         GitCommandResponse commandResponse = await gitServer.ExecuteResultAsync(new(RepositoryName: repoName, Service: service, AdvertiseRefs: advertiseRefs, EndStreamWithNull: endStreamWithNull),
                                                                                 httpContext: httpContext,
                                                                                 cancellationToken: cancellationToken);
 
+        return NoCacheResult(httpContext: httpContext, commandResponse: commandResponse);
+    }
+
+    private static IResult NoCacheResult(HttpContext httpContext, in GitCommandResponse commandResponse)
+    {
         httpContext.Response.Headers.Append(key: "Expires", value: "Fri, 01 Jan 1980 00:00:00 GMT");
         httpContext.Response.Headers.Append(key: "Pragma", value: "no-cache");
         httpContext.Response.Headers.Append(key: "Cache-Control", value: "no-cache, max-age=0, must-revalidate");
