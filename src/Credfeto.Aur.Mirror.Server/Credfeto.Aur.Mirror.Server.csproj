@@ -89,6 +89,7 @@
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.9" />
     <PackageReference Include="Credfeto.Enumeration.Source.Generation.Attributes" Version="1.2.129.1430" />
     <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="All" ExcludeAssets="runtime" />

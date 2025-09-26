@@ -15,12 +15,15 @@ using Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
 using LibGit2Sharp;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.IO;
 
 namespace Credfeto.Aur.Mirror.Server.Services;
 
 public sealed class GitServer : IGitServer
 {
     private const string GIT_PATH = "/usr/bin/git";
+
+    private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
     private readonly ILogger<GitServer> _logger;
 
     private readonly IRepoConfig _repoConfig;
@@ -71,7 +74,7 @@ public sealed class GitServer : IGitServer
 
             await process.StandardInput.DisposeAsync();
 
-            MemoryStream memoryStream = new();
+            RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream();
 
             if (options.AdvertiseRefs)
             {
@@ -131,7 +134,7 @@ public sealed class GitServer : IGitServer
 
         string fileName = Path.Combine(path1: repoBasePath, path2: path);
 
-        MemoryStream memoryStream = new();
+        RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream();
 
         await using (Stream file = File.OpenRead(fileName))
         {
