@@ -83,6 +83,7 @@ internal static class ServerStartup
             .AddSingleton<IAurRpc, AurRpc>()
             .AddSingleton<IAurRepos, AurRepos>()
             .AddSingleton<IGitServer, GitServer>()
+            .AddSingleton<IRepoConfig, RepoConfig>()
             .AddSingleton<IUpdateLock, UpdateLock>()
             .AddRpcClient()
             .AddReposClient()

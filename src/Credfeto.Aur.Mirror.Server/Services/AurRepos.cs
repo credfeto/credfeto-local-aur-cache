@@ -78,10 +78,7 @@ public sealed class AurRepos : IAurRepos
         }
     }
 
-    public string GetRepoBasePath(string repoName)
-    {
-        return Path.Combine(path1: this._serverConfig.Storage.Repos, $"{repoName}.git");
-    }
+
 
     private async ValueTask<byte[]> RequestPackagesUpstreamAsync(
         ProductInfoHeaderValue? userAgent,

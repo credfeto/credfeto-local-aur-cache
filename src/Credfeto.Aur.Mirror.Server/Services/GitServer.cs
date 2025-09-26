@@ -7,36 +7,46 @@ using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Aur.Mirror.Server.Git;
 using Credfeto.Aur.Mirror.Server.Interfaces;
+using Credfeto.Aur.Mirror.Server.Models.Git;
+using Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Aur.Mirror.Server.Services;
 
 public sealed class GitServer : IGitServer
 {
-    public async ValueTask<GitCommandResponse> ExecuteResultAsync(
-        string gitPath,
-        GitCommandOptions options,
-        HttpContext httpContext,
-        CancellationToken cancellationToken
-    )
+    private const string GIT_PATH = "/usr/bin/git";
+
+    private readonly ILogger<GitServer> _logger;
+
+    public GitServer(ILogger<GitServer> logger)
     {
+        this._logger = logger;
+    }
+
+    public async ValueTask<GitCommandResponse> ExecuteResultAsync(GitCommandOptions options, HttpContext httpContext, CancellationToken cancellationToken)
+    {
+        string arguments = options.BuildCommand();
+        this._logger.ExecutingCommand(arguments);
+
         string contentType = GetMimeType(options);
 
-        ProcessStartInfo info = new(fileName: gitPath, options.BuildCommand())
-        {
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
+        ProcessStartInfo info = new(fileName: GIT_PATH, arguments)
+                                {
+                                    UseShellExecute = false,
+                                    CreateNoWindow = true,
+                                    RedirectStandardInput = true,
+                                    RedirectStandardOutput = true,
+                                    RedirectStandardError = true
+                                };
 
         using (Process? process = Process.Start(info))
         {
             if (process is null)
             {
+                this._logger.FailedToStartGit(GIT_PATH, arguments);
                 throw new DataException("Git could not be started.");
             }
 
@@ -54,26 +64,20 @@ public sealed class GitServer : IGitServer
 
             if (options.AdvertiseRefs)
             {
-                await using (StreamWriter writer = new(memoryStream, leaveOpen: true))
+                await using (StreamWriter writer = new(stream: memoryStream, leaveOpen: true))
                 {
                     string service = $"# service={options.Service}\n";
-                    await writer.WriteAsync(
-                        new StringBuilder($"{service.Length + 4:x4}{service}0000"),
-                        cancellationToken: cancellationToken
-                    );
+                    await writer.WriteAsync(new StringBuilder($"{service.Length + 4:x4}{service}0000"), cancellationToken: cancellationToken);
                     await writer.FlushAsync(cancellationToken);
                 }
             }
 
-            await process.StandardOutput.BaseStream.CopyToAsync(
-                destination: memoryStream,
-                cancellationToken: cancellationToken
-            );
-            memoryStream.Seek(0, SeekOrigin.Begin);
+            await process.StandardOutput.BaseStream.CopyToAsync(destination: memoryStream, cancellationToken: cancellationToken);
+            memoryStream.Seek(offset: 0, loc: SeekOrigin.Begin);
 
             await process.WaitForExitAsync(cancellationToken);
 
-            return new(memoryStream, contentType);
+            return new(Content: memoryStream, ContentType: contentType);
         }
     }
 
@@ -81,14 +85,12 @@ public sealed class GitServer : IGitServer
     {
         string contentType = $"application/x-{options.Service}";
 
-        return options.AdvertiseRefs ? contentType + "-advertisement" : contentType;
+        return options.AdvertiseRefs
+            ? contentType + "-advertisement"
+            : contentType;
     }
 
-    [SuppressMessage(
-        category: "Microsoft.Reliability",
-        checkId: "CA2000:DisposeObjectsBeforeLosingScope",
-        Justification = "For Review"
-    )]
+    [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "For Review")]
     private static Stream GetInputStream(HttpContext context)
     {
         return StringComparer.Ordinal.Equals(context.Request.Headers["Content-Encoding"], y: "gzip")
