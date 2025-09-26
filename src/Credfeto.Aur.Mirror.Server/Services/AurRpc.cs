@@ -27,6 +27,7 @@ public sealed class AurRpc : IAurRpc
 {
     private static readonly CancellationToken DoNotCancelEarly = CancellationToken.None;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IGitServer _gitServer;
     private readonly ILogger<AurRpc> _logger;
     private readonly ServerConfig _serverConfig;
     private readonly IUpdateLock _updateLock;
@@ -34,11 +35,13 @@ public sealed class AurRpc : IAurRpc
     public AurRpc(
         IHttpClientFactory httpClientFactory,
         IOptions<ServerConfig> config,
+        IGitServer gitServer,
         IUpdateLock updateLock,
         ILogger<AurRpc> logger
     )
     {
         this._httpClientFactory = httpClientFactory;
+        this._gitServer = gitServer;
         this._logger = logger;
         this._serverConfig = config.Value;
         this._updateLock = updateLock;
@@ -222,7 +225,6 @@ public sealed class AurRpc : IAurRpc
         foreach (SearchResult package in upstream.Results)
         {
             string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
-            string repoPath = Path.Combine(path1: this._serverConfig.Storage.Repos, $"{package.Name}.git");
             string upstreamRepo = this._serverConfig.Upstream.Repos + "/" + package.Name + ".git";
 
             if (File.Exists(metadataFileName))
@@ -230,8 +232,8 @@ public sealed class AurRpc : IAurRpc
                 SearchResult? existing = await this.ReadPackageFromMetadataAsync(metadataFileName);
 
                 bool changed = existing is null || existing.LastModified != package.LastModified;
-                await this.EnsureRepositoryHasBeenClonedAsync(
-                    repoPath: repoPath,
+                await this._gitServer.EnsureRepositoryHasBeenClonedAsync(
+                    repoName: package.Name,
                     upstreamRepo: upstreamRepo,
                     changed: changed,
                     cancellationToken: DoNotCancelEarly
@@ -244,8 +246,8 @@ public sealed class AurRpc : IAurRpc
             }
             else
             {
-                await this.EnsureRepositoryHasBeenClonedAsync(
-                    repoPath: repoPath,
+                await this._gitServer.EnsureRepositoryHasBeenClonedAsync(
+                    repoName: package.Name,
                     upstreamRepo: upstreamRepo,
                     changed: true,
                     cancellationToken: DoNotCancelEarly
@@ -317,67 +319,9 @@ public sealed class AurRpc : IAurRpc
         }
     }
 
-    private async ValueTask EnsureRepositoryHasBeenClonedAsync(
-        string repoPath,
-        string upstreamRepo,
-        bool changed,
-        CancellationToken cancellationToken
-    )
-    {
-        SemaphoreSlim wait = await this._updateLock.GetLockAsync(
-            fileName: repoPath,
-            cancellationToken: cancellationToken
-        );
 
-        try
-        {
-            if (Directory.Exists(repoPath))
-            {
-                string? repoFolder = Repository.Discover(repoPath);
 
-                if (repoFolder is null)
-                {
-                    CloneRepository(upstreamRepo: upstreamRepo, repoPath: repoPath);
-                }
-                else if (changed)
-                {
-                    UpdateRepository(repoFolder);
-                }
-            }
-            else
-            {
-                CloneRepository(upstreamRepo: upstreamRepo, repoPath: repoPath);
-            }
-        }
-        finally
-        {
-            wait.Release();
-        }
-    }
 
-    private static void UpdateRepository(string repoFolder)
-    {
-        using (Repository repo = new(repoFolder))
-        {
-            FetchOptions options = new() { Prune = true, TagFetchMode = TagFetchMode.Auto };
-
-            Remote? remote = repo.Network.Remotes["origin"];
-            const string msg = "Fetching remote";
-            IEnumerable<string> refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-            Commands.Fetch(
-                repository: repo,
-                remote: remote.Name,
-                refspecs: refSpecs,
-                options: options,
-                logMessage: msg
-            );
-        }
-    }
-
-    private static void CloneRepository(string upstreamRepo, string repoPath)
-    {
-        Repository.Clone(sourceUrl: upstreamRepo, workdirPath: repoPath, new() { IsBare = true });
-    }
 
     private async ValueTask SavePackageToMetadataAsync(
         SearchResult package,

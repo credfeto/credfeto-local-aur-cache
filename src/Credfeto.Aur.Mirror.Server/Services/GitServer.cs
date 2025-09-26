@@ -1,15 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Server.Interfaces;
 using Credfeto.Aur.Mirror.Server.Models.Git;
 using Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
+using LibGit2Sharp;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -21,10 +24,12 @@ public sealed class GitServer : IGitServer
     private readonly ILogger<GitServer> _logger;
 
     private readonly IRepoConfig _repoConfig;
+    private readonly IUpdateLock _updateLock;
 
-    public GitServer(IRepoConfig repoConfig, ILogger<GitServer> logger)
+    public GitServer(IRepoConfig repoConfig, IUpdateLock updateLock, ILogger<GitServer> logger)
     {
         this._repoConfig = repoConfig;
+        this._updateLock = updateLock;
         this._logger = logger;
     }
 
@@ -102,5 +107,69 @@ public sealed class GitServer : IGitServer
         return StringComparer.Ordinal.Equals(context.Request.Headers["Content-Encoding"], y: "gzip")
             ? new GZipStream(stream: context.Request.Body, mode: CompressionMode.Decompress)
             : context.Request.Body;
+    }
+
+    public async ValueTask EnsureRepositoryHasBeenClonedAsync(
+        string repoName,
+        string upstreamRepo,
+        bool changed,
+        CancellationToken cancellationToken
+    )
+    {
+        string repoBasePath = this._repoConfig.GetRepoBasePath(repoName);
+
+        SemaphoreSlim wait = await this._updateLock.GetLockAsync(
+            fileName: repoBasePath,
+            cancellationToken: cancellationToken
+        );
+
+        try
+        {
+            if (Directory.Exists(repoBasePath))
+            {
+                string? repoFolder = Repository.Discover(repoBasePath);
+
+                if (repoFolder is null)
+                {
+                    CloneRepository(upstreamRepo: upstreamRepo, repoPath: repoBasePath);
+                }
+                else if (changed)
+                {
+                    UpdateRepository(repoFolder);
+                }
+            }
+            else
+            {
+                CloneRepository(upstreamRepo: upstreamRepo, repoPath: repoBasePath);
+            }
+        }
+        finally
+        {
+            wait.Release();
+        }
+    }
+
+    private static void UpdateRepository(string repoFolder)
+    {
+        using (Repository repo = new(repoFolder))
+        {
+            FetchOptions options = new() { Prune = true, TagFetchMode = TagFetchMode.Auto };
+
+            Remote? remote = repo.Network.Remotes["origin"];
+            const string msg = "Fetching remote";
+            IEnumerable<string> refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+            Commands.Fetch(
+                repository: repo,
+                remote: remote.Name,
+                refspecs: refSpecs,
+                options: options,
+                logMessage: msg
+            );
+        }
+    }
+
+    private static void CloneRepository(string upstreamRepo, string repoPath)
+    {
+        Repository.Clone(sourceUrl: upstreamRepo, workdirPath: repoPath, new() { IsBare = true });
     }
 }
