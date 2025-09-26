@@ -3,14 +3,11 @@ FROM alpine:latest
 
 WORKDIR /usr/src/app
 
-# Bundle App and basic config
-COPY Credfeto.Aur.Mirror.Server .
-COPY appsettings.json .
-
 CMD mkdir /data && \
     mkdir /data/metadata && \
     mkdir /data/metadata && \
-    chmod -R 1654:1654 /data
+    chown -R 1654:1654 /data
+    chown -R 1654:1654 /usr/src/app
 
 RUN apk add --no-cache \
         bash \
@@ -35,6 +32,11 @@ RUN rm -fr /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/lib/apk
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 USER 1654:1654
+
+# Bundle App and basic config
+COPY Credfeto.Aur.Mirror.Server .
+COPY appsettings.json .
+
 
 EXPOSE 8080
 ENTRYPOINT [ "/usr/src/app/Credfeto.Aur.Mirror.Server" ]
