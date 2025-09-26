@@ -7,9 +7,12 @@ public sealed class ServerConfig
 {
     public ServerConfig()
     {
+        this.Git = new();
         this.Upstream = new();
         this.Storage = new();
     }
+
+    public GitConfig Git { get; set; }
 
     public UpstreamConfig Upstream { get; set; }
 

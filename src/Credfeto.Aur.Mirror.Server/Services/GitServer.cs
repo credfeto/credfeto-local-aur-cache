@@ -43,19 +43,15 @@ public sealed class GitServer : IGitServer
         string arguments = options.BuildCommand(repoBasePath);
         this._logger.ExecutingCommand(arguments);
 
-        string contentType = GetMimeType(options);
-
-        ProcessStartInfo info = new(fileName: GIT_PATH, arguments: arguments)
-                                {
-                                    UseShellExecute = false,
-                                    CreateNoWindow = true,
-                                    RedirectStandardInput = true,
-                                    RedirectStandardOutput = true,
-                                    RedirectStandardError = true,
-                                    WorkingDirectory = repoBasePath
-                                };
-
-        using (Process? process = Process.Start(info))
+        using (Process? process = Process.Start(new ProcessStartInfo(fileName: GIT_PATH, arguments: arguments)
+                                                {
+                                                    UseShellExecute = false,
+                                                    CreateNoWindow = true,
+                                                    RedirectStandardInput = true,
+                                                    RedirectStandardOutput = true,
+                                                    RedirectStandardError = true,
+                                                    WorkingDirectory = repoBasePath
+                                                }))
         {
             if (process is null)
             {
@@ -90,7 +86,7 @@ public sealed class GitServer : IGitServer
 
                 await process.WaitForExitAsync(cancellationToken);
 
-                return new(memoryStream.ToArray(), ContentType: contentType);
+                return new(memoryStream.ToArray(), ContentType: options.ContentType);
             }
         }
     }
@@ -143,15 +139,6 @@ public sealed class GitServer : IGitServer
 
             return new(memoryStream.ToArray(), ContentType: "application/octet-stream");
         }
-    }
-
-    private static string GetMimeType(in GitCommandOptions options)
-    {
-        string contentType = $"application/x-{options.Service}";
-
-        return options.AdvertiseRefs
-            ? contentType + "-advertisement"
-            : contentType;
     }
 
     [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "For Review")]
