@@ -78,8 +78,6 @@ public sealed class AurRepos : IAurRepos
         }
     }
 
-
-
     private async ValueTask<byte[]> RequestPackagesUpstreamAsync(
         ProductInfoHeaderValue? userAgent,
         CancellationToken cancellationToken
