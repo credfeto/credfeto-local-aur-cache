@@ -24,17 +24,50 @@ internal static partial class AurRpcLoggingExtensions
         logger.PackageInfo(string.Join(separator: ", ", values: packages));
     }
 
-    [LoggerMessage(LogLevel.Warning, EventId = 5, Message = "Failed to retrieve package infos: {packages} => {message}")]
-    private static partial void FailedToGetUpstreamPackageInfo(this ILogger<IAurRpc> logger, string packages, string message, Exception exception);
+    [LoggerMessage(
+        LogLevel.Warning,
+        EventId = 5,
+        Message = "Failed to retrieve package infos: {packages} => {message}"
+    )]
+    private static partial void FailedToGetUpstreamPackageInfo(
+        this ILogger<IAurRpc> logger,
+        string packages,
+        string message,
+        Exception exception
+    );
 
-    public static void FailedToGetUpstreamPackageInfo(this ILogger<IAurRpc> logger, IReadOnlyList<string> packages, string message, Exception exception)
+    public static void FailedToGetUpstreamPackageInfo(
+        this ILogger<IAurRpc> logger,
+        IReadOnlyList<string> packages,
+        string message,
+        Exception exception
+    )
     {
-        logger.FailedToGetUpstreamPackageInfo(string.Join(separator: ", ", values: packages), message: message, exception: exception);
+        logger.FailedToGetUpstreamPackageInfo(
+            string.Join(separator: ", ", values: packages),
+            message: message,
+            exception: exception
+        );
     }
 
     [LoggerMessage(LogLevel.Information, EventId = 6, Message = "Search Found: {package} using {keyword} by {by}")]
-    public static partial void OfflineSearchFound(this ILogger<IAurRpc> logger, string package, string keyword, string by);
+    public static partial void OfflineSearchFound(
+        this ILogger<IAurRpc> logger,
+        string package,
+        string keyword,
+        string by
+    );
 
-    [LoggerMessage(LogLevel.Warning, EventId = 7, Message = "Failed Upstream search for: {keyword} by {by} => {message}")]
-    public static partial void FailedToSearchUpstreamPackageInfo(this ILogger<IAurRpc> logger, string keyword, string by, string message, Exception exception);
+    [LoggerMessage(
+        LogLevel.Warning,
+        EventId = 7,
+        Message = "Failed Upstream search for: {keyword} by {by} => {message}"
+    )]
+    public static partial void FailedToSearchUpstreamPackageInfo(
+        this ILogger<IAurRpc> logger,
+        string keyword,
+        string by,
+        string message,
+        Exception exception
+    );
 }
