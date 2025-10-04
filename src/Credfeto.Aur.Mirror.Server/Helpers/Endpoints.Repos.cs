@@ -68,11 +68,45 @@ internal static partial class Endpoints
                                                                                                 gitServer: gitServer,
                                                                                                 httpContext: httpContext,
                                                                                                 cancellationToken: cancellationToken));
+        group.MapGet(pattern: "/{repoName}/{file1}/{file2}/{file3}/{file4}/{file5}",
+                     handler: static ([FromRoute] string repoName,
+                                      [FromRoute] string file1,
+                                      [FromRoute] string file2,
+                                      [FromRoute] string file3,
+                                      [FromRoute] string file4,
+                                      [FromRoute] string file5,
+                                      IGitServer gitServer,
+                                      HttpContext httpContext,
+                                      CancellationToken cancellationToken) => RetrieveFileAsync(repoName: repoName,
+                                                                                                file1: file1,
+                                                                                                file2: file2,
+                                                                                                file3: file3,
+                                                                                                file4: file4,
+                                                                                                file5: file5,
+                                                                                                gitServer: gitServer,
+                                                                                                httpContext: httpContext,
+                                                                                                cancellationToken: cancellationToken));
     }
 
     private static void RegisterFile4(IEndpointRouteBuilder group)
     {
         group.MapGet(pattern: "/{repoName}.git/{file1}/{file2}/{file3}/{file4}",
+                     handler: static ([FromRoute] string repoName,
+                                      [FromRoute] string file1,
+                                      [FromRoute] string file2,
+                                      [FromRoute] string file3,
+                                      [FromRoute] string file4,
+                                      IGitServer gitServer,
+                                      HttpContext httpContext,
+                                      CancellationToken cancellationToken) => RetrieveFileAsync(repoName: repoName,
+                                                                                                file1: file1,
+                                                                                                file2: file2,
+                                                                                                file3: file3,
+                                                                                                file4: file4,
+                                                                                                gitServer: gitServer,
+                                                                                                httpContext: httpContext,
+                                                                                                cancellationToken: cancellationToken));
+        group.MapGet(pattern: "/{repoName}/{file1}/{file2}/{file3}/{file4}",
                      handler: static ([FromRoute] string repoName,
                                       [FromRoute] string file1,
                                       [FromRoute] string file2,
@@ -106,11 +140,33 @@ internal static partial class Endpoints
                                                                                                 gitServer: gitServer,
                                                                                                 httpContext: httpContext,
                                                                                                 cancellationToken: cancellationToken));
+        group.MapGet(pattern: "/{repoName}/{file1}/{file2}/{file3}",
+                     handler: static ([FromRoute] string repoName,
+                                      [FromRoute] string file1,
+                                      [FromRoute] string file2,
+                                      [FromRoute] string file3,
+                                      IGitServer gitServer,
+                                      HttpContext httpContext,
+                                      CancellationToken cancellationToken) => RetrieveFileAsync(repoName: repoName,
+                                                                                                file1: file1,
+                                                                                                file2: file2,
+                                                                                                file3: file3,
+                                                                                                gitServer: gitServer,
+                                                                                                httpContext: httpContext,
+                                                                                                cancellationToken: cancellationToken));
     }
 
     private static void RegisterFile2(IEndpointRouteBuilder group)
     {
         group.MapGet(pattern: "/{repoName}.git/{file1}/{file2}",
+                     handler: static ([FromRoute] string repoName,
+                                      [FromRoute] string file1,
+                                      [FromRoute] string file2,
+                                      IGitServer gitServer,
+                                      HttpContext httpContext,
+                                      CancellationToken cancellationToken) =>
+                                  RetrieveFileAsync(repoName: repoName, file1: file1, file2: file2, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+        group.MapGet(pattern: "/{repoName}/{file1}/{file2}",
                      handler: static ([FromRoute] string repoName,
                                       [FromRoute] string file1,
                                       [FromRoute] string file2,
@@ -125,11 +181,17 @@ internal static partial class Endpoints
         group.MapGet(pattern: "/{repoName}.git/{file1}/",
                      handler: static ([FromRoute] string repoName, [FromRoute] string file1, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
                                   RetrieveFileAsync(repoName: repoName, file1: file1, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+        group.MapGet(pattern: "/{repoName}/{file1}/",
+                     handler: static ([FromRoute] string repoName, [FromRoute] string file1, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  RetrieveFileAsync(repoName: repoName, file1: file1, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
     }
 
     private static void RegisterInfoRefs(IEndpointRouteBuilder group)
     {
         group.MapGet(pattern: "/{repoName}.git/info/refs",
+                     handler: static ([FromRoute] string repoName, [FromQuery] string? service, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  GitInfoRefsAsync(repoName: repoName, service: service, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+        group.MapGet(pattern: "/{repoName}/info/refs",
                      handler: static ([FromRoute] string repoName, [FromQuery] string? service, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
                                   GitInfoRefsAsync(repoName: repoName, service: service, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
     }
@@ -139,11 +201,17 @@ internal static partial class Endpoints
         group.MapGet(pattern: "/{repoName}.git/git-receive-pack",
                      handler: static ([FromRoute] string repoName, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
                                   GitReceivePackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+        group.MapGet(pattern: "/{repoName}/git-receive-pack",
+                     handler: static ([FromRoute] string repoName, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                  GitReceivePackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
     }
 
     private static void RegisterGitUploadPack(IEndpointRouteBuilder group)
     {
         group.MapPost(pattern: "/{repoName}.git/git-upload-pack",
+                      handler: static ([FromRoute] string repoName, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
+                                   GitUploadPackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
+        group.MapPost(pattern: "/{repoName}/git-upload-pack",
                       handler: static ([FromRoute] string repoName, IGitServer gitServer, HttpContext httpContext, CancellationToken cancellationToken) =>
                                    GitUploadPackAsync(repoName: repoName, gitServer: gitServer, httpContext: httpContext, cancellationToken: cancellationToken));
     }

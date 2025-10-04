@@ -31,13 +31,7 @@ public sealed class AurRpc : IAurRpc
     private readonly ServerConfig _serverConfig;
     private readonly IUpdateLock _updateLock;
 
-    public AurRpc(
-        IHttpClientFactory httpClientFactory,
-        IOptions<ServerConfig> config,
-        IGitServer gitServer,
-        IUpdateLock updateLock,
-        ILogger<AurRpc> logger
-    )
+    public AurRpc(IHttpClientFactory httpClientFactory, IOptions<ServerConfig> config, IGitServer gitServer, IUpdateLock updateLock, ILogger<AurRpc> logger)
     {
         this._httpClientFactory = httpClientFactory;
         this._gitServer = gitServer;
@@ -49,23 +43,13 @@ public sealed class AurRpc : IAurRpc
         EnsureDirectoryExists(this._serverConfig.Storage.Repos);
     }
 
-    public async ValueTask<RpcResponse> SearchAsync(
-        string keyword,
-        string by,
-        ProductInfoHeaderValue? userAgent,
-        CancellationToken cancellationToken
-    )
+    public async ValueTask<RpcResponse> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
         this._logger.SearchingFor(keyword: keyword, by: by);
 
         try
         {
-            RpcResponse upstream = await this.RequestSearchUpstreamAsync(
-                keyword: keyword,
-                by: by,
-                userAgent: userAgent,
-                cancellationToken: cancellationToken
-            );
+            RpcResponse upstream = await this.RequestSearchUpstreamAsync(keyword: keyword, by: by, userAgent: userAgent, cancellationToken: cancellationToken);
 
             await this.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent, new(false));
 
@@ -73,26 +57,13 @@ public sealed class AurRpc : IAurRpc
         }
         catch (HttpRequestException exception)
         {
-            this._logger.FailedToSearchUpstreamPackageInfo(
-                keyword: keyword,
-                by: by,
-                message: exception.Message,
-                exception: exception
-            );
+            this._logger.FailedToSearchUpstreamPackageInfo(keyword: keyword, by: by, message: exception.Message, exception: exception);
 
-            return await this.ExecuteLocalSearchQueryAsync(
-                keyword: keyword,
-                by: by,
-                cancellationToken: cancellationToken
-            );
+            return await this.ExecuteLocalSearchQueryAsync(keyword: keyword, by: by, cancellationToken: cancellationToken);
         }
     }
 
-    public async ValueTask<RpcResponse> InfoAsync(
-        IReadOnlyList<string> packages,
-        ProductInfoHeaderValue? userAgent,
-        CancellationToken cancellationToken
-    )
+    public async ValueTask<RpcResponse> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
         this._logger.PackageInfo(packages);
 
@@ -103,11 +74,7 @@ public sealed class AurRpc : IAurRpc
                 return RpcResults.InfoNotFound;
             }
 
-            RpcResponse upstream = await this.RequestInfoUpstreamAsync(
-                packages: packages,
-                userAgent: userAgent,
-                cancellationToken: cancellationToken
-            );
+            RpcResponse upstream = await this.RequestInfoUpstreamAsync(packages: packages, userAgent: userAgent, cancellationToken: cancellationToken);
 
             await this.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent, new(true));
 
@@ -115,20 +82,13 @@ public sealed class AurRpc : IAurRpc
         }
         catch (HttpRequestException exception)
         {
-            this._logger.FailedToGetUpstreamPackageInfo(
-                packages: packages,
-                message: exception.Message,
-                exception: exception
-            );
+            this._logger.FailedToGetUpstreamPackageInfo(packages: packages, message: exception.Message, exception: exception);
 
             return await this.ExecuteLocalInfoQueryAsync(package: packages, cancellationToken: cancellationToken);
         }
     }
 
-    private async Task<RpcResponse> ExecuteLocalInfoQueryAsync(
-        IReadOnlyList<string> package,
-        CancellationToken cancellationToken
-    )
+    private async Task<RpcResponse> ExecuteLocalInfoQueryAsync(IReadOnlyList<string> package, CancellationToken cancellationToken)
     {
         List<SearchResult> results = [];
         IReadOnlyList<string> files = this.GetMetadataFiles();
@@ -163,21 +123,13 @@ public sealed class AurRpc : IAurRpc
         }
         catch (Exception exception)
         {
-            this._logger.CouldNotFindMetadataFiles(
-                directory: this._serverConfig.Storage.Metadata,
-                message: exception.Message,
-                exception: exception
-            );
+            this._logger.CouldNotFindMetadataFiles(directory: this._serverConfig.Storage.Metadata, message: exception.Message, exception: exception);
 
             return [];
         }
     }
 
-    private async ValueTask<RpcResponse> ExecuteLocalSearchQueryAsync(
-        string keyword,
-        string by,
-        CancellationToken cancellationToken
-    )
+    private async ValueTask<RpcResponse> ExecuteLocalSearchQueryAsync(string keyword, string by, CancellationToken cancellationToken)
     {
         List<SearchResult> results = [];
         IReadOnlyList<string> files = this.GetMetadataFiles();
@@ -203,54 +155,40 @@ public sealed class AurRpc : IAurRpc
         return by switch
         {
             "name" => // (search by package name only)
-            existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
+                existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
             "name-desc" => // (search by package name and description)
-            existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-                || existing.Description.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
+                existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase) ||
+                existing.Description.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
             "maintainer" => // (search by package maintainer)
-            existing.Maintainer.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
+                existing.Maintainer.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
             "depends" => // (search for packages that depend on keywords)
-            existing.Depends?.Any(depend =>
-                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-            ) == true,
+                existing.Depends?.Any(depend => depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)) == true,
             "makedepends" => // (search for packages that makedepend on keywords)
-            existing.MakeDepends?.Any(depend =>
-                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-            ) == true,
+                existing.MakeDepends?.Any(depend => depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)) == true,
             "optdepends" => // (search for packages that optdepend on keywords)
-            existing.OptDepends?.Any(depend =>
-                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-            ) == true,
+                existing.OptDepends?.Any(depend => depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)) == true,
             "checkdepends" => // (search for packages that checkdepend on keywords)
-            existing.CheckDepends?.Any(depend =>
-                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-            ) == true,
+                existing.CheckDepends?.Any(depend => depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)) == true,
             _ => false,
         };
     }
 
-    private async ValueTask SyncUpstreamReposAsync(
-        RpcResponse upstream,
-        ProductInfoHeaderValue? userAgent,
-        SearchTracking tracking
-    )
+    private async ValueTask SyncUpstreamReposAsync(RpcResponse upstream, ProductInfoHeaderValue? userAgent, SearchTracking tracking)
     {
         foreach (SearchResult package in upstream.Results)
         {
             string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
             string upstreamRepo = this._serverConfig.Upstream.Repos + "/" + package.Name + ".git";
 
+            this._logger.CheckingPackage(packageId: package.Id, packageName: package.Name, metadataFileName: metadataFileName, upstreamRepo: upstreamRepo);
+
             if (File.Exists(metadataFileName))
             {
+                this._logger.FoundMetadata(packageId: package.Id, packageName: package.Name, metadataFileName: metadataFileName);
                 SearchResult? existing = await this.ReadPackageFromMetadataAsync(metadataFileName);
 
                 bool changed = existing is null || existing.LastModified != package.LastModified;
-                await this._gitServer.EnsureRepositoryHasBeenClonedAsync(
-                    repoName: package.Name,
-                    upstreamRepo: upstreamRepo,
-                    changed: changed,
-                    cancellationToken: DoNotCancelEarly
-                );
+                await this._gitServer.EnsureRepositoryHasBeenClonedAsync(repoName: package.Name, upstreamRepo: upstreamRepo, changed: changed, cancellationToken: DoNotCancelEarly);
 
                 if (changed)
                 {
@@ -259,12 +197,9 @@ public sealed class AurRpc : IAurRpc
             }
             else
             {
-                await this._gitServer.EnsureRepositoryHasBeenClonedAsync(
-                    repoName: package.Name,
-                    upstreamRepo: upstreamRepo,
-                    changed: true,
-                    cancellationToken: DoNotCancelEarly
-                );
+                this._logger.NoMetadata(packageId: package.Id, packageName: package.Name, metadataFileName: metadataFileName);
+
+                await this._gitServer.EnsureRepositoryHasBeenClonedAsync(repoName: package.Name, upstreamRepo: upstreamRepo, changed: true, cancellationToken: DoNotCancelEarly);
 
                 tracking.AppendRepoSyncSearchResult(package);
             }
@@ -285,11 +220,7 @@ public sealed class AurRpc : IAurRpc
 
     private async ValueTask SaveUpstreamAsync(List<string> packages, ProductInfoHeaderValue? userAgent)
     {
-        RpcResponse packageInfo = await this.RequestInfoUpstreamAsync(
-            packages: packages,
-            userAgent: userAgent,
-            cancellationToken: DoNotCancelEarly
-        );
+        RpcResponse packageInfo = await this.RequestInfoUpstreamAsync(packages: packages, userAgent: userAgent, cancellationToken: DoNotCancelEarly);
 
         await this.SaveSearchResultsAsync(packageInfo.Results);
     }
@@ -299,11 +230,7 @@ public sealed class AurRpc : IAurRpc
         foreach (SearchResult package in packagesToSave)
         {
             string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
-            await this.SavePackageToMetadataAsync(
-                package: package,
-                metadataFileName: metadataFileName,
-                cancellationToken: DoNotCancelEarly
-            );
+            await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName, cancellationToken: DoNotCancelEarly);
         }
     }
 
@@ -311,57 +238,33 @@ public sealed class AurRpc : IAurRpc
     {
         try
         {
-            string json = await File.ReadAllTextAsync(
-                path: metadataFileName,
-                encoding: Encoding.UTF8,
-                cancellationToken: DoNotCancelEarly
-            );
+            string json = await File.ReadAllTextAsync(path: metadataFileName, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
 
             return JsonSerializer.Deserialize(json: json, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
         }
         catch (Exception exception)
         {
-            this._logger.FailedToReadSavedMetadata(
-                filename: metadataFileName,
-                message: exception.Message,
-                exception: exception
-            );
+            this._logger.FailedToReadSavedMetadata(filename: metadataFileName, message: exception.Message, exception: exception);
             File.Delete(metadataFileName);
 
             return null;
         }
     }
 
-    private async ValueTask SavePackageToMetadataAsync(
-        SearchResult package,
-        string metadataFileName,
-        CancellationToken cancellationToken
-    )
+    private async ValueTask SavePackageToMetadataAsync(SearchResult package, string metadataFileName, CancellationToken cancellationToken)
     {
-        SemaphoreSlim wait = await this._updateLock.GetLockAsync(
-            fileName: metadataFileName,
-            cancellationToken: cancellationToken
-        );
+        SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: metadataFileName, cancellationToken: cancellationToken);
 
         try
         {
             EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
 
             string json = JsonSerializer.Serialize(value: package, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
-            await File.WriteAllTextAsync(
-                path: metadataFileName,
-                contents: json,
-                encoding: Encoding.UTF8,
-                cancellationToken: DoNotCancelEarly
-            );
+            await File.WriteAllTextAsync(path: metadataFileName, contents: json, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
         }
         catch (Exception exception)
         {
-            this._logger.SaveMetadataFailed(
-                filename: metadataFileName,
-                message: exception.Message,
-                exception: exception
-            );
+            this._logger.SaveMetadataFailed(filename: metadataFileName, message: exception.Message, exception: exception);
         }
         finally
         {
@@ -369,51 +272,29 @@ public sealed class AurRpc : IAurRpc
         }
     }
 
-    private ValueTask<RpcResponse> RequestInfoUpstreamAsync(
-        IReadOnlyList<string> packages,
-        ProductInfoHeaderValue? userAgent,
-        in CancellationToken cancellationToken
-    )
+    private ValueTask<RpcResponse> RequestInfoUpstreamAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, in CancellationToken cancellationToken)
     {
         HttpClient client = this.GetClient(userAgent: userAgent, out Uri baseUri);
 
         Uri requestUri = MakeInfoUri(baseUri: baseUri, packages: packages);
 
-        return this.RequestUpstreamCommonAsync(
-            client: client,
-            requestUri: requestUri,
-            cancellationToken: cancellationToken
-        );
+        return this.RequestUpstreamCommonAsync(client: client, requestUri: requestUri, cancellationToken: cancellationToken);
     }
 
-    private async ValueTask<RpcResponse> RequestUpstreamCommonAsync(
-        HttpClient client,
-        Uri requestUri,
-        CancellationToken cancellationToken
-    )
+    private async ValueTask<RpcResponse> RequestUpstreamCommonAsync(HttpClient client, Uri requestUri, CancellationToken cancellationToken)
     {
         this._logger.RequestingUpstream(requestUri);
 
-        using (
-            HttpResponseMessage result = await client.GetAsync(
-                requestUri: requestUri,
-                cancellationToken: cancellationToken
-            )
-        )
+        using (HttpResponseMessage result = await client.GetAsync(requestUri: requestUri, cancellationToken: cancellationToken))
         {
             if (result.IsSuccessStatusCode)
             {
                 this._logger.SuccessFromUpstream(uri: requestUri, statusCode: result.StatusCode);
 
-                await using (
-                    Stream stream = await result.Content.ReadAsStreamAsync(cancellationToken: cancellationToken)
-                )
+                await using (Stream stream = await result.Content.ReadAsStreamAsync(cancellationToken: cancellationToken))
                 {
-                    return await JsonSerializer.DeserializeAsync<RpcResponse>(
-                            utf8Json: stream,
-                            jsonTypeInfo: AppJsonContexts.Default.RpcResponse,
-                            cancellationToken: cancellationToken
-                        ) ?? throw new JsonException("Could not deserialize response");
+                    return await JsonSerializer.DeserializeAsync<RpcResponse>(utf8Json: stream, jsonTypeInfo: AppJsonContexts.Default.RpcResponse, cancellationToken: cancellationToken) ??
+                           throw new JsonException("Could not deserialize response");
                 }
             }
 
@@ -421,32 +302,19 @@ public sealed class AurRpc : IAurRpc
         }
     }
 
-    private ValueTask<RpcResponse> RequestSearchUpstreamAsync(
-        string keyword,
-        string by,
-        ProductInfoHeaderValue? userAgent,
-        in CancellationToken cancellationToken
-    )
+    private ValueTask<RpcResponse> RequestSearchUpstreamAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, in CancellationToken cancellationToken)
     {
         HttpClient client = this.GetClient(userAgent: userAgent, out Uri baseUri);
 
         Uri requestUri = MakeUri(baseUri: baseUri, $"/v5/search/{keyword}?by={by}");
 
-        return this.RequestUpstreamCommonAsync(
-            client: client,
-            requestUri: requestUri,
-            cancellationToken: cancellationToken
-        );
+        return this.RequestUpstreamCommonAsync(client: client, requestUri: requestUri, cancellationToken: cancellationToken);
     }
 
     [DoesNotReturn]
     private static RpcResponse Failed(Uri requestUri, HttpStatusCode resultStatusCode)
     {
-        throw new HttpRequestException(
-            $"Failed to download {requestUri}: {resultStatusCode.GetName()}",
-            inner: null,
-            statusCode: resultStatusCode
-        );
+        throw new HttpRequestException($"Failed to download {requestUri}: {resultStatusCode.GetName()}", inner: null, statusCode: resultStatusCode);
     }
 
     private static Uri MakeUri(Uri baseUri, string pathAndQuery)
@@ -482,7 +350,9 @@ public sealed class AurRpc : IAurRpc
     {
         baseUri = new(uriString: this._serverConfig.Upstream.Rpc, uriKind: UriKind.Absolute);
 
-        return this._httpClientFactory.CreateClient(nameof(AurRpc)).WithBaseAddress(baseUri).WithUserAgent(userAgent);
+        return this._httpClientFactory.CreateClient(nameof(AurRpc))
+                   .WithBaseAddress(baseUri)
+                   .WithUserAgent(userAgent);
     }
 
     private static void EnsureDirectoryExists(string directory)

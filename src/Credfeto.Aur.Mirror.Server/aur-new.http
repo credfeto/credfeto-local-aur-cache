@@ -14,3 +14,4 @@ Content-Type: application/x-www-form-urlencoded
 
 arg[] = yay-git
 arg[]=brave-bin
+arg[]=go-sqlcmd
