@@ -23,7 +23,11 @@ public sealed class LocallyInstalled : ILocallyInstalled
     private readonly ILogger<LocallyInstalled> _logger;
     private readonly ServerConfig _serverConfig;
 
-    public LocallyInstalled(IOptions<ServerConfig> config, ICurrentTimeSource dateTimeSource, ILogger<LocallyInstalled> logger)
+    public LocallyInstalled(
+        IOptions<ServerConfig> config,
+        ICurrentTimeSource dateTimeSource,
+        ILogger<LocallyInstalled> logger
+    )
     {
         this._dateTimeSource = dateTimeSource;
         this._logger = logger;
@@ -52,24 +56,33 @@ public sealed class LocallyInstalled : ILocallyInstalled
 
         string fileName = Path.Combine(path1: this._serverConfig.Storage.Repos, $"{repo}.cloned");
 
-        await File.WriteAllTextAsync(path: fileName, contents: "{}", encoding: Encoding.UTF8, cancellationToken: cancellationToken);
+        await File.WriteAllTextAsync(
+            path: fileName,
+            contents: "{}",
+            encoding: Encoding.UTF8,
+            cancellationToken: cancellationToken
+        );
     }
 
     public ValueTask<IReadOnlyList<RepoCloneInfo>> GetRecentlyClonedAsync(CancellationToken cancellationToken)
     {
-        IEnumerable<string> files = Directory.EnumerateFiles(path: this._serverConfig.Storage.Repos, searchPattern: "*.cloned");
+        IEnumerable<string> files = Directory.EnumerateFiles(
+            path: this._serverConfig.Storage.Repos,
+            searchPattern: "*.cloned"
+        );
 
         IReadOnlyList<RepoCloneInfo> cloneInfo =
         [
-            .. files.Select(file =>
-                            {
-                                cancellationToken.ThrowIfCancellationRequested();
+            .. files
+                .Select(file =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                                string repo = Path.GetFileNameWithoutExtension(file);
+                    string repo = Path.GetFileNameWithoutExtension(file);
 
-                                return this.BuildRepoEntry(repo: repo, fileName: file);
-                            })
-                    .OrderBy(x => x.LastCloned)
+                    return this.BuildRepoEntry(repo: repo, fileName: file);
+                })
+                .OrderBy(x => x.LastCloned),
         ];
 
         return ValueTask.FromResult(cloneInfo);
@@ -79,8 +92,7 @@ public sealed class LocallyInstalled : ILocallyInstalled
     {
         if (!this._cloned.TryGetValue(key: repo, out DateTimeOffset lastCloned))
         {
-            lastCloned = File.GetLastWriteTimeUtc(fileName)
-                             .AsDateTimeOffset();
+            lastCloned = File.GetLastWriteTimeUtc(fileName).AsDateTimeOffset();
 
             if (this._cloned.TryAdd(key: repo, value: lastCloned))
             {
