@@ -1,5 +1,5 @@
-#@Server=http://localhost:8080
-@Server=https://aur.archlinux.org
+@Server=http://localhost:8080
+#@Server=https://aur.archlinux.org
 
 
 ### info

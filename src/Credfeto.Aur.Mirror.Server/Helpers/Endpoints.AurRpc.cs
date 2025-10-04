@@ -56,6 +56,11 @@ internal static partial class Endpoints
                        handler: static ([FromQuery(Name = "arg[]")] string packages, HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
                                     PackageInfoMultiAsync(packages: packages, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken));
 
+        v5Group.MapPost(pattern: "info",
+                        handler: static ([FromForm(Name = "arg[]")] string packages, HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
+                                     PackageInfoMultiAsync(packages: packages, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken))
+               .DisableAntiforgery();
+
         return app;
     }
 
@@ -148,7 +153,6 @@ internal static partial class Endpoints
             {
                 return await PackageInfoMultiAsync(packages.ToString(), aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
             }
-
         }
 
         return Results.Ok(RpcResults.InfoNotFound);
@@ -160,7 +164,6 @@ internal static partial class Endpoints
 
         static bool IsInfoQuery(in StringValues queryType)
         {
-
             return IsMatch(queryType, "info") || IsMatch(queryType, "multiinfo");
         }
 
@@ -169,6 +172,4 @@ internal static partial class Endpoints
             return queryType == match;
         }
     }
-
-
 }
