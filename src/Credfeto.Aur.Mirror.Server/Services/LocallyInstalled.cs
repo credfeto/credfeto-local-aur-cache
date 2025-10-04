@@ -88,6 +88,6 @@ public sealed class LocallyInstalled : ILocallyInstalled
             }
         }
 
-        return new(Repo: repo, LastCloned: lastCloned);
+        return new(repo: repo, lastCloned: lastCloned);
     }
 }
