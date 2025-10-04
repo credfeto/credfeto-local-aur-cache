@@ -22,15 +22,17 @@ namespace Credfeto.Aur.Mirror.Server.Services;
 public sealed class GitServer : IGitServer
 {
     private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
+    private readonly ILocallyInstalled _locallyInstalled;
     private readonly ILogger<GitServer> _logger;
 
     private readonly IRepoConfig _repoConfig;
     private readonly IUpdateLock _updateLock;
 
-    public GitServer(IRepoConfig repoConfig, IUpdateLock updateLock, ILogger<GitServer> logger)
+    public GitServer(IRepoConfig repoConfig, IUpdateLock updateLock, ILocallyInstalled locallyInstalled, ILogger<GitServer> logger)
     {
         this._repoConfig = repoConfig;
         this._updateLock = updateLock;
+        this._locallyInstalled = locallyInstalled;
         this._logger = logger;
     }
 
@@ -83,6 +85,8 @@ public sealed class GitServer : IGitServer
                 await process.StandardOutput.BaseStream.CopyToAsync(destination: memoryStream, cancellationToken: cancellationToken);
 
                 await process.WaitForExitAsync(cancellationToken);
+
+                await this._locallyInstalled.MarkAsClonedAsync(repo: options.RepositoryName, cancellationToken: cancellationToken);
 
                 return new(memoryStream.ToArray(), ContentType: options.ContentType);
             }
