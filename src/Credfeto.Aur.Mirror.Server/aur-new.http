@@ -1,0 +1,16 @@
+#@Server=http://localhost:8080
+@Server=https://aur.archlinux.org
+
+
+### info
+GET {{Server}}/rpc?arg%5B%5D=firejail-handler-extra&arg%5B%5D=firejail-handler-http&type=info&v=5
+
+
+### info post
+
+POST {{Server}}/rpc/v5/info
+Accept: application/json'
+Content-Type: application/x-www-form-urlencoded
+
+arg[] = yay-git
+arg[]=brave-bin
