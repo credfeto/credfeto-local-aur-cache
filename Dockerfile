@@ -8,8 +8,7 @@ COPY appsettings.json .
 
 CMD mkdir /data && \
     mkdir /data/metadata && \
-    mkdir /data/repos && \
-    chmod -R 1654:1654 /data
+    mkdir /data/repos
 
 RUN apt-get update && apt-get install -y git
 
