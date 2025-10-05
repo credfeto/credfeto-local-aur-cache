@@ -1,14 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Server.Exceptions;
+using Credfeto.Aur.Mirror.Server.Helpers;
 using Credfeto.Aur.Mirror.Server.Interfaces;
 using Credfeto.Aur.Mirror.Server.Models.Git;
 using Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
@@ -97,6 +97,7 @@ public sealed class GitServer : IGitServer
     {
         string repoBasePath = this._repoConfig.GetRepoBasePath(repoName);
 
+        this._logger.RequestingCloneOrUpdateOfRepo(repo: repoName, upstream: upstreamRepo, path: repoBasePath);
         SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: repoBasePath, cancellationToken: cancellationToken);
 
         try
@@ -107,16 +108,16 @@ public sealed class GitServer : IGitServer
 
                 if (repoFolder is null)
                 {
-                    CloneRepository(upstreamRepo: upstreamRepo, repoPath: repoBasePath);
+                    await this.CloneRepositoryAsync(upstreamRepo: upstreamRepo, repoPath: repoBasePath, cancellationToken: cancellationToken);
                 }
                 else if (changed)
                 {
-                    UpdateRepository(repoFolder);
+                    await this.UpdateRepositoryAsync(upstreamRepo: upstreamRepo, repoPath: repoFolder, cancellationToken: cancellationToken);
                 }
             }
             else
             {
-                CloneRepository(upstreamRepo: upstreamRepo, repoPath: repoBasePath);
+                await this.CloneRepositoryAsync(upstreamRepo: upstreamRepo, repoPath: repoBasePath, cancellationToken: cancellationToken);
             }
         }
         finally
@@ -151,21 +152,37 @@ public sealed class GitServer : IGitServer
             : context.Request.Body;
     }
 
-    private static void UpdateRepository(string repoFolder)
+    private async ValueTask CloneRepositoryAsync(string upstreamRepo, string repoPath, CancellationToken cancellationToken)
     {
-        using (Repository repo = new(repoFolder))
-        {
-            FetchOptions options = new() { Prune = true, TagFetchMode = TagFetchMode.Auto };
+        (string[] output, int exitCode) = await GitCommandLine.ExecAsync(gitExecutable: this._repoConfig.GitExecutable,
+                                                                         clonePath: upstreamRepo,
+                                                                         repoPath: repoPath,
+                                                                         $"clone --mirror {upstreamRepo} {repoPath}",
+                                                                         cancellationToken: cancellationToken);
 
-            Remote? remote = repo.Network.Remotes["origin"];
-            const string msg = "Fetching remote";
-            IEnumerable<string> refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-            Commands.Fetch(repository: repo, remote: remote.Name, refspecs: refSpecs, options: options, logMessage: msg);
+        if (exitCode != 0)
+        {
+            string message = string.Join(separator: Environment.NewLine, value: output);
+            this._logger.FailedToCloneGit(upstream: upstreamRepo, path: repoPath, message: message);
+
+            throw new GitException(message);
         }
     }
 
-    private static void CloneRepository(string upstreamRepo, string repoPath)
+    private async ValueTask UpdateRepositoryAsync(string upstreamRepo, string repoPath, CancellationToken cancellationToken)
     {
-        Repository.Clone(sourceUrl: upstreamRepo, workdirPath: repoPath, new() { IsBare = true });
+        (string[] output, int exitCode) = await GitCommandLine.ExecAsync(gitExecutable: this._repoConfig.GitExecutable,
+                                                                         clonePath: upstreamRepo,
+                                                                         repoPath: repoPath,
+                                                                         $"-C \"{repoPath}\" fetch",
+                                                                         cancellationToken: cancellationToken);
+
+        if (exitCode != 0)
+        {
+            string message = string.Join(separator: Environment.NewLine, value: output);
+            this._logger.FailedToCloneGit(upstream: upstreamRepo, path: repoPath, message: message);
+
+            throw new GitException(message);
+        }
     }
 }
