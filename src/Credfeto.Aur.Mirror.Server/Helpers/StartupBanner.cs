@@ -1,22 +1,15 @@
 using System;
+using Figgle;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
-internal static class StartupBanner
+// https://www.figlet.org/examples.html
+[GenerateFiggleText("Banner", "basic", "AUR Cache")]
+internal static  partial class StartupBanner
 {
     public static void Show()
     {
-        // Generated from https://fsymbols.com/generators/carty/
-        const string banner =
-            @"
-░█████╗░██╗░░░██╗██████╗░  ░█████╗░░█████╗░░█████╗░░█████╗░██╗░░██╗███████╗
-██╔══██╗██║░░░██║██╔══██╗  ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║░░██║██╔════╝
-███████║██║░░░██║██████╔╝  ██║░░╚═╝██║░░╚═╝███████║██║░░╚═╝███████║█████╗░░
-██╔══██║██║░░░██║██╔══██╗  ██║░░██╗██║░░██╗██╔══██║██║░░██╗██╔══██║██╔══╝░░
-██║░░██║╚██████╔╝██║░░██║  ╚█████╔╝╚█████╔╝██║░░██║╚█████╔╝██║░░██║███████╗
-╚═╝░░╚═╝░╚═════╝░╚═╝░░╚═╝  ░╚════╝░░╚════╝░╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚══════╝";
-
-        Console.WriteLine(banner);
+        Console.WriteLine(Banner);
 
         Console.WriteLine("Starting version " + VersionInformation.Version + "...");
     }
