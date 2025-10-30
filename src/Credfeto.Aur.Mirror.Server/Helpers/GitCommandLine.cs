@@ -20,16 +20,16 @@ internal static class GitCommandLine
         EnsureNotLocked(repoUrl: clonePath, workingDirectory: repoPath);
 
         ProcessStartInfo psi = new()
-                               {
-                                   FileName = gitExecutable,
-                                   WorkingDirectory = repoPath,
-                                   Arguments = arguments,
-                                   RedirectStandardOutput = true,
-                                   RedirectStandardError = true,
-                                   UseShellExecute = false,
-                                   CreateNoWindow = true,
-                                   Environment = { ["GIT_REDIRECT_STDERR"] = "2>&1" },
-                               };
+        {
+            FileName = gitExecutable,
+            WorkingDirectory = repoPath,
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            Environment = { ["GIT_REDIRECT_STDERR"] = "2>&1" },
+        };
 
         using (Process? process = Process.Start(psi))
         {
