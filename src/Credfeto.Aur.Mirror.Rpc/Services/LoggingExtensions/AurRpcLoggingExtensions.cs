@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using Credfeto.Aur.Mirror.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
