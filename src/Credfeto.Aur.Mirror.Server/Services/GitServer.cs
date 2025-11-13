@@ -1,9 +1,7 @@
 using System;
 using System.Data;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +11,6 @@ using Credfeto.Aur.Mirror.Server.Exceptions;
 using Credfeto.Aur.Mirror.Server.Helpers;
 using Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
 using LibGit2Sharp;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.IO;
 
