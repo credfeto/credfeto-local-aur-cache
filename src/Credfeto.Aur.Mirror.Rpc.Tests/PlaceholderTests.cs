@@ -1,7 +1,7 @@
 ﻿using FunFair.Test.Common;
 using Xunit;
 
-namespace Credfeto.Aur.Mirror.Tests;
+namespace Credfeto.Aur.Mirror.Rpc.Tests;
 
 public sealed class PlaceholderTests : TestBase
 {
