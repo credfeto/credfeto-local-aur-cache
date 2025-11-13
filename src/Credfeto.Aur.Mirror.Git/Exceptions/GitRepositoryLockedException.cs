@@ -1,6 +1,6 @@
 using System;
 
-namespace Credfeto.Aur.Mirror.Server.Exceptions;
+namespace Credfeto.Aur.Mirror.Git.Exceptions;
 
 public sealed class GitRepositoryLockedException : Exception
 {

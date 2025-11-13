@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Aur.Mirror.Server.Exceptions;
+using Credfeto.Aur.Mirror.Git.Exceptions;
 
-namespace Credfeto.Aur.Mirror.Server.Helpers;
+namespace Credfeto.Aur.Mirror.Git.Helpers;
 
 internal static class GitCommandLine
 {

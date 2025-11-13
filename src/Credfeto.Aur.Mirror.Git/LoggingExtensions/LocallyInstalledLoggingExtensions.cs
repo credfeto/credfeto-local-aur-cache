@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
+namespace Credfeto.Aur.Mirror.Git.LoggingExtensions;
 
 public static partial class LocallyInstalledLoggingExtensions
 {

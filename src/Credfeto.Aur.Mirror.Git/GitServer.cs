@@ -5,16 +5,16 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Git.Exceptions;
+using Credfeto.Aur.Mirror.Git.Helpers;
+using Credfeto.Aur.Mirror.Git.LoggingExtensions;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.Git;
-using Credfeto.Aur.Mirror.Server.Exceptions;
-using Credfeto.Aur.Mirror.Server.Helpers;
-using Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 using Microsoft.IO;
 
-namespace Credfeto.Aur.Mirror.Server.Services;
+namespace Credfeto.Aur.Mirror.Git;
 
 public sealed class GitServer : IGitServer
 {

@@ -3,7 +3,7 @@ using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Interfaces;
 using Microsoft.Extensions.Options;
 
-namespace Credfeto.Aur.Mirror.Server.Services;
+namespace Credfeto.Aur.Mirror.Git;
 
 public sealed class RepoConfig : IRepoConfig
 {

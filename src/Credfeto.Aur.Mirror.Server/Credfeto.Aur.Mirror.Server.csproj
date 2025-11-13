@@ -75,7 +75,6 @@
   <ItemGroup>
     <PackageReference Include="Credfeto.Date" Version="1.1.138.1330" />
     <PackageReference Include="Credfeto.Docker.HealthCheck.Http.Client" Version="0.0.53.355" />
-    <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.9" />
     <PackageReference Include="Serilog" Version="4.3.0" />
@@ -89,7 +88,6 @@
     <PackageReference Include="NonBlocking" Version="2.1.2" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.9" />
     <PackageReference Include="Credfeto.Enumeration.Source.Generation.Attributes" Version="1.2.129.1430" />
-    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
@@ -115,5 +113,8 @@
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Git\Credfeto.Aur.Mirror.Git.csproj" />
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Interfaces\Credfeto.Aur.Mirror.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Rpc\Credfeto.Aur.Mirror.Rpc.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Services\" />
   </ItemGroup>
 </Project>
