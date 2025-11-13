@@ -12,6 +12,8 @@
  - any: [ 'src/**/*.json', '!src/global.json' ]
 "credfeto-aur-mirror-server":
  - any: [ 'src/$Credfeto.Aur.Mirror.Server/**/*' ]
+"credfeto-aur-mirror-tests":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Tests/**/*' ]
 "github-actions":
  - any: [ '.github/workflows/*.yml' ]
 "Markdown":
