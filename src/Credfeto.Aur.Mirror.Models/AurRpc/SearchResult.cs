@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Credfeto.Aur.Mirror.Server.Models.AurRpc;
+namespace Credfeto.Aur.Mirror.Models.AurRpc;
 
 [DebuggerDisplay("ID: {Id} Name: {Name} LastModified: {LastModified} Version: {Version}")]
 public sealed class SearchResult

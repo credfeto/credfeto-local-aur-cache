@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Credfeto.Aur.Mirror.Server.Models.Cache;
+namespace Credfeto.Aur.Mirror.Models.Cache;
 
 [DebuggerDisplay("Repo: {Repo} Last Cloned: {LastCloned}")]
 public sealed class RepoCloneInfo

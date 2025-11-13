@@ -1,6 +1,6 @@
 using System.IO;
+using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Server.Config;
-using Credfeto.Aur.Mirror.Server.Interfaces;
 using Microsoft.Extensions.Options;
 
 namespace Credfeto.Aur.Mirror.Server.Services;

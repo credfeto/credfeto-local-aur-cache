@@ -1,12 +1,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Interfaces;
+using Credfeto.Aur.Mirror.Models.Git;
 using Credfeto.Aur.Mirror.Server.Extensions;
-using Credfeto.Aur.Mirror.Server.Interfaces;
-using Credfeto.Aur.Mirror.Server.Models.Git;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -614,7 +615,7 @@ internal static partial class Endpoints
                 AdvertiseRefs: advertiseRefs,
                 EndStreamWithNull: endStreamWithNull
             ),
-            httpContext: httpContext,
+            source: GetInputStream(httpContext),
             cancellationToken: cancellationToken
         );
 
@@ -632,5 +633,13 @@ internal static partial class Endpoints
             contentType: commandResponse.ContentType,
             fileDownloadName: null
         );
+    }
+
+    [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "For Review")]
+    private static Stream GetInputStream(HttpContext context)
+    {
+        return StringComparer.Ordinal.Equals(context.Request.Headers["Content-Encoding"], y: "gzip")
+            ? new GZipStream(stream: context.Request.Body, mode: CompressionMode.Decompress)
+            : context.Request.Body;
     }
 }

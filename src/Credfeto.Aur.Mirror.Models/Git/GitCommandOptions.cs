@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Text;
 
-namespace Credfeto.Aur.Mirror.Server.Models.Git;
+namespace Credfeto.Aur.Mirror.Models.Git;
 
 [DebuggerDisplay("Repo:{RepositoryName}, Service: {Service} Refs: {AdvertiseRefs} {EndStreamWithNull}")]
 public readonly record struct GitCommandOptions(

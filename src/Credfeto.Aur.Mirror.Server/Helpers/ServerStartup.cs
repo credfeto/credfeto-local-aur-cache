@@ -4,9 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Threading;
+using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Server.Config;
-using Credfeto.Aur.Mirror.Server.Interfaces;
-using Credfeto.Aur.Mirror.Server.Models;
 using Credfeto.Aur.Mirror.Server.Services;
 using Credfeto.Date;
 using Microsoft.AspNetCore.Builder;
@@ -19,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
+using AppJsonContexts = Credfeto.Aur.Mirror.Models.AppJsonContexts;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 

@@ -1,4 +1,4 @@
-using Credfeto.Aur.Mirror.Server.Models.AurRpc;
+using Credfeto.Aur.Mirror.Models.AurRpc;
 
 namespace Credfeto.Aur.Mirror.Server.Services;
 

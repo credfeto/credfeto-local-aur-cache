@@ -1,15 +1,15 @@
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Aur.Mirror.Server.Models.Git;
-using Microsoft.AspNetCore.Http;
+using Credfeto.Aur.Mirror.Models.Git;
 
-namespace Credfeto.Aur.Mirror.Server.Interfaces;
+namespace Credfeto.Aur.Mirror.Interfaces;
 
 public interface IGitServer
 {
     ValueTask<GitCommandResponse> ExecuteResultAsync(
         GitCommandOptions options,
-        HttpContext httpContext,
+        Stream source,
         CancellationToken cancellationToken
     );
 

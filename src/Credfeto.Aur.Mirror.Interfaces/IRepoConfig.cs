@@ -1,4 +1,4 @@
-namespace Credfeto.Aur.Mirror.Server.Interfaces;
+namespace Credfeto.Aur.Mirror.Interfaces;
 
 public interface IRepoConfig
 {

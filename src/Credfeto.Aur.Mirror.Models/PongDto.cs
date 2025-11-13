@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-namespace Credfeto.Aur.Mirror.Server.Models;
+namespace Credfeto.Aur.Mirror.Models;
 
 [DebuggerDisplay(value: "{Value}")]
 public readonly record struct PongDto

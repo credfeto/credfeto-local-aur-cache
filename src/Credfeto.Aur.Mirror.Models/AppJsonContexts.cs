@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Credfeto.Aur.Mirror.Server.Models.AurRpc;
-using Credfeto.Aur.Mirror.Server.Models.Cache;
+using Credfeto.Aur.Mirror.Models.AurRpc;
+using Credfeto.Aur.Mirror.Models.Cache;
 
-namespace Credfeto.Aur.Mirror.Server.Models;
+namespace Credfeto.Aur.Mirror.Models;
 
 [JsonSourceGenerationOptions(
     GenerationMode = JsonSourceGenerationMode.Serialization | JsonSourceGenerationMode.Metadata,

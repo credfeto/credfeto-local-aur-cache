@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Aur.Mirror.Server.Models.AurRpc;
+using Credfeto.Aur.Mirror.Models.AurRpc;
 
-namespace Credfeto.Aur.Mirror.Server.Interfaces;
+namespace Credfeto.Aur.Mirror.Interfaces;
 
 public interface IAurRpc
 {

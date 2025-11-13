@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-namespace Credfeto.Aur.Mirror.Server.Models.AurRpc;
+namespace Credfeto.Aur.Mirror.Models.AurRpc;
 
 [DebuggerDisplay("RpcType: {RpcType} Count: {Count} Version: {Version}")]
 public sealed class RpcResponse

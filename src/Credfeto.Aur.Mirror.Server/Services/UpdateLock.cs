@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Aur.Mirror.Server.Interfaces;
+using Credfeto.Aur.Mirror.Interfaces;
 using NonBlocking;
 
 namespace Credfeto.Aur.Mirror.Server.Services;

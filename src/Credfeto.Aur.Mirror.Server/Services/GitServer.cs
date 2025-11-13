@@ -7,10 +7,10 @@ using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Interfaces;
+using Credfeto.Aur.Mirror.Models.Git;
 using Credfeto.Aur.Mirror.Server.Exceptions;
 using Credfeto.Aur.Mirror.Server.Helpers;
-using Credfeto.Aur.Mirror.Server.Interfaces;
-using Credfeto.Aur.Mirror.Server.Models.Git;
 using Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
 using LibGit2Sharp;
 using Microsoft.AspNetCore.Http;
@@ -36,7 +36,7 @@ public sealed class GitServer : IGitServer
         this._logger = logger;
     }
 
-    public async ValueTask<GitCommandResponse> ExecuteResultAsync(GitCommandOptions options, HttpContext httpContext, CancellationToken cancellationToken)
+    public async ValueTask<GitCommandResponse> ExecuteResultAsync(GitCommandOptions options, Stream source, CancellationToken cancellationToken)
     {
         string repoBasePath = this._repoConfig.GetRepoBasePath(options.RepositoryName);
 
@@ -60,7 +60,7 @@ public sealed class GitServer : IGitServer
                 throw new DataException("Git could not be started.");
             }
 
-            await GetInputStream(httpContext)
+            await source
                 .CopyToAsync(destination: process.StandardInput.BaseStream, cancellationToken: cancellationToken);
 
             if (options.EndStreamWithNull)
@@ -144,13 +144,7 @@ public sealed class GitServer : IGitServer
         }
     }
 
-    [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "For Review")]
-    private static Stream GetInputStream(HttpContext context)
-    {
-        return StringComparer.Ordinal.Equals(context.Request.Headers["Content-Encoding"], y: "gzip")
-            ? new GZipStream(stream: context.Request.Body, mode: CompressionMode.Decompress)
-            : context.Request.Body;
-    }
+
 
     private async ValueTask CloneRepositoryAsync(string upstreamRepo, string repoPath, CancellationToken cancellationToken)
     {

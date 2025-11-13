@@ -4,11 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Server.Helpers;
-using Credfeto.Aur.Mirror.Server.Models;
-using Credfeto.Aur.Mirror.Server.Models.AurRpc;
 using Credfeto.Docker.HealthCheck.Http.Client;
 using Microsoft.AspNetCore.Builder;
+using AppJsonContexts = Credfeto.Aur.Mirror.Models.AppJsonContexts;
 
 namespace Credfeto.Aur.Mirror.Server;
 

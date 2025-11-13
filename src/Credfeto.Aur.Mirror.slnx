@@ -7,6 +7,8 @@
     <File Path="global.json" />
     <File Path="publish" />
   </Folder>
+  <Project Path="Credfeto.Aur.Mirror.Interfaces/Credfeto.Aur.Mirror.Interfaces.csproj" />
+  <Project Path="Credfeto.Aur.Mirror.Models/Credfeto.Aur.Mirror.Models.csproj" />
   <Project Path="Credfeto.Aur.Mirror.Server/Credfeto.Aur.Mirror.Server.csproj" />
   <Project Path="Credfeto.Aur.Mirror.Tests/Credfeto.Aur.Mirror.Tests.csproj" />
 </Solution>

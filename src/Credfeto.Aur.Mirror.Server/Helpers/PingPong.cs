@@ -1,4 +1,4 @@
-using Credfeto.Aur.Mirror.Server.Models;
+using Credfeto.Aur.Mirror.Models;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
