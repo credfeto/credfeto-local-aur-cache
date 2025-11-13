@@ -5,13 +5,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Interfaces;
-using Credfeto.Aur.Mirror.Server.Config;
-using Credfeto.Aur.Mirror.Server.Extensions;
+using Credfeto.Aur.Mirror.Rpc.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Credfeto.Aur.Mirror.Server.Services;
+namespace Credfeto.Aur.Mirror.Rpc.Services;
 
 public sealed class AurRepos : IAurRepos
 {

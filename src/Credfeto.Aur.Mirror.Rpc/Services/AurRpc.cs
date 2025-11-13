@@ -10,17 +10,17 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
-using Credfeto.Aur.Mirror.Server.Config;
-using Credfeto.Aur.Mirror.Server.Extensions;
-using Credfeto.Aur.Mirror.Server.Helpers.LoggingExtensions;
-using Credfeto.Aur.Mirror.Server.Services.LoggingExtensions;
+using Credfeto.Aur.Mirror.Rpc.Constants;
+using Credfeto.Aur.Mirror.Rpc.Extensions;
+using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using AppJsonContexts = Credfeto.Aur.Mirror.Models.AppJsonContexts;
 
-namespace Credfeto.Aur.Mirror.Server.Services;
+namespace Credfeto.Aur.Mirror.Rpc.Services;
 
 public sealed class AurRpc : IAurRpc
 {

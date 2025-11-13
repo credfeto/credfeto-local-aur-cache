@@ -1,8 +1,8 @@
 using Credfeto.Aur.Mirror.Models.AurRpc;
 
-namespace Credfeto.Aur.Mirror.Server.Services;
+namespace Credfeto.Aur.Mirror.Rpc.Constants;
 
-internal static class RpcResults
+public static class RpcResults
 {
     public const int RpcVersion = 5;
 

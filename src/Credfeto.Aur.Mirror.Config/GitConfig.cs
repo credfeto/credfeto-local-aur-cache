@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Credfeto.Aur.Mirror.Server.Config;
+namespace Credfeto.Aur.Mirror.Config;
 
 [DebuggerDisplay("Exe: {Executable}")]
 public sealed class GitConfig

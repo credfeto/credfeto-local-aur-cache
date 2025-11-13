@@ -2,13 +2,13 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Credfeto.Aur.Mirror.Server.Services;
+using Credfeto.Aur.Mirror.Rpc.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 
-namespace Credfeto.Aur.Mirror.Server.Helpers;
+namespace Credfeto.Aur.Mirror.Rpc;
 
-internal static class HttpClientSetup
+public static class HttpClientSetup
 {
     private const int CONCURRENT_ACTIONS = 30;
     private const int QUEUED_ACTIONS = 10;

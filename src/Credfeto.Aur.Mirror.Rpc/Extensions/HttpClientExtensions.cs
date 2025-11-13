@@ -2,7 +2,7 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
-namespace Credfeto.Aur.Mirror.Server.Extensions;
+namespace Credfeto.Aur.Mirror.Rpc.Extensions;
 
 internal static class HttpClientExtensions
 {

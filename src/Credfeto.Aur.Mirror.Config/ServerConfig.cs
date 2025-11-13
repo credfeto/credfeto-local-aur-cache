@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Credfeto.Aur.Mirror.Server.Config;
+namespace Credfeto.Aur.Mirror.Config;
 
 [DebuggerDisplay("Storage: {Storage} Upstream: {Upstream} ")]
 public sealed class ServerConfig
