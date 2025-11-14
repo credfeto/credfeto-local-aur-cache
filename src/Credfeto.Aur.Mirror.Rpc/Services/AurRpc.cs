@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -56,6 +58,14 @@ public sealed class AurRpc : IAurRpc
             {
                 return RpcResults.InfoNotFound;
             }
+
+            // RpcResponse found = await this._localAurRpc.InfoAsync(packages, userAgent, cancellationToken);
+            //
+            // // All packages in locally no need to hit upstream
+            // if(packages.All(package => found.Results.Any( p => StringComparer.Ordinal.Equals(p.Name, package))))
+            // {
+            //     return found;
+            // }
 
             RpcResponse upstream = await this._remoteAurRpc.InfoAsync(packages: packages, userAgent: userAgent, cancellationToken: cancellationToken);
 
