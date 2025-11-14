@@ -33,6 +33,8 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
         this._logger = logger;
         this._serverConfig = config.Value;
         this._metadata = new(StringComparer.OrdinalIgnoreCase);
+
+        // TASK: Store local config in a DB that's quick to search rather than filesystem
     }
 
     public async ValueTask LoadAsync(CancellationToken cancellationToken)
