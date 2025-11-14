@@ -78,11 +78,7 @@ internal static partial class AurRpcLoggingExtensions
         string metadataFileName
     );
 
-
-
-
-
-        [LoggerMessage(LogLevel.Information, EventId = 8, Message = "Request query: {query}")]
+    [LoggerMessage(LogLevel.Information, EventId = 8, Message = "Request query: {query}")]
     public static partial void Query(this ILogger<AurRpc> logger, string query);
 
     [LoggerMessage(LogLevel.Error, EventId = 9, Message = "Failed query: {query}  => {message}")]
@@ -145,5 +141,4 @@ internal static partial class AurRpcLoggingExtensions
         string message,
         Exception exception
     );
-
 }
