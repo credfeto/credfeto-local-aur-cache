@@ -13,6 +13,8 @@ public static class RpcSetup
             .AddRpcClient()
             .AddReposClient()
             .AddSingleton<IAurRpc, AurRpc>()
-            .AddSingleton<IAurRepos, AurRepos>();
+            .AddSingleton<IAurRepos, AurRepos>()
+            .AddSingleton<ILocalAurRpc, LocalAurRpc>()
+            .AddSingleton<IRemoteAurRpc, RemoteAurRpc>();
     }
 }
