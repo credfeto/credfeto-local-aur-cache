@@ -39,9 +39,10 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
 
     public async ValueTask<RpcResponse> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
-        this._logger.SearchingFor(keyword: keyword, by: by);
+        HttpClient client = this.GetClient(userAgent: userAgent, out Uri baseUri);
 
-        RpcResponse upstream = await this.RequestSearchUpstreamAsync(keyword: keyword, by: by, userAgent: userAgent, cancellationToken: cancellationToken);
+        Uri requestUri = MakeUri(baseUri: baseUri, $"/v5/search/{keyword}?by={by}");
+        RpcResponse upstream = await this.RequestUpstreamCommonAsync(client: client, requestUri: requestUri, cancellationToken: cancellationToken);
 
         IReadOnlyList<string> packageNames = [..upstream.Results.Select(r => r.Name)];
 
@@ -59,18 +60,12 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
             return RpcResults.InfoNotFound;
         }
 
-        RpcResponse upstream = await this.RequestInfoUpstreamAsync(packages: packages, userAgent: userAgent, cancellationToken: cancellationToken);
-
-        return upstream;
-    }
-
-    private ValueTask<RpcResponse> RequestInfoUpstreamAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, in CancellationToken cancellationToken)
-    {
         HttpClient client = this.GetClient(userAgent: userAgent, out Uri baseUri);
 
         Uri requestUri = MakeInfoUri(baseUri: baseUri, packages: packages);
+        RpcResponse upstream = await this.RequestUpstreamCommonAsync(client: client, requestUri: requestUri, cancellationToken: cancellationToken);
 
-        return this.RequestUpstreamCommonAsync(client: client, requestUri: requestUri, cancellationToken: cancellationToken);
+        return upstream;
     }
 
     private async ValueTask<RpcResponse> RequestUpstreamCommonAsync(HttpClient client, Uri requestUri, CancellationToken cancellationToken)
@@ -92,15 +87,6 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
 
             return Failed(requestUri: requestUri, resultStatusCode: result.StatusCode);
         }
-    }
-
-    private ValueTask<RpcResponse> RequestSearchUpstreamAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, in CancellationToken cancellationToken)
-    {
-        HttpClient client = this.GetClient(userAgent: userAgent, out Uri baseUri);
-
-        Uri requestUri = MakeUri(baseUri: baseUri, $"/v5/search/{keyword}?by={by}");
-
-        return this.RequestUpstreamCommonAsync(client: client, requestUri: requestUri, cancellationToken: cancellationToken);
     }
 
     [DoesNotReturn]
