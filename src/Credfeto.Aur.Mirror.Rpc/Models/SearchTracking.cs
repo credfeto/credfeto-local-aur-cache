@@ -5,15 +5,17 @@ namespace Credfeto.Aur.Mirror.Rpc.Models;
 
 public sealed class SearchTracking
 {
+    private readonly List<SearchResult> _toSave;
+
     public SearchTracking()
     {
-        this.ToSave = [];
+        this._toSave = [];
     }
 
-    public List<SearchResult> ToSave { get; }
+    public IReadOnlyList<SearchResult> ToSave => this._toSave;
 
     public void AppendRepoSyncSearchResult(SearchResult package)
     {
-        this.ToSave.Add(package);
+        this._toSave.Add(package);
     }
 }
