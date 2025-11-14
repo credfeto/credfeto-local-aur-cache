@@ -69,95 +69,10 @@ public sealed class LocalAurRpc : ILocalAurRpc
 
     public ValueTask SyncUpstreamReposAsync(RpcResponse upstream, ProductInfoHeaderValue? userAgent)
     {
-        return this.SyncUpstreamReposAsync(upstream.Results);
+        return this._localAurMetadata.UpdateAsync(upstream.Results);
     }
 
-    private async ValueTask SyncUpstreamReposAsync(IReadOnlyList<SearchResult> items)
-    {
-        SearchTracking tracking = new();
 
-        foreach (SearchResult package in items)
-        {
-            string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
-            string upstreamRepo = this._serverConfig.Upstream.Repos + "/" + package.Name + ".git";
-
-            this._logger.CheckingPackage(packageId: package.Id, packageName: package.Name, metadataFileName: metadataFileName, upstreamRepo: upstreamRepo);
-
-            if (File.Exists(metadataFileName))
-            {
-                this._logger.FoundMetadata(packageId: package.Id, packageName: package.Name, metadataFileName: metadataFileName);
-                SearchResult? existing = await this.ReadPackageFromMetadataAsync(metadataFileName);
-
-                bool changed = existing is null || existing.LastModified != package.LastModified;
-                await this._gitServer.EnsureRepositoryHasBeenClonedAsync(repoName: package.Name, upstreamRepo: upstreamRepo, changed: changed, cancellationToken: DoNotCancelEarly);
-
-                if (changed)
-                {
-                    tracking.AppendRepoSyncSearchResult(package);
-                }
-            }
-            else
-            {
-                this._logger.NoMetadata(packageId: package.Id, packageName: package.Name, metadataFileName: metadataFileName);
-
-                await this._gitServer.EnsureRepositoryHasBeenClonedAsync(repoName: package.Name, upstreamRepo: upstreamRepo, changed: true, cancellationToken: DoNotCancelEarly);
-
-                tracking.AppendRepoSyncSearchResult(package);
-            }
-        }
-
-        if (tracking.ToSave is not [])
-        {
-            await this.SaveSearchResultsAsync(tracking);
-        }
-    }
-
-    private async ValueTask SaveSearchResultsAsync(SearchTracking searchTracking)
-    {
-        foreach (SearchResult package in searchTracking.ToSave)
-        {
-            string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
-            await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName, cancellationToken: DoNotCancelEarly);
-        }
-    }
-
-    private async ValueTask<SearchResult?> ReadPackageFromMetadataAsync(string metadataFileName)
-    {
-        try
-        {
-            string json = await File.ReadAllTextAsync(path: metadataFileName, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
-
-            return JsonSerializer.Deserialize(json: json, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
-        }
-        catch (Exception exception)
-        {
-            this._logger.FailedToReadSavedMetadata(filename: metadataFileName, message: exception.Message, exception: exception);
-            File.Delete(metadataFileName);
-
-            return null;
-        }
-    }
-
-    private async ValueTask SavePackageToMetadataAsync(SearchResult package, string metadataFileName, CancellationToken cancellationToken)
-    {
-        SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: metadataFileName, cancellationToken: cancellationToken);
-
-        try
-        {
-            EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
-
-            string json = JsonSerializer.Serialize(value: package, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
-            await File.WriteAllTextAsync(path: metadataFileName, contents: json, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
-        }
-        catch (Exception exception)
-        {
-            this._logger.SaveMetadataFailed(filename: metadataFileName, message: exception.Message, exception: exception);
-        }
-        finally
-        {
-            wait.Release();
-        }
-    }
 
     private static bool IsSearchMatch(SearchResult existing, string keyword, string by)
     {
