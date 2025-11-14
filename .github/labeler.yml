@@ -16,6 +16,8 @@
  - any: [ 'src/$Credfeto.Aur.Mirror.Git/**/*' ]
 "credfeto-aur-mirror-git-interfaces":
  - any: [ 'src/$Credfeto.Aur.Mirror.Git.Interfaces/**/*' ]
+"credfeto-aur-mirror-git-tests":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Git.Tests/**/*' ]
 "credfeto-aur-mirror-interfaces":
  - any: [ 'src/$Credfeto.Aur.Mirror.Interfaces/**/*' ]
 "credfeto-aur-mirror-models":
