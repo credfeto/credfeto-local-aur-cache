@@ -10,10 +10,20 @@
  - any: [ 'CHANGELOG.md' ]
 "Config Change":
  - any: [ 'src/**/*.json', '!src/global.json' ]
+"credfeto-aur-mirror-config":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Config/**/*' ]
+"credfeto-aur-mirror-git":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Git/**/*' ]
+"credfeto-aur-mirror-interfaces":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Interfaces/**/*' ]
+"credfeto-aur-mirror-models":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Models/**/*' ]
+"credfeto-aur-mirror-rpc":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Rpc/**/*' ]
+"credfeto-aur-mirror-rpc-tests":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Rpc.Tests/**/*' ]
 "credfeto-aur-mirror-server":
  - any: [ 'src/$Credfeto.Aur.Mirror.Server/**/*' ]
-"credfeto-aur-mirror-tests":
- - any: [ 'src/$Credfeto.Aur.Mirror.Tests/**/*' ]
 "github-actions":
  - any: [ '.github/workflows/*.yml' ]
 "Markdown":

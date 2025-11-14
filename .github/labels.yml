@@ -30,13 +30,33 @@
    color: "d8bb50"
    description: "Configuration files changes"
 
+ - name: "credfeto-aur-mirror-config"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Aur.Mirror.Config project"
+
+ - name: "credfeto-aur-mirror-git"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Aur.Mirror.Git project"
+
+ - name: "credfeto-aur-mirror-interfaces"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Aur.Mirror.Interfaces project"
+
+ - name: "credfeto-aur-mirror-models"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Aur.Mirror.Models project"
+
+ - name: "credfeto-aur-mirror-rpc"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Aur.Mirror.Rpc project"
+
+ - name: "credfeto-aur-mirror-rpc-tests"
+   color: "0e8a16"
+   description: "Changes in Credfeto.Aur.Mirror.Rpc.Tests project"
+
  - name: "credfeto-aur-mirror-server"
    color: "96f7d2"
    description: "Changes in Credfeto.Aur.Mirror.Server project"
-
- - name: "credfeto-aur-mirror-tests"
-   color: "0e8a16"
-   description: "Changes in Credfeto.Aur.Mirror.Tests project"
 
  - name: "dependencies"
    color: "0366d6"
