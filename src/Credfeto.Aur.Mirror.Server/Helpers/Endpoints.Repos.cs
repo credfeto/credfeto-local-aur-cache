@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.Git;
+using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Server.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

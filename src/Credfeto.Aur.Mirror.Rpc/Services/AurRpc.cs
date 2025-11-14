@@ -15,6 +15,7 @@ using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Constants;
 using Credfeto.Aur.Mirror.Rpc.Extensions;
+using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -1,4 +1,5 @@
 using Credfeto.Aur.Mirror.Interfaces;
+using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using FunFair.Test.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;

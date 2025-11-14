@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Extensions;
+using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

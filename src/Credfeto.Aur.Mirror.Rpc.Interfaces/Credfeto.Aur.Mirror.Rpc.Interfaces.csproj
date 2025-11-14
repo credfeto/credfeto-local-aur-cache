@@ -52,19 +52,12 @@
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xhfc-gr8f-ffwc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Config\Credfeto.Aur.Mirror.Config.csproj" />
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Interfaces\Credfeto.Aur.Mirror.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Rpc.Interfaces\Credfeto.Aur.Mirror.Rpc.Interfaces.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Credfeto.Enumeration.Source.Generation.Attributes" Version="1.2.129.1430" />
-    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.9" />
+    <ProjectReference Include="..\Credfeto.Aur.Mirror.Models\Credfeto.Aur.Mirror.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="codecracker.CSharp" Version="1.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Credfeto.Enumeration.Source.Generation" Version="1.2.127.1366" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="Credfeto.Version.Information.Generator" Version="1.0.115.836" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="CSharpIsNullAnalyzer" Version="0.1.593" PrivateAssets="all" ExcludeAssets="runtime" />
     <PackageReference Include="FunFair.CodeAnalysis" Version="7.1.21.1364" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Meziantou.Analyzer" Version="2.0.212" PrivateAssets="All" ExcludeAssets="runtime" />

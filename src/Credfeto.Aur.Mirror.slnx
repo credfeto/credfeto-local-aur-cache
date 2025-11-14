@@ -7,11 +7,16 @@
     <File Path="global.json" />
     <File Path="publish" />
   </Folder>
+  <Folder Name="/Git/">
+    <Project Path="Credfeto.Aur.Mirror.Git/Credfeto.Aur.Mirror.Git.csproj" />
+  </Folder>
+  <Folder Name="/RPC/">
+    <Project Path="Credfeto.Aur.Mirror.Rpc.Interfaces/Credfeto.Aur.Mirror.Rpc.Interfaces.csproj" />
+    <Project Path="Credfeto.Aur.Mirror.Rpc.Tests\Credfeto.Aur.Mirror.Rpc.Tests.csproj" />
+    <Project Path="Credfeto.Aur.Mirror.Rpc/Credfeto.Aur.Mirror.Rpc.csproj" />
+  </Folder>
   <Project Path="Credfeto.Aur.Mirror.Config/Credfeto.Aur.Mirror.Config.csproj" />
-  <Project Path="Credfeto.Aur.Mirror.Git/Credfeto.Aur.Mirror.Git.csproj" />
   <Project Path="Credfeto.Aur.Mirror.Interfaces/Credfeto.Aur.Mirror.Interfaces.csproj" />
   <Project Path="Credfeto.Aur.Mirror.Models/Credfeto.Aur.Mirror.Models.csproj" />
-  <Project Path="Credfeto.Aur.Mirror.Rpc.Tests\Credfeto.Aur.Mirror.Rpc.Tests.csproj" />
-  <Project Path="Credfeto.Aur.Mirror.Rpc/Credfeto.Aur.Mirror.Rpc.csproj" />
   <Project Path="Credfeto.Aur.Mirror.Server/Credfeto.Aur.Mirror.Server.csproj" />
 </Solution>
