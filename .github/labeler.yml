@@ -20,6 +20,8 @@
  - any: [ 'src/$Credfeto.Aur.Mirror.Models/**/*' ]
 "credfeto-aur-mirror-rpc":
  - any: [ 'src/$Credfeto.Aur.Mirror.Rpc/**/*' ]
+"credfeto-aur-mirror-rpc-interfaces":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Rpc.Interfaces/**/*' ]
 "credfeto-aur-mirror-rpc-tests":
  - any: [ 'src/$Credfeto.Aur.Mirror.Rpc.Tests/**/*' ]
 "credfeto-aur-mirror-server":

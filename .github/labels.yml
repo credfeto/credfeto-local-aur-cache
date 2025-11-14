@@ -50,6 +50,10 @@
    color: "96f7d2"
    description: "Changes in Credfeto.Aur.Mirror.Rpc project"
 
+ - name: "credfeto-aur-mirror-rpc-interfaces"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Aur.Mirror.Rpc.Interfaces project"
+
  - name: "credfeto-aur-mirror-rpc-tests"
    color: "0e8a16"
    description: "Changes in Credfeto.Aur.Mirror.Rpc.Tests project"
