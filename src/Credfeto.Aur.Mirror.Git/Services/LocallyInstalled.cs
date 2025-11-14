@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Config;
-using Credfeto.Aur.Mirror.Git.LoggingExtensions;
+using Credfeto.Aur.Mirror.Git.Services.LoggingExtensions;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.Cache;
 using Credfeto.Date.Interfaces;
@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NonBlocking;
 
-namespace Credfeto.Aur.Mirror.Git;
+namespace Credfeto.Aur.Mirror.Git.Services;
 
 public sealed class LocallyInstalled : ILocallyInstalled
 {

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Interfaces;
 using NonBlocking;
 
-namespace Credfeto.Aur.Mirror.Git;
+namespace Credfeto.Aur.Mirror.Git.Services;
 
 public sealed class UpdateLock : IUpdateLock
 {

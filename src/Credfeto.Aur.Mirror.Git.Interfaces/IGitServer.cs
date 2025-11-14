@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Models.Git;
 
-namespace Credfeto.Aur.Mirror.Interfaces;
+namespace Credfeto.Aur.Mirror.Git.Interfaces;
 
 public interface IGitServer
 {

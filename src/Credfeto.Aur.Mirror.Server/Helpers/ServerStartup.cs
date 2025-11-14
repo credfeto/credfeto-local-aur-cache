@@ -6,6 +6,8 @@ using System.Net;
 using System.Threading;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git;
+using Credfeto.Aur.Mirror.Git.Interfaces;
+using Credfeto.Aur.Mirror.Git.Services;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Rpc;
 using Credfeto.Aur.Mirror.Rpc.Services;
@@ -83,9 +85,7 @@ internal static class ServerStartup
             .Services.Configure<ServerConfig>(section)
             .AddDate()
             .AddAurRpcApi()
-            .AddSingleton<IGitServer, GitServer>()
-            .AddSingleton<IRepoConfig, RepoConfig>()
-            .AddSingleton<IUpdateLock, UpdateLock>()
+            .AddGitRepos()
             .AddSingleton<ILocallyInstalled, LocallyInstalled>()
             .ConfigureHttpJsonOptions(options =>
                 options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)

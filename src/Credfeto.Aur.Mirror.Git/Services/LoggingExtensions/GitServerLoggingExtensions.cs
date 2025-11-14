@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Credfeto.Aur.Mirror.Git.LoggingExtensions;
+namespace Credfeto.Aur.Mirror.Git.Services.LoggingExtensions;
 
 internal static partial class GitServerLoggingExtensions
 {

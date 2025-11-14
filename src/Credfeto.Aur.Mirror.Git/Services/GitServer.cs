@@ -5,16 +5,19 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git.Exceptions;
 using Credfeto.Aur.Mirror.Git.Helpers;
-using Credfeto.Aur.Mirror.Git.LoggingExtensions;
+using Credfeto.Aur.Mirror.Git.Interfaces;
+using Credfeto.Aur.Mirror.Git.Services.LoggingExtensions;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.Git;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IO;
 
-namespace Credfeto.Aur.Mirror.Git;
+namespace Credfeto.Aur.Mirror.Git.Services;
 
 public sealed class GitServer : IGitServer
 {
@@ -22,12 +25,12 @@ public sealed class GitServer : IGitServer
     private readonly ILocallyInstalled _locallyInstalled;
     private readonly ILogger<GitServer> _logger;
 
-    private readonly IRepoConfig _repoConfig;
+    private readonly ServerConfig _serverConfig;
     private readonly IUpdateLock _updateLock;
 
-    public GitServer(IRepoConfig repoConfig, IUpdateLock updateLock, ILocallyInstalled locallyInstalled, ILogger<GitServer> logger)
+    public GitServer(IOptions<ServerConfig> config, IUpdateLock updateLock, ILocallyInstalled locallyInstalled, ILogger<GitServer> logger)
     {
-        this._repoConfig = repoConfig;
+        this._serverConfig = config.Value;
         this._updateLock = updateLock;
         this._locallyInstalled = locallyInstalled;
         this._logger = logger;
@@ -35,12 +38,12 @@ public sealed class GitServer : IGitServer
 
     public async ValueTask<GitCommandResponse> ExecuteResultAsync(GitCommandOptions options, Stream source, CancellationToken cancellationToken)
     {
-        string repoBasePath = this._repoConfig.GetRepoBasePath(options.RepositoryName);
+        string repoBasePath = this.GetRepoBasePath(options.RepositoryName);
 
         string arguments = options.BuildCommand(repoBasePath);
         this._logger.ExecutingCommand(arguments);
 
-        using (Process? process = Process.Start(new ProcessStartInfo(fileName: this._repoConfig.GitExecutable, arguments: arguments)
+        using (Process? process = Process.Start(new ProcessStartInfo(fileName: this._serverConfig.Git.Executable, arguments: arguments)
                                                 {
                                                     UseShellExecute = false,
                                                     CreateNoWindow = true,
@@ -52,7 +55,7 @@ public sealed class GitServer : IGitServer
         {
             if (process is null)
             {
-                this._logger.FailedToStartGit(exe: this._repoConfig.GitExecutable, arguments: arguments);
+                this._logger.FailedToStartGit(exe: this._serverConfig.Git.Executable, arguments: arguments);
 
                 throw new DataException("Git could not be started.");
             }
@@ -92,7 +95,7 @@ public sealed class GitServer : IGitServer
 
     public async ValueTask EnsureRepositoryHasBeenClonedAsync(string repoName, string upstreamRepo, bool changed, CancellationToken cancellationToken)
     {
-        string repoBasePath = this._repoConfig.GetRepoBasePath(repoName);
+        string repoBasePath = this.GetRepoBasePath(repoName);
 
         this._logger.RequestingCloneOrUpdateOfRepo(repo: repoName, upstream: upstreamRepo, path: repoBasePath);
         SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: repoBasePath, cancellationToken: cancellationToken);
@@ -126,7 +129,7 @@ public sealed class GitServer : IGitServer
     public async ValueTask<GitCommandResponse> GetFileAsync(string repoName, string path, CancellationToken cancellationToken)
     {
         this._logger.ReadingFile(repo: repoName, path: path);
-        string repoBasePath = this._repoConfig.GetRepoBasePath(repoName);
+        string repoBasePath = this.GetRepoBasePath(repoName);
 
         string fileName = Path.Combine(path1: repoBasePath, path2: path);
 
@@ -145,7 +148,7 @@ public sealed class GitServer : IGitServer
 
     private async ValueTask CloneRepositoryAsync(string upstreamRepo, string repoPath, CancellationToken cancellationToken)
     {
-        (string[] output, int exitCode) = await GitCommandLine.ExecAsync(gitExecutable: this._repoConfig.GitExecutable,
+        (string[] output, int exitCode) = await GitCommandLine.ExecAsync(gitExecutable: this._serverConfig.Git.Executable,
                                                                          clonePath: upstreamRepo,
                                                                          repoPath: repoPath,
                                                                          $"clone --mirror {upstreamRepo} {repoPath}",
@@ -162,7 +165,7 @@ public sealed class GitServer : IGitServer
 
     private async ValueTask UpdateRepositoryAsync(string upstreamRepo, string repoPath, CancellationToken cancellationToken)
     {
-        (string[] output, int exitCode) = await GitCommandLine.ExecAsync(gitExecutable: this._repoConfig.GitExecutable,
+        (string[] output, int exitCode) = await GitCommandLine.ExecAsync(gitExecutable: this._serverConfig.Git.Executable,
                                                                          clonePath: upstreamRepo,
                                                                          repoPath: repoPath,
                                                                          $"-C \"{repoPath}\" fetch",
@@ -175,5 +178,10 @@ public sealed class GitServer : IGitServer
 
             throw new GitException(message);
         }
+    }
+
+    private string GetRepoBasePath(string repoName)
+    {
+        return Path.Combine(path1: this._serverConfig.Storage.Repos, $"{repoName}.git");
     }
 }
