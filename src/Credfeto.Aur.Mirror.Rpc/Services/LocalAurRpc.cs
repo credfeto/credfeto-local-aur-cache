@@ -1,17 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git.Interfaces;
-using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Constants;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
-using Credfeto.Aur.Mirror.Rpc.Models;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Credfeto.Extensions.Linq;
 using Microsoft.Extensions.Logging;
@@ -69,29 +66,23 @@ public sealed class LocalAurRpc : ILocalAurRpc
 
     private async ValueTask SyncUpstreamReposAsync(IReadOnlyList<SearchResult> items)
     {
-        SearchTracking tracking = new();
-
         foreach (SearchResult package in items)
         {
-            string upstreamRepo = this._serverConfig.Upstream.Repos + "/" + package.Name + ".git";
-
-            this._logger.CheckingPackage(packageId: package.Id, packageName: package.Name, upstreamRepo: upstreamRepo);
-
-            SearchResult? existing = this._localAurMetadata.Get(package.Name);
-
-            bool changed = existing is null || existing.LastModified != package.LastModified;
-            await this._gitServer.EnsureRepositoryHasBeenClonedAsync(repoName: package.Name, upstreamRepo: upstreamRepo, changed: changed, cancellationToken: DoNotCancelEarly);
-
-            if (changed)
-            {
-                tracking.AppendRepoSyncSearchResult(package);
-            }
+            await this._localAurMetadata.UpdateAsync(package, onUpdate: this.OnRepoChangedAsync, CancellationToken.None);
         }
+    }
 
-        if (tracking.ToSave is not [])
-        {
-            await this._localAurMetadata.UpdateAsync(tracking.ToSave);
-        }
+    private ValueTask OnRepoChangedAsync(SearchResult package, bool changed)
+    {
+        string upstreamRepo = this._serverConfig.Upstream.Repos + "/" + package.Name + ".git";
+
+        this._logger.CheckingPackage(packageId: package.Id, packageName: package.Name, upstreamRepo: upstreamRepo);
+
+        return this._gitServer.EnsureRepositoryHasBeenClonedAsync(
+            repoName: package.Name,
+            upstreamRepo: upstreamRepo,
+            changed: changed,
+            cancellationToken: DoNotCancelEarly);
     }
 
     private static bool IsSearchMatch(SearchResult existing, string keyword, string by)

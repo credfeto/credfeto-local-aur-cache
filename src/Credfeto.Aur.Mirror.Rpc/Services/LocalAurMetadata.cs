@@ -71,34 +71,37 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
         return null;
     }
 
-    public async ValueTask UpdateAsync(IReadOnlyList<SearchResult> items)
+    public async ValueTask UpdateAsync(SearchResult package, Func<SearchResult, bool, ValueTask> onUpdate,  CancellationToken cancellationToken)
     {
-        foreach (SearchResult item in items)
+        bool save = false;
+        bool changed = false;
+
+        if (this._metadata.TryGetValue(key: package.Name, out SearchResult? existing))
         {
-            bool save = false;
-
-            if (this._metadata.TryGetValue(key: item.Name, out SearchResult? existing))
+            if (existing.LastModified < package.LastModified)
             {
-                if (existing.LastModified < item.LastModified)
-                {
-                    // Should make this atomic
-                    _ = this._metadata.TryRemove(key: item.Name, value: out _);
-                    _ = this._metadata.TryAdd(key: item.Name, value: item);
-                    save = true;
-                }
-            }
-            else
-            {
-                _ = this._metadata.TryAdd(key: item.Name, value: item);
+                // Should make this atomic and store additional status metadata for save state etc
+                _ = this._metadata.TryRemove(key: package.Name, value: out _);
+                _ = this._metadata.TryAdd(key: package.Name, value: package);
                 save = true;
-            }
-
-            if (save)
-            {
-                string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{item.Id}.json");
-                await this.SavePackageToMetadataAsync(package: item, metadataFileName: metadataFileName, cancellationToken: DoNotCancelEarly);
+                changed = true;
             }
         }
+        else
+        {
+            _ = this._metadata.TryAdd(key: package.Name, value: package);
+            save = true;
+        }
+
+        if (save)
+        {
+            // Future: Queue package update in background -> once its updated in cache will be reading from there from
+            string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
+            await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName, cancellationToken: DoNotCancelEarly);
+
+            await onUpdate(package, changed);
+        }
+
     }
 
     private async ValueTask SavePackageToMetadataAsync(SearchResult package, string metadataFileName, CancellationToken cancellationToken)
