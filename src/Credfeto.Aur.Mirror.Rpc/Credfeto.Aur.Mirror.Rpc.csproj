@@ -52,6 +52,10 @@
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xhfc-gr8f-ffwc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Credfeto.Aur.Mirror.Config\Credfeto.Aur.Mirror.Config.csproj" />
+    <ProjectReference Include="..\Credfeto.Aur.Mirror.Interfaces\Credfeto.Aur.Mirror.Interfaces.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Credfeto.Enumeration.Source.Generation.Attributes" Version="1.2.129.1430" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.9" />
   </ItemGroup>
@@ -74,9 +78,5 @@
     <PackageReference Include="SonarAnalyzer.CSharp" Version="10.15.0.120848" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.3" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="ToStringWithoutOverrideAnalyzer" Version="0.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Config\Credfeto.Aur.Mirror.Config.csproj" />
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Interfaces\Credfeto.Aur.Mirror.Interfaces.csproj" />
   </ItemGroup>
 </Project>
