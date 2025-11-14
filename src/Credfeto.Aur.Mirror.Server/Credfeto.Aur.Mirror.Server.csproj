@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
@@ -111,7 +111,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Git\Credfeto.Aur.Mirror.Git.csproj" />
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Interfaces\Credfeto.Aur.Mirror.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Rpc\Credfeto.Aur.Mirror.Rpc.csproj" />
   </ItemGroup>
   <ItemGroup>
