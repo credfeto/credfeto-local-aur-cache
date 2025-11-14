@@ -17,14 +17,42 @@ internal static partial class AurRpcLoggingExtensions
         logger.PackageInfo(string.Join(separator: ", ", values: packages));
     }
 
-    [LoggerMessage(LogLevel.Warning, EventId = 3, Message = "Failed to retrieve package infos: {packages} => {message}")]
-    private static partial void FailedToGetUpstreamPackageInfo(this ILogger<AurRpc> logger, string packages, string message, Exception exception);
+    [LoggerMessage(
+        LogLevel.Warning,
+        EventId = 3,
+        Message = "Failed to retrieve package infos: {packages} => {message}"
+    )]
+    private static partial void FailedToGetUpstreamPackageInfo(
+        this ILogger<AurRpc> logger,
+        string packages,
+        string message,
+        Exception exception
+    );
 
-    public static void FailedToGetUpstreamPackageInfo(this ILogger<AurRpc> logger, IReadOnlyList<string> packages, string message, Exception exception)
+    public static void FailedToGetUpstreamPackageInfo(
+        this ILogger<AurRpc> logger,
+        IReadOnlyList<string> packages,
+        string message,
+        Exception exception
+    )
     {
-        logger.FailedToGetUpstreamPackageInfo(string.Join(separator: ", ", values: packages), message: message, exception: exception);
+        logger.FailedToGetUpstreamPackageInfo(
+            string.Join(separator: ", ", values: packages),
+            message: message,
+            exception: exception
+        );
     }
 
-    [LoggerMessage(LogLevel.Warning, EventId = 4, Message = "Failed Upstream search for: {keyword} by {by} => {message}")]
-    public static partial void FailedToSearchUpstreamPackageInfo(this ILogger<AurRpc> logger, string keyword, string by, string message, Exception exception);
+    [LoggerMessage(
+        LogLevel.Warning,
+        EventId = 4,
+        Message = "Failed Upstream search for: {keyword} by {by} => {message}"
+    )]
+    public static partial void FailedToSearchUpstreamPackageInfo(
+        this ILogger<AurRpc> logger,
+        string keyword,
+        string by,
+        string message,
+        Exception exception
+    );
 }
