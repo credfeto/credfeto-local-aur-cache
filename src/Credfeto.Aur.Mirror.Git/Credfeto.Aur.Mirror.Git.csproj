@@ -55,7 +55,6 @@
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Git.Interfaces\Credfeto.Aur.Mirror.Git.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
     <PackageReference Include="NonBlocking" Version="2.1.2" />
   </ItemGroup>
   <ItemGroup>
