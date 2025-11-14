@@ -55,7 +55,6 @@
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Git.Interfaces\Credfeto.Aur.Mirror.Git.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.9" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
     <PackageReference Include="NonBlocking" Version="2.1.2" />
