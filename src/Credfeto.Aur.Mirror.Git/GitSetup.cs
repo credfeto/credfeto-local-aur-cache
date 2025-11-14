@@ -9,9 +9,7 @@ public static class GitSetup
 {
     public static IServiceCollection AddGitRepos(this IServiceCollection services)
     {
-        return services
-               .AddSingleton<IGitServer, GitServer>()
-               .AddSingleton<IUpdateLock, UpdateLock>()
-            ;
+        return services.AddSingleton<IGitServer, GitServer>()
+                       .AddSingleton<IUpdateLock, UpdateLock>();
     }
 }
