@@ -8,9 +8,10 @@ public static class RpcSetup
 {
     public static IServiceCollection AddAurRpcApi(this IServiceCollection services)
     {
-        return services.AddRpcClient()
-                       .AddReposClient()
-                       .AddSingleton<IAurRpc, AurRpc>()
-                       .AddSingleton<IAurRepos, AurRepos>();
+        return services
+            .AddRpcClient()
+            .AddReposClient()
+            .AddSingleton<IAurRpc, AurRpc>()
+            .AddSingleton<IAurRepos, AurRepos>();
     }
 }
