@@ -15,6 +15,7 @@ public static class RpcSetup
             .AddSingleton<IAurRpc, AurRpc>()
             .AddSingleton<IAurRepos, AurRepos>()
             .AddSingleton<ILocalAurRpc, LocalAurRpc>()
-            .AddSingleton<IRemoteAurRpc, RemoteAurRpc>();
+            .AddSingleton<IRemoteAurRpc, RemoteAurRpc>()
+            .AddSingleton<ILocalAurMetadata, LocalAurMetadata>();
     }
 }

@@ -16,6 +16,7 @@ using Credfeto.Aur.Mirror.Rpc.Constants;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Models;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
+using Credfeto.Extensions.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -25,14 +26,16 @@ public sealed class LocalAurRpc : ILocalAurRpc
 {
     private static readonly CancellationToken DoNotCancelEarly = CancellationToken.None;
     private readonly IGitServer _gitServer;
+    private readonly ILocalAurMetadata _localAurMetadata;
     private readonly ILogger<LocalAurRpc> _logger;
     private readonly ServerConfig _serverConfig;
     private readonly IUpdateLock _updateLock;
 
-    public LocalAurRpc(IOptions<ServerConfig> config, IGitServer gitServer, IUpdateLock updateLock, ILogger<LocalAurRpc> logger)
+    public LocalAurRpc(IOptions<ServerConfig> config, IGitServer gitServer, IUpdateLock updateLock, ILocalAurMetadata localAurMetadata, ILogger<LocalAurRpc> logger)
     {
         this._gitServer = gitServer;
         this._updateLock = updateLock;
+        this._localAurMetadata = localAurMetadata;
         this._logger = logger;
         this._gitServer = gitServer;
         this._logger = logger;
@@ -45,55 +48,35 @@ public sealed class LocalAurRpc : ILocalAurRpc
 
     public async ValueTask<RpcResponse> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
-        List<SearchResult> results = [];
-        IReadOnlyList<string> files = this.GetMetadataFiles();
-
-        foreach (string metadataFileName in files)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            SearchResult? existing = await this.ReadPackageFromMetadataAsync(metadataFileName);
-
-            if (existing is not null && IsSearchMatch(existing: existing, keyword: keyword, by: by))
-            {
-                this._logger.OfflineSearchFound(package: existing.Name, keyword: keyword, by: by);
-                results.Add(existing);
-            }
-        }
+        IReadOnlyList<SearchResult> results =
+            await this._localAurMetadata.SearchAsync(predicate: item => IsSearchMatch(existing: item, keyword: keyword, by: by), cancellationToken: cancellationToken);
 
         return new(count: results.Count, results: results, rpcType: "search", version: RpcResults.RpcVersion);
     }
 
-    public async ValueTask<RpcResponse> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    public ValueTask<RpcResponse> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
-        List<SearchResult> results = [];
-        IReadOnlyList<string> files = this.GetMetadataFiles();
+        IReadOnlyList<SearchResult> results =
+        [
+            .. packages.Select(this._localAurMetadata.Get)
+                       .RemoveNulls()
+        ];
 
-        foreach (string metadataFileName in files)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+        RpcResponse response = new(count: results.Count, results: results, rpcType: "multiinfo", version: RpcResults.RpcVersion);
 
-            SearchResult? existing = await this.ReadPackageFromMetadataAsync(metadataFileName);
-
-            if (existing is null)
-            {
-                continue;
-            }
-
-            if (packages.Any(p => StringComparer.OrdinalIgnoreCase.Equals(x: existing.Name, y: p)))
-            {
-                results.Add(existing);
-            }
-        }
-
-        return new(count: results.Count, results: results, rpcType: "multiinfo", version: RpcResults.RpcVersion);
+        return ValueTask.FromResult(response);
     }
 
-    public async ValueTask SyncUpstreamReposAsync(RpcResponse upstream, ProductInfoHeaderValue? userAgent)
+    public ValueTask SyncUpstreamReposAsync(RpcResponse upstream, ProductInfoHeaderValue? userAgent)
+    {
+        return this.SyncUpstreamReposAsync(upstream.Results);
+    }
+
+    private async ValueTask SyncUpstreamReposAsync(IReadOnlyList<SearchResult> items)
     {
         SearchTracking tracking = new();
 
-        foreach (SearchResult package in upstream.Results)
+        foreach (SearchResult package in items)
         {
             string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
             string upstreamRepo = this._serverConfig.Upstream.Repos + "/" + package.Name + ".git";
@@ -207,19 +190,5 @@ public sealed class LocalAurRpc : ILocalAurRpc
         }
     }
 
-    private IReadOnlyList<string> GetMetadataFiles()
-    {
-        try
-        {
-            EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
 
-            return Directory.GetFiles(path: this._serverConfig.Storage.Metadata, searchPattern: "*.json");
-        }
-        catch (Exception exception)
-        {
-            this._logger.CouldNotFindMetadataFiles(directory: this._serverConfig.Storage.Metadata, message: exception.Message, exception: exception);
-
-            return [];
-        }
-    }
 }
