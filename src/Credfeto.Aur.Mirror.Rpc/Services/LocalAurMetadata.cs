@@ -69,6 +69,12 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
         return null;
     }
 
+    public ValueTask UpdateAsync(IReadOnlyList<SearchResult> items)
+    {
+
+    }
+
+    
     private async ValueTask<SearchResult?> ReadPackageFromMetadataAsync(string metadataFileName)
     {
         try

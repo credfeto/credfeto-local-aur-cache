@@ -13,4 +13,6 @@ public interface ILocalAurMetadata
     ValueTask<IReadOnlyList<SearchResult>> SearchAsync(Func<SearchResult, bool> predicate, CancellationToken cancellationToken);
 
     SearchResult? Get(string packageName);
+
+    ValueTask UpdateAsync(IReadOnlyList<SearchResult> items);
 }
