@@ -10,6 +10,7 @@ public static class GitSetup
     public static IServiceCollection AddGitRepos(this IServiceCollection services)
     {
         return services.AddSingleton<IGitServer, GitServer>()
+                       .AddSingleton<ILocallyInstalled, LocallyInstalled>()
                        .AddSingleton<IUpdateLock, UpdateLock>();
     }
 }

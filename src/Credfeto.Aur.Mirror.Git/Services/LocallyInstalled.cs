@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Config;
+using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Git.Services.LoggingExtensions;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.Cache;

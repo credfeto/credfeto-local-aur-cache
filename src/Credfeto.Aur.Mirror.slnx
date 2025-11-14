@@ -9,6 +9,7 @@
   </Folder>
   <Folder Name="/Git/">
     <Project Path="Credfeto.Aur.Mirror.Git.Interfaces/Credfeto.Aur.Mirror.Git.Interfaces.csproj" />
+    <Project Path="Credfeto.Aur.Mirror.Git.Tests/Credfeto.Aur.Mirror.Git.Tests.csproj" />
     <Project Path="Credfeto.Aur.Mirror.Git/Credfeto.Aur.Mirror.Git.csproj" />
   </Folder>
   <Folder Name="/RPC/">
