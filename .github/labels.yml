@@ -38,6 +38,10 @@
    color: "96f7d2"
    description: "Changes in Credfeto.Aur.Mirror.Git project"
 
+ - name: "credfeto-aur-mirror-git-interfaces"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Aur.Mirror.Git.Interfaces project"
+
  - name: "credfeto-aur-mirror-interfaces"
    color: "96f7d2"
    description: "Changes in Credfeto.Aur.Mirror.Interfaces project"
