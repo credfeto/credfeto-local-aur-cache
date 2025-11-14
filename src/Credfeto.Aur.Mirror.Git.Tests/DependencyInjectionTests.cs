@@ -14,9 +14,7 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
 
     private static IServiceCollection Configure(IServiceCollection services)
     {
-        return services
-               .AddMockedService<ICurrentTimeSource>()
-            .AddGitRepos();
+        return services.AddMockedService<ICurrentTimeSource>().AddGitRepos();
     }
 
     [Fact]
