@@ -4,6 +4,7 @@
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisRuleSet>$(SolutionDir)\CodeAnalysis.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <DebuggerSupport>true</DebuggerSupport>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>true</EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -40,7 +41,6 @@
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
     <WarningsAsErrors />
-    <DebuggerSupport>true</DebuggerSupport>
   </PropertyGroup>
   <ItemGroup>
     <!-- error NU1903: Warning As Error: Package 'System.Private.Uri' 4.3.0 has a known high severity vulnerability -->
@@ -53,9 +53,12 @@
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-8g4q-xg66-9fp4" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FunFair.Test.Common" Version="6.2.4.1830"/>
+    <ProjectReference Include="..\Credfeto.Aur.Mirror.Rpc\Credfeto.Aur.Mirror.Rpc.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FunFair.Test.Common" Version="6.2.4.1830" />
     <PackageReference Include="NSubstitute" Version="5.3.0" />
-    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.0"/>
+    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
@@ -77,9 +80,6 @@
     <PackageReference Include="SonarAnalyzer.CSharp" Version="10.15.0.120848" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.3" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="ToStringWithoutOverrideAnalyzer" Version="0.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="xunit.analyzers" Version="1.25.0" PrivateAssets="All" ExcludeAssets="runtime"/>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Rpc\Credfeto.Aur.Mirror.Rpc.csproj" />
+    <PackageReference Include="xunit.analyzers" Version="1.25.0" PrivateAssets="All" ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>
