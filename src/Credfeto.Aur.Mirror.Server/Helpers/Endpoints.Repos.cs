@@ -6,7 +6,6 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Git.Interfaces;
-using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.Git;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Server.Extensions;

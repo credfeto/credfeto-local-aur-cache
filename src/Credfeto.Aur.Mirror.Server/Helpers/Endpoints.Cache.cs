@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Credfeto.Aur.Mirror.Git.Interfaces;
-using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.Cache;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
