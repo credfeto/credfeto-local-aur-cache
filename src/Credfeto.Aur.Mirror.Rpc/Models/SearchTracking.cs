@@ -3,7 +3,7 @@ using Credfeto.Aur.Mirror.Models.AurRpc;
 
 namespace Credfeto.Aur.Mirror.Rpc.Models;
 
-public sealed class SearchTracking
+internal sealed class SearchTracking
 {
     private readonly List<SearchResult> _toSave;
 
