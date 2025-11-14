@@ -39,8 +39,8 @@ public sealed class AurRpc : IAurRpc
         this._serverConfig = config.Value;
         this._updateLock = updateLock;
 
-        EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
-        EnsureDirectoryExists(this._serverConfig.Storage.Repos);
+        // TASK: Store local config in a DB that's quick to search rather than filesystem
+        // TASK: Look locally for everything and ONLY look in RPC if a significant amount of time has occured since the last query for that same data
     }
 
     public async ValueTask<RpcResponse> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)

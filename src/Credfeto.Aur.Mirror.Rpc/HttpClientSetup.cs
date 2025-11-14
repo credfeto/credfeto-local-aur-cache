@@ -8,7 +8,7 @@ using Polly;
 
 namespace Credfeto.Aur.Mirror.Rpc;
 
-public static class HttpClientSetup
+internal static class HttpClientSetup
 {
     private const int CONCURRENT_ACTIONS = 30;
     private const int QUEUED_ACTIONS = 10;

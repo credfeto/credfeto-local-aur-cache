@@ -82,14 +82,11 @@ internal static class ServerStartup
         builder
             .Services.Configure<ServerConfig>(section)
             .AddDate()
-            .AddSingleton<IAurRpc, AurRpc>()
-            .AddSingleton<IAurRepos, AurRepos>()
+            .AddAurRpcApi()
             .AddSingleton<IGitServer, GitServer>()
             .AddSingleton<IRepoConfig, RepoConfig>()
             .AddSingleton<IUpdateLock, UpdateLock>()
             .AddSingleton<ILocallyInstalled, LocallyInstalled>()
-            .AddRpcClient()
-            .AddReposClient()
             .ConfigureHttpJsonOptions(options =>
                 options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
             );
