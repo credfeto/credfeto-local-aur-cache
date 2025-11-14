@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Interfaces;
-using Credfeto.Aur.Mirror.Models;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Constants;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
@@ -29,18 +26,16 @@ public sealed class LocalAurRpc : ILocalAurRpc
     private readonly ILocalAurMetadata _localAurMetadata;
     private readonly ILogger<LocalAurRpc> _logger;
     private readonly ServerConfig _serverConfig;
-    private readonly IUpdateLock _updateLock;
 
-    public LocalAurRpc(IOptions<ServerConfig> config, IGitServer gitServer, IUpdateLock updateLock, ILocalAurMetadata localAurMetadata, ILogger<LocalAurRpc> logger)
+
+    public LocalAurRpc(IOptions<ServerConfig> config, IGitServer gitServer,  ILocalAurMetadata localAurMetadata, ILogger<LocalAurRpc> logger)
     {
         this._gitServer = gitServer;
-        this._updateLock = updateLock;
         this._localAurMetadata = localAurMetadata;
         this._logger = logger;
         this._gitServer = gitServer;
         this._logger = logger;
         this._serverConfig = config.Value;
-        this._updateLock = updateLock;
 
         // TASK: Store local config in a DB that's quick to search rather than filesystem
         // TASK: Look locally for everything and ONLY look in RPC if a significant amount of time has occured since the last query for that same data
@@ -69,10 +64,35 @@ public sealed class LocalAurRpc : ILocalAurRpc
 
     public ValueTask SyncUpstreamReposAsync(RpcResponse upstream, ProductInfoHeaderValue? userAgent)
     {
-        return this._localAurMetadata.UpdateAsync(upstream.Results);
+        return this.SyncUpstreamReposAsync(upstream.Results);
     }
 
+    private async ValueTask SyncUpstreamReposAsync(IReadOnlyList<SearchResult> items)
+    {
+        SearchTracking tracking = new();
 
+        foreach (SearchResult package in items)
+        {
+            string upstreamRepo = this._serverConfig.Upstream.Repos + "/" + package.Name + ".git";
+
+            this._logger.CheckingPackage(packageId: package.Id, packageName: package.Name, upstreamRepo: upstreamRepo);
+
+            SearchResult? existing = this._localAurMetadata.Get(package.Name);
+
+            bool changed = existing is null || existing.LastModified != package.LastModified;
+            await this._gitServer.EnsureRepositoryHasBeenClonedAsync(repoName: package.Name, upstreamRepo: upstreamRepo, changed: changed, cancellationToken: DoNotCancelEarly);
+
+            if (changed)
+            {
+                tracking.AppendRepoSyncSearchResult(package);
+            }
+        }
+
+        if (tracking.ToSave is not [])
+        {
+            await this._localAurMetadata.UpdateAsync(tracking.ToSave);
+        }
+    }
 
     private static bool IsSearchMatch(SearchResult existing, string keyword, string by)
     {
@@ -96,14 +116,4 @@ public sealed class LocalAurRpc : ILocalAurRpc
             _ => false
         };
     }
-
-    private static void EnsureDirectoryExists(string directory)
-    {
-        if (!Directory.Exists(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-    }
-
-
 }

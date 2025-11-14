@@ -36,13 +36,12 @@ internal static partial class LocalAurRpcLoggingExtensions
     [LoggerMessage(
         LogLevel.Information,
         EventId = 4,
-        Message = "Checking Package {packageId}) ({packageName}) metadata: {metadataFileName} from {upstreamRepo}"
+        Message = "Checking Package {packageId}) ({packageName}) from {upstreamRepo}"
     )]
     public static partial void CheckingPackage(
         this ILogger<LocalAurRpc> logger,
         int packageId,
         string packageName,
-        string metadataFileName,
         string upstreamRepo
     );
 
