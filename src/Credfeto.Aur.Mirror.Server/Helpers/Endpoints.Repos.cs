@@ -635,7 +635,11 @@ internal static partial class Endpoints
         );
     }
 
-    [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "For Review")]
+    [SuppressMessage(
+        category: "Microsoft.Reliability",
+        checkId: "CA2000:DisposeObjectsBeforeLosingScope",
+        Justification = "For Review"
+    )]
     private static Stream GetInputStream(HttpContext context)
     {
         return StringComparer.Ordinal.Equals(context.Request.Headers["Content-Encoding"], y: "gzip")
