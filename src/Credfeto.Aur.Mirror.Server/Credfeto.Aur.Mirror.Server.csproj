@@ -110,7 +110,4 @@
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Git\Credfeto.Aur.Mirror.Git.csproj" />
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Rpc\Credfeto.Aur.Mirror.Rpc.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
 </Project>
