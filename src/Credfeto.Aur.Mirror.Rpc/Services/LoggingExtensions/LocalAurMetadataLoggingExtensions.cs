@@ -3,11 +3,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 
-internal static partial class LocalAurRpcLoggingExtensions
+internal static partial class LocalAurMetadataLoggingExtensions
 {
     [LoggerMessage(LogLevel.Error, EventId = 1, Message = "Failed to save metadata: {filename}: {message}")]
     public static partial void SaveMetadataFailed(
-        this ILogger<LocalAurRpc> logger,
+        this ILogger<LocalAurMetadata> logger,
         string filename,
         string message,
         Exception exception
@@ -15,7 +15,7 @@ internal static partial class LocalAurRpcLoggingExtensions
 
     [LoggerMessage(LogLevel.Error, EventId = 2, Message = "Failed to read saved metadata: {filename}: {message}")]
     public static partial void FailedToReadSavedMetadata(
-        this ILogger<LocalAurRpc> logger,
+        this ILogger<LocalAurMetadata> logger,
         string filename,
         string message,
         Exception exception
@@ -27,7 +27,7 @@ internal static partial class LocalAurRpcLoggingExtensions
         Message = "Failed to read saved metadata from folder: {directory}: {message}"
     )]
     public static partial void CouldNotFindMetadataFiles(
-        this ILogger<LocalAurRpc> logger,
+        this ILogger<LocalAurMetadata> logger,
         string directory,
         string message,
         Exception exception
@@ -36,12 +36,13 @@ internal static partial class LocalAurRpcLoggingExtensions
     [LoggerMessage(
         LogLevel.Information,
         EventId = 4,
-        Message = "Checking Package {packageId}) ({packageName}) from {upstreamRepo}"
+        Message = "Checking Package {packageId}) ({packageName}) metadata: {metadataFileName} from {upstreamRepo}"
     )]
     public static partial void CheckingPackage(
-        this ILogger<LocalAurRpc> logger,
+        this ILogger<LocalAurMetadata> logger,
         int packageId,
         string packageName,
+        string metadataFileName,
         string upstreamRepo
     );
 
@@ -51,7 +52,7 @@ internal static partial class LocalAurRpcLoggingExtensions
         Message = "Found Metadata for {packageId}) ({packageName}) in {metadataFileName}"
     )]
     public static partial void FoundMetadata(
-        this ILogger<LocalAurRpc> logger,
+        this ILogger<LocalAurMetadata> logger,
         int packageId,
         string packageName,
         string metadataFileName
@@ -63,7 +64,7 @@ internal static partial class LocalAurRpcLoggingExtensions
         Message = "No Metadata for {packageId}) ({packageName}) in {metadataFileName}"
     )]
     public static partial void NoMetadata(
-        this ILogger<LocalAurRpc> logger,
+        this ILogger<LocalAurMetadata> logger,
         int packageId,
         string packageName,
         string metadataFileName
@@ -71,7 +72,7 @@ internal static partial class LocalAurRpcLoggingExtensions
 
     [LoggerMessage(LogLevel.Information, EventId = 7, Message = "Search Found: {package} using {keyword} by {by}")]
     public static partial void OfflineSearchFound(
-        this ILogger<LocalAurRpc> logger,
+        this ILogger<LocalAurMetadata> logger,
         string package,
         string keyword,
         string by

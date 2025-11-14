@@ -8,12 +8,12 @@ using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Git.Services;
-using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Rpc;
-using Credfeto.Aur.Mirror.Rpc.Services;
 using Credfeto.Date;
+using Credfeto.Services.Startup;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -84,14 +84,18 @@ internal static class ServerStartup
         builder
             .Services.Configure<ServerConfig>(section)
             .AddDate()
+            .AddRunOnStartupServices()
             .AddAurRpcApi()
             .AddGitRepos()
             .AddSingleton<ILocallyInstalled, LocallyInstalled>()
-            .ConfigureHttpJsonOptions(options =>
-                options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default)
-            );
+            .ConfigureHttpJsonOptions(AddHttpJsonOptions);
 
         return builder;
+    }
+
+    private static void AddHttpJsonOptions(JsonOptions options)
+    {
+        options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default);
     }
 
     private static WebApplicationBuilder ConfigureSettings(this WebApplicationBuilder builder, string configPath)

@@ -1,4 +1,3 @@
-using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +14,7 @@ public static class RpcSetup
             .AddSingleton<IAurRpc, AurRpc>()
             .AddSingleton<IAurRepos, AurRepos>()
             .AddSingleton<ILocalAurRpc, LocalAurRpc>()
-            .AddSingleton<IRemoteAurRpc, RemoteAurRpc>();
+            .AddSingleton<IRemoteAurRpc, RemoteAurRpc>()
+            .AddSingleton<ILocalAurMetadata, LocalAurMetadata>();
     }
 }
