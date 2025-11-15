@@ -12,6 +12,7 @@ using Credfeto.Aur.Mirror.Models;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
+using Credfeto.Date.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NonBlocking;
@@ -21,15 +22,16 @@ namespace Credfeto.Aur.Mirror.Rpc.Services;
 public sealed class LocalAurMetadata : ILocalAurMetadata
 {
     private static readonly CancellationToken DoNotCancelEarly = CancellationToken.None;
+    private readonly ICurrentTimeSource _currentTimeSource;
     private readonly ILogger<LocalAurMetadata> _logger;
-    private readonly ConcurrentDictionary<string, SearchResult> _metadata;
+    private readonly ConcurrentDictionary<string, Tracking> _metadata;
     private readonly ServerConfig _serverConfig;
     private readonly IUpdateLock _updateLock;
 
-
-    public LocalAurMetadata(IOptions<ServerConfig> config, IUpdateLock updateLock,ILogger<LocalAurMetadata> logger)
+    public LocalAurMetadata(IOptions<ServerConfig> config, IUpdateLock updateLock, ICurrentTimeSource currentTimeSource, ILogger<LocalAurMetadata> logger)
     {
         this._updateLock = updateLock;
+        this._currentTimeSource = currentTimeSource;
         this._logger = logger;
         this._serverConfig = config.Value;
         this._metadata = new(StringComparer.OrdinalIgnoreCase);
@@ -52,46 +54,57 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
                 continue;
             }
 
-            _ = this._metadata.TryAdd(key: existing.Name, value: existing);
+            _ = this._metadata.TryAdd(key: existing.Name, new(this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), item: existing));
         }
     }
 
     public ValueTask<IReadOnlyList<SearchResult>> SearchAsync(Func<SearchResult, bool> predicate, CancellationToken cancellationToken)
     {
-        IReadOnlyList<SearchResult> results = [.. this._metadata.Values.Where(predicate)];
+        IReadOnlyList<SearchResult> results =
+        [
+            .. this._metadata.Values.Where(item => predicate(item.Item))
+                   .Select(item =>
+                           {
+                               item.LastAccessed = this._currentTimeSource.UtcNow();
+
+                               return item.Item;
+                           })
+        ];
 
         return ValueTask.FromResult(results);
     }
 
     public SearchResult? Get(string packageName)
     {
-        if (this._metadata.TryGetValue(key: packageName, out SearchResult? result))
+        if (this._metadata.TryGetValue(key: packageName, out Tracking? result))
         {
-            return result;
+            result.LastAccessed = this._currentTimeSource.UtcNow();
+
+            return result.Item;
         }
 
         return null;
     }
 
-    public async ValueTask UpdateAsync(SearchResult package, Func<SearchResult, bool, ValueTask> onUpdate,  CancellationToken cancellationToken)
+    public async ValueTask UpdateAsync(SearchResult package, Func<SearchResult, bool, ValueTask> onUpdate, CancellationToken cancellationToken)
     {
         bool save = false;
         bool changed = false;
 
-        if (this._metadata.TryGetValue(key: package.Name, out SearchResult? existing))
+        if (this._metadata.TryGetValue(key: package.Name, out Tracking? existing))
         {
-            if (existing.LastModified < package.LastModified)
+            if (existing.Item.LastModified < package.LastModified)
             {
-                // Should make this atomic and store additional status metadata for save state etc
-                _ = this._metadata.TryRemove(key: package.Name, value: out _);
-                _ = this._metadata.TryAdd(key: package.Name, value: package);
+                existing.Item = package;
+                existing.LastRequestedUpstream = this._currentTimeSource.UtcNow();
+                existing.LastAccessed = this._currentTimeSource.UtcNow();
                 save = true;
                 changed = true;
             }
         }
         else
         {
-            _ = this._metadata.TryAdd(key: package.Name, value: package);
+            _ = this._metadata.TryAdd(key: package.Name, new(this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), item: package));
             save = true;
         }
 
@@ -101,9 +114,8 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
             string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
             await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName, cancellationToken: DoNotCancelEarly);
 
-            await onUpdate(package, changed);
+            await onUpdate(arg1: package, arg2: changed);
         }
-
     }
 
     private async ValueTask SavePackageToMetadataAsync(SearchResult package, string metadataFileName, CancellationToken cancellationToken)
@@ -166,5 +178,26 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
 
             return [];
         }
+    }
+
+    private sealed class Tracking
+    {
+        public Tracking(DateTimeOffset lastSaved, DateTimeOffset lastAccessed, DateTimeOffset lastRequestedUpstream, SearchResult item)
+        {
+            this.LastSaved = lastSaved;
+            this.LastAccessed = lastAccessed;
+            this.LastRequestedUpstream = lastRequestedUpstream;
+            this.Item = item;
+        }
+
+        public DateTimeOffset LastSaved { get; set; }
+
+        public DateTimeOffset LastModified => DateTimeOffset.FromUnixTimeSeconds(this.Item.LastModified);
+
+        public DateTimeOffset LastAccessed { get; set; }
+
+        public DateTimeOffset LastRequestedUpstream { get; set; }
+
+        public SearchResult Item { get; set; }
     }
 }
