@@ -116,7 +116,7 @@ In `$HOME/.config/yay/config.json` aururl and aurrpcurl should be set to point a
 ```json
 {
   "aururl": "http://localhost:8080",
-  "aurrpcurl": "https://localhost:8080/rpc?"
+  "aurrpcurl": "http://localhost:8080/rpc?"
 }
 ```
 
@@ -125,7 +125,7 @@ When accessing remotely from another client pc then adjust localhost to your ser
 ```json
 {
   "aururl": "http://192.168.101.27:8080",
-  "aurrpcurl": "https://192.168.101.27:8080/rpc?"
+  "aurrpcurl": "http://192.168.101.27:8080/rpc?"
 }
 ```
 
@@ -145,7 +145,7 @@ In `$HOME/.config/paru/paru.conf` AurUrl and AurRpcUrl should be set to point at
 ```ini
 [options]
 AurUrl = http://localhost:8080
-AurRpcUrl = https://localhost:8080/rpc?
+AurRpcUrl = http://localhost:8080/rpc?
 ```
 
 When accessing remotely from another client pc then adjust localhost to your server ip to access the cache.
@@ -153,14 +153,14 @@ When accessing remotely from another client pc then adjust localhost to your ser
 ```ini
 [options]
 AurUrl = http://192.168.101.27:8080
-AurRpcUrl = https://192.168.101.27:8080/rpc?
+AurRpcUrl = http://192.168.101.27:8080/rpc?
 ```
 
 If using TLS:
 
 ```ini
 [options]
-AurUrl = http2://my.server.domain:8081
+AurUrl = https://my.server.domain:8081
 AurRpcUrl = https://my.server.domain:8081/rpc?
 ```
 
