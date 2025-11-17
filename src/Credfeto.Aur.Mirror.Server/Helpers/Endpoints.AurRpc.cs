@@ -164,7 +164,7 @@ internal static partial class Endpoints
 
         static bool IsInfoQuery(in StringValues queryType)
         {
-            return IsMatch(queryType, "info") || IsMatch(queryType, "multiinfo");
+            return IsMatch(queryType: queryType, match: "info") || IsMatch(queryType: queryType, match: "multiinfo");
         }
 
         static bool IsMatch(in StringValues queryType, string match)

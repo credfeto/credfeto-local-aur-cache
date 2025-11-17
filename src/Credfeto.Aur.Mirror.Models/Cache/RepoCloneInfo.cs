@@ -8,11 +8,7 @@ namespace Credfeto.Aur.Mirror.Models.Cache;
 [DebuggerDisplay("Repo: {Repo} Last Cloned: {LastCloned}")]
 public sealed class RepoCloneInfo
 {
-    [SuppressMessage(
-        category: "Roslynator.Analyzers",
-        checkId: "RCS1231:Make ref read only",
-        Justification = "Not for json serialization"
-    )]
+    [SuppressMessage(category: "Roslynator.Analyzers", checkId: "RCS1231:Make ref read only", Justification = "Not for json serialization")]
     [JsonConstructor]
     public RepoCloneInfo(string repo, DateTimeOffset lastCloned)
     {

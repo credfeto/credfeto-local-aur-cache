@@ -8,6 +8,7 @@ using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Git.Services;
+using Credfeto.Aur.Mirror.Models;
 using Credfeto.Aur.Mirror.Rpc;
 using Credfeto.Date;
 using Credfeto.Services.Startup;
@@ -22,7 +23,6 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
-using AppJsonContexts = Credfeto.Aur.Mirror.Models.AppJsonContexts;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
@@ -61,18 +61,18 @@ internal static class ServerStartup
     {
         string configPath = ApplicationConfigLocator.ConfigurationFilesPath;
 
-        return WebApplication
-            .CreateSlimBuilder(args)
-            .ConfigureSettings(configPath: configPath)
-            .ConfigureServices()
-            .ConfigureAppHost()
-            .ConfigureWebHost(configPath: configPath)
-            .Build();
+        return WebApplication.CreateSlimBuilder(args)
+                             .ConfigureSettings(configPath: configPath)
+                             .ConfigureServices()
+                             .ConfigureAppHost()
+                             .ConfigureWebHost(configPath: configPath)
+                             .Build();
     }
 
     private static WebApplicationBuilder ConfigureAppHost(this WebApplicationBuilder builder)
     {
-        builder.Host.UseWindowsService().UseSystemd();
+        builder.Host.UseWindowsService()
+               .UseSystemd();
 
         return builder;
     }
@@ -81,87 +81,69 @@ internal static class ServerStartup
     {
         IConfigurationSection section = builder.Configuration.GetSection("Proxy");
 
-        builder
-            .Services.Configure<ServerConfig>(section)
-            .AddDate()
-            .AddRunOnStartupServices()
-            .AddAurRpcApi()
-            .AddGitRepos()
-            .AddSingleton<ILocallyInstalled, LocallyInstalled>()
-            .ConfigureHttpJsonOptions(AddHttpJsonOptions);
+        builder.Services.Configure<ServerConfig>(section)
+               .AddDate()
+               .AddRunOnStartupServices()
+               .AddAurRpcApi()
+               .AddGitRepos()
+               .ConfigureHttpJsonOptions(AddHttpJsonOptions);
 
         return builder;
     }
 
     private static void AddHttpJsonOptions(JsonOptions options)
     {
-        options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default);
+        options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContext.Default);
     }
 
     private static WebApplicationBuilder ConfigureSettings(this WebApplicationBuilder builder, string configPath)
     {
         builder.Configuration.Sources.Clear();
-        builder
-            .Configuration.SetBasePath(configPath)
-            .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: false)
-            .AddJsonFile(path: "appsettings-local.json", optional: true, reloadOnChange: false)
-            .AddEnvironmentVariables();
+        builder.Configuration.SetBasePath(configPath)
+               .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: false)
+               .AddJsonFile(path: "appsettings-local.json", optional: true, reloadOnChange: false)
+               .AddEnvironmentVariables();
 
         return builder;
     }
 
     private static WebApplicationBuilder ConfigureWebHost(this WebApplicationBuilder builder, string configPath)
     {
-        builder
-            .WebHost.UseKestrel(options: options =>
-                SetKestrelOptions(
-                    options: options,
-                    httpPort: HTTP_PORT,
-                    httpsPort: HTTPS_PORT,
-                    h2Port: H2_PORT,
-                    configurationFiledPath: configPath
-                )
-            )
-            .UseSetting(key: WebHostDefaults.SuppressStatusMessagesKey, value: "True")
-            .ConfigureLogging((_, logger) => ConfigureLogging(logger));
+        builder.WebHost.UseKestrel(options: options => SetKestrelOptions(options: options, httpPort: HTTP_PORT, httpsPort: HTTPS_PORT, h2Port: H2_PORT, configurationFiledPath: configPath))
+               .UseSetting(key: WebHostDefaults.SuppressStatusMessagesKey, value: "True")
+               .ConfigureLogging((_, logger) => ConfigureLogging(logger));
 
         return builder;
     }
 
-    [SuppressMessage(
-        category: "Microsoft.Reliability",
-        checkId: "CA2000:DisposeObjectsBeforeLosingScope",
-        Justification = "Lives for program lifetime"
-    )]
-    [SuppressMessage(
-        category: "SmartAnalyzers.CSharpExtensions.Annotations",
-        checkId: "CSE007:DisposeObjectsBeforeLosingScope",
-        Justification = "Lives for program lifetime"
-    )]
+    [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "Lives for program lifetime")]
+    [SuppressMessage(category: "SmartAnalyzers.CSharpExtensions.Annotations", checkId: "CSE007:DisposeObjectsBeforeLosingScope", Justification = "Lives for program lifetime")]
     private static void ConfigureLogging(ILoggingBuilder logger)
     {
-        logger.ClearProviders().AddSerilog(CreateLogger(), dispose: true);
+        logger.ClearProviders()
+              .AddSerilog(CreateLogger(), dispose: true);
     }
 
     private static Logger CreateLogger()
     {
-        return new LoggerConfiguration()
-            .Enrich.WithDemystifiedStackTraces()
-            .Enrich.FromLogContext()
-            .Enrich.WithMachineName()
-            .Enrich.WithProcessId()
-            .Enrich.WithThreadId()
-            .Enrich.WithProperty(name: "ServerVersion", value: VersionInformation.Version)
-            .Enrich.WithProperty(name: "ProcessName", value: VersionInformation.Product)
-            .WriteToDebuggerAwareOutput()
-            .CreateLogger();
+        return new LoggerConfiguration().Enrich.WithDemystifiedStackTraces()
+                                        .Enrich.FromLogContext()
+                                        .Enrich.WithMachineName()
+                                        .Enrich.WithProcessId()
+                                        .Enrich.WithThreadId()
+                                        .Enrich.WithProperty(name: "ServerVersion", value: VersionInformation.Version)
+                                        .Enrich.WithProperty(name: "ProcessName", value: VersionInformation.Product)
+                                        .WriteToDebuggerAwareOutput()
+                                        .CreateLogger();
     }
 
     private static LoggerConfiguration WriteToDebuggerAwareOutput(this LoggerConfiguration configuration)
     {
         LoggerSinkConfiguration writeTo = configuration.WriteTo;
 
-        return Debugger.IsAttached ? writeTo.Debug() : writeTo.Console();
+        return Debugger.IsAttached
+            ? writeTo.Debug()
+            : writeTo.Console();
     }
 
     private static void SetH1ListenOptions(ListenOptions listenOptions)
@@ -180,13 +162,7 @@ internal static class ServerStartup
         listenOptions.UseHttps(fileName: certFile);
     }
 
-    private static void SetKestrelOptions(
-        KestrelServerOptions options,
-        int httpPort,
-        int httpsPort,
-        int h2Port,
-        string configurationFiledPath
-    )
+    private static void SetKestrelOptions(KestrelServerOptions options, int httpPort, int httpsPort, int h2Port, string configurationFiledPath)
     {
         options.DisableStringReuse = false;
         options.AllowSynchronousIO = false;
@@ -200,11 +176,7 @@ internal static class ServerStartup
         if (httpsPort != 0 && File.Exists(certFile))
         {
             Console.WriteLine($"Listening on HTTPS port: {httpsPort}");
-            options.Listen(
-                address: IPAddress.Any,
-                port: httpsPort,
-                configure: o => SetHttpsListenOptions(listenOptions: o, certFile: certFile)
-            );
+            options.Listen(address: IPAddress.Any, port: httpsPort, configure: o => SetHttpsListenOptions(listenOptions: o, certFile: certFile));
         }
 
         if (h2Port != 0)

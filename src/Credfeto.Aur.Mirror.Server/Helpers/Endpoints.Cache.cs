@@ -14,15 +14,13 @@ internal static partial class Endpoints
     {
         Console.WriteLine("Configuring Cache Endpoint");
 
-        app.MapGet(
-            pattern: "/cache",
-            handler: static async (ILocallyInstalled locallyInstalled, CancellationToken cancellationToken) =>
-            {
-                IReadOnlyList<RepoCloneInfo> cached = await locallyInstalled.GetRecentlyClonedAsync(cancellationToken);
+        app.MapGet(pattern: "/cache",
+                   handler: static async (ILocallyInstalled locallyInstalled, CancellationToken cancellationToken) =>
+                            {
+                                IReadOnlyList<RepoCloneInfo> cached = await locallyInstalled.GetRecentlyClonedAsync(cancellationToken);
 
-                return Results.Ok(cached);
-            }
-        );
+                                return Results.Ok(cached);
+                            });
 
         return app;
     }

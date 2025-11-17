@@ -4,11 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Models;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Server.Helpers;
 using Credfeto.Docker.HealthCheck.Http.Client;
 using Microsoft.AspNetCore.Builder;
-using AppJsonContexts = Credfeto.Aur.Mirror.Models.AppJsonContexts;
 
 namespace Credfeto.Aur.Mirror.Server;
 
@@ -16,11 +16,7 @@ public static class Program
 {
     private const int MIN_THREADS = 32;
 
-    [SuppressMessage(
-        category: "Meziantou.Analyzer",
-        checkId: "MA0109: Add an overload with a Span or Memory parameter",
-        Justification = "Won't work here"
-    )]
+    [SuppressMessage(category: "Meziantou.Analyzer", checkId: "MA0109: Add an overload with a Span or Memory parameter", Justification = "Won't work here")]
     public static async Task<int> Main(string[] args)
     {
         return HealthCheckClient.IsHealthCheck(args: args, out string? checkUrl)
@@ -58,8 +54,7 @@ public static class Program
     [Conditional("DEBUG")]
     private static void TestDeserialization()
     {
-        const string s =
-            @"{
+        const string s = @"{
                 ""resultcount"":1,
                 ""results"":[
                     {
@@ -85,9 +80,7 @@ public static class Program
                 ""type"":""multiinfo"",
                 ""version"":5
             }";
-        RpcResponse rpcResponse =
-            JsonSerializer.Deserialize<RpcResponse>(s, AppJsonContexts.Default.RpcResponse)
-            ?? throw new JsonException("Could not deserialize response");
+        RpcResponse rpcResponse = JsonSerializer.Deserialize<RpcResponse>(json: s, jsonTypeInfo: AppJsonContext.Default.RpcResponse) ?? throw new JsonException("Could not deserialize response");
 
         Console.WriteLine(rpcResponse.Count);
     }
@@ -96,7 +89,8 @@ public static class Program
     {
         Console.WriteLine("App Created");
 
-        return AddMiddleware(application).RunAsync();
+        return AddMiddleware(application)
+            .RunAsync();
     }
 
     private static WebApplication AddMiddleware(WebApplication application)

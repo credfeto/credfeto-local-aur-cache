@@ -9,27 +9,21 @@ namespace Credfeto.Aur.Mirror.Git.Helpers;
 
 internal static class GitCommandLine
 {
-    public static async ValueTask<(string[] Output, int ExitCode)> ExecAsync(
-        string gitExecutable,
-        string clonePath,
-        string repoPath,
-        string arguments,
-        CancellationToken cancellationToken
-    )
+    public static async ValueTask<(string[] Output, int ExitCode)> ExecAsync(string gitExecutable, string clonePath, string repoPath, string arguments, CancellationToken cancellationToken)
     {
         EnsureNotLocked(repoUrl: clonePath, workingDirectory: repoPath);
 
         ProcessStartInfo psi = new()
-        {
-            FileName = gitExecutable,
-            WorkingDirectory = repoPath,
-            Arguments = arguments,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            Environment = { ["GIT_REDIRECT_STDERR"] = "2>&1" },
-        };
+                               {
+                                   FileName = gitExecutable,
+                                   WorkingDirectory = repoPath,
+                                   Arguments = arguments,
+                                   RedirectStandardOutput = true,
+                                   RedirectStandardError = true,
+                                   UseShellExecute = false,
+                                   CreateNoWindow = true,
+                                   Environment = { ["GIT_REDIRECT_STDERR"] = "2>&1" }
+                               };
 
         using (Process? process = Process.Start(psi))
         {
@@ -51,10 +45,7 @@ internal static class GitCommandLine
 
             string result = string.Join(separator: Environment.NewLine, output, error);
 
-            return (
-                result.Split(separator: Environment.NewLine, options: StringSplitOptions.RemoveEmptyEntries),
-                process.ExitCode
-            );
+            return (result.Split(separator: Environment.NewLine, options: StringSplitOptions.RemoveEmptyEntries), process.ExitCode);
         }
     }
 

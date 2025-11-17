@@ -9,6 +9,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 ### Fixed
 ### Changed
+- Moved caching to separate service and to priorities info reads through the local cache
 ### Removed
 ### Deployment Changes
 

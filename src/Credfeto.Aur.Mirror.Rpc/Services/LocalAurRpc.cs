@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
-using Credfeto.Aur.Mirror.Rpc.Constants;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
+using Credfeto.Aur.Mirror.Rpc.Models;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Credfeto.Extensions.Linq;
 using Microsoft.Extensions.Logging;
@@ -24,8 +24,7 @@ public sealed class LocalAurRpc : ILocalAurRpc
     private readonly ILogger<LocalAurRpc> _logger;
     private readonly ServerConfig _serverConfig;
 
-
-    public LocalAurRpc(IOptions<ServerConfig> config, IGitServer gitServer,  ILocalAurMetadata localAurMetadata, ILogger<LocalAurRpc> logger)
+    public LocalAurRpc(IOptions<ServerConfig> config, IGitServer gitServer, ILocalAurMetadata localAurMetadata, ILogger<LocalAurRpc> logger)
     {
         this._gitServer = gitServer;
         this._localAurMetadata = localAurMetadata;
@@ -38,25 +37,20 @@ public sealed class LocalAurRpc : ILocalAurRpc
         // TASK: Look locally for everything and ONLY look in RPC if a significant amount of time has occured since the last query for that same data
     }
 
-    public async ValueTask<RpcResponse> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    public ValueTask<IReadOnlyList<Package>> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
-        IReadOnlyList<SearchResult> results =
-            await this._localAurMetadata.SearchAsync(predicate: item => IsSearchMatch(existing: item, keyword: keyword, by: by), cancellationToken: cancellationToken);
-
-        return new(count: results.Count, results: results, rpcType: "search", version: RpcResults.RpcVersion);
+        return this._localAurMetadata.SearchAsync(predicate: item => IsSearchMatch(existing: item, keyword: keyword, by: by), cancellationToken: cancellationToken);
     }
 
-    public ValueTask<RpcResponse> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    public ValueTask<IReadOnlyList<Package>> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
-        IReadOnlyList<SearchResult> results =
+        IReadOnlyList<Package> results =
         [
             .. packages.Select(this._localAurMetadata.Get)
                        .RemoveNulls()
         ];
 
-        RpcResponse response = new(count: results.Count, results: results, rpcType: "multiinfo", version: RpcResults.RpcVersion);
-
-        return ValueTask.FromResult(response);
+        return ValueTask.FromResult(results);
     }
 
     public ValueTask SyncUpstreamReposAsync(RpcResponse upstream, ProductInfoHeaderValue? userAgent)
@@ -68,7 +62,7 @@ public sealed class LocalAurRpc : ILocalAurRpc
     {
         foreach (SearchResult package in items)
         {
-            await this._localAurMetadata.UpdateAsync(package, onUpdate: this.OnRepoChangedAsync, CancellationToken.None);
+            await this._localAurMetadata.UpdateAsync(package: package, onUpdate: this.OnRepoChangedAsync, cancellationToken: CancellationToken.None);
         }
     }
 
@@ -78,11 +72,7 @@ public sealed class LocalAurRpc : ILocalAurRpc
 
         this._logger.CheckingPackage(packageId: package.Id, packageName: package.Name, upstreamRepo: upstreamRepo);
 
-        return this._gitServer.EnsureRepositoryHasBeenClonedAsync(
-            repoName: package.Name,
-            upstreamRepo: upstreamRepo,
-            changed: changed,
-            cancellationToken: DoNotCancelEarly);
+        return this._gitServer.EnsureRepositoryHasBeenClonedAsync(repoName: package.Name, upstreamRepo: upstreamRepo, changed: changed, cancellationToken: DoNotCancelEarly);
     }
 
     private static bool IsSearchMatch(SearchResult existing, string keyword, string by)

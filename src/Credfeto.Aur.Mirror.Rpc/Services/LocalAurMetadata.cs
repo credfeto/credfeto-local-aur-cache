@@ -2,120 +2,178 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Interfaces;
-using Credfeto.Aur.Mirror.Models;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
+using Credfeto.Aur.Mirror.Rpc.Models;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
+using Credfeto.Date.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NonBlocking;
 
 namespace Credfeto.Aur.Mirror.Rpc.Services;
 
-public sealed class LocalAurMetadata : ILocalAurMetadata
+public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
 {
     private static readonly CancellationToken DoNotCancelEarly = CancellationToken.None;
+    private readonly ICurrentTimeSource _currentTimeSource;
     private readonly ILogger<LocalAurMetadata> _logger;
-    private readonly ConcurrentDictionary<string, SearchResult> _metadata;
+    private readonly ConcurrentDictionary<string, Package> _metadata;
+    private readonly Channel<Package> _saveQueue;
     private readonly ServerConfig _serverConfig;
+    private readonly IDisposable _subscription;
     private readonly IUpdateLock _updateLock;
 
-
-    public LocalAurMetadata(IOptions<ServerConfig> config, IUpdateLock updateLock,ILogger<LocalAurMetadata> logger)
+    public LocalAurMetadata(IOptions<ServerConfig> config, IUpdateLock updateLock, ICurrentTimeSource currentTimeSource, ILogger<LocalAurMetadata> logger)
     {
         this._updateLock = updateLock;
+        this._currentTimeSource = currentTimeSource;
         this._logger = logger;
         this._serverConfig = config.Value;
         this._metadata = new(StringComparer.OrdinalIgnoreCase);
+        this._saveQueue = Channel.CreateUnbounded<Package>();
+
+        this._subscription = this.SubscribeToPackageSaveQueue();
 
         // TASK: Store local config in a DB that's quick to search rather than filesystem
     }
 
+    public void Dispose()
+    {
+        this._subscription.Dispose();
+    }
+
     public async ValueTask LoadAsync(CancellationToken cancellationToken)
     {
-        IReadOnlyList<string> files = this.GetMetadataFiles();
-
-        foreach (string metadataFileName in files)
+        await foreach (Package package in this.GetMetadataAsync(cancellationToken))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            SearchResult? existing = await this.ReadPackageFromMetadataAsync(metadataFileName);
-
-            if (existing is null)
-            {
-                continue;
-            }
-
-            _ = this._metadata.TryAdd(key: existing.Name, value: existing);
+            _ = this._metadata.TryAdd(key: package.PackageName, value: package);
         }
     }
 
-    public ValueTask<IReadOnlyList<SearchResult>> SearchAsync(Func<SearchResult, bool> predicate, CancellationToken cancellationToken)
+    public async ValueTask<IReadOnlyList<Package>> SearchAsync(Func<SearchResult, bool> predicate, CancellationToken cancellationToken)
     {
-        IReadOnlyList<SearchResult> results = [.. this._metadata.Values.Where(predicate)];
+        return await Task.WhenAll(this._metadata.Values.Where(item => predicate(item.SearchResult))
+                                      .Select(QueueUpdateAndReturnAsync));
 
-        return ValueTask.FromResult(results);
+        async Task<Package> QueueUpdateAndReturnAsync(Package item)
+        {
+            item.LastAccessed = this._currentTimeSource.UtcNow();
+
+            await this.QueueUpdateAsync(packageToSave: item, cancellationToken: cancellationToken);
+
+            return item;
+        }
     }
 
-    public SearchResult? Get(string packageName)
+    public Package? Get(string packageName)
     {
-        if (this._metadata.TryGetValue(key: packageName, out SearchResult? result))
+        if (!this._metadata.TryGetValue(key: packageName, out Package? result))
         {
-            return result;
+            return null;
         }
 
-        return null;
+        result.LastAccessed = this._currentTimeSource.UtcNow();
+
+        return result;
     }
 
-    public async ValueTask UpdateAsync(SearchResult package, Func<SearchResult, bool, ValueTask> onUpdate,  CancellationToken cancellationToken)
+    public async ValueTask UpdateAsync(SearchResult package, Func<SearchResult, bool, ValueTask> onUpdate, CancellationToken cancellationToken)
     {
-        bool save = false;
-        bool changed = false;
+        Package toSave = this.ShouldIssueUpdate(package: package, out bool issueUpdate, out bool changed);
 
-        if (this._metadata.TryGetValue(key: package.Name, out SearchResult? existing))
+        await this.QueueUpdateAsync(packageToSave: toSave, cancellationToken: cancellationToken);
+
+        if (issueUpdate)
         {
-            if (existing.LastModified < package.LastModified)
-            {
-                // Should make this atomic and store additional status metadata for save state etc
-                _ = this._metadata.TryRemove(key: package.Name, value: out _);
-                _ = this._metadata.TryAdd(key: package.Name, value: package);
-                save = true;
-                changed = true;
-            }
+            await onUpdate(arg1: package, arg2: changed);
         }
-        else
-        {
-            _ = this._metadata.TryAdd(key: package.Name, value: package);
-            save = true;
-        }
-
-        if (save)
-        {
-            // Future: Queue package update in background -> once its updated in cache will be reading from there from
-            string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.Id}.json");
-            await this.SavePackageToMetadataAsync(package: package, metadataFileName: metadataFileName, cancellationToken: DoNotCancelEarly);
-
-            await onUpdate(package, changed);
-        }
-
     }
 
-    private async ValueTask SavePackageToMetadataAsync(SearchResult package, string metadataFileName, CancellationToken cancellationToken)
+    private IDisposable SubscribeToPackageSaveQueue()
     {
+        return this._saveQueue.Reader.ReadAllAsync(DoNotCancelEarly)
+                   .ToObservable()
+                   .Select(package => Observable.FromAsync(cancellationToken => this.SavePackageToMetadataAsync(package: package, cancellationToken: cancellationToken)
+                                                                                    .AsTask()))
+                   .Concat()
+                   .Subscribe();
+    }
+
+    private Package ShouldIssueUpdate(SearchResult package, out bool issueUpdate, out bool changed)
+    {
+        if (this._metadata.TryGetValue(key: package.Name, out Package? existing))
+        {
+            return this.OnPackageChanged(candidate: package, existing: existing, issueUpdate: out issueUpdate, changed: out changed);
+        }
+
+        Package toSave = this.Wrap(package);
+        Package current = this._metadata.GetOrAdd(key: package.Name, value: toSave);
+
+        if (ReferenceEquals(objA: current, objB: toSave))
+        {
+            changed = false;
+            issueUpdate = true;
+
+            return current;
+        }
+
+        return this.OnPackageChanged(candidate: package, existing: current, issueUpdate: out issueUpdate, changed: out changed);
+    }
+
+    private Package Wrap(SearchResult package)
+    {
+        DateTimeOffset now = this._currentTimeSource.UtcNow();
+
+        return new(lastSaved: now, lastAccessed: now, lastRequestedUpstream: now, searchResult: package);
+    }
+
+    private Package OnPackageChanged(SearchResult candidate, Package existing, out bool issueUpdate, out bool changed)
+    {
+        DateTimeOffset now = this._currentTimeSource.UtcNow();
+        existing.LastRequestedUpstream = now;
+        bool modified = existing.SearchResult.LastModified < candidate.LastModified;
+
+        if (modified)
+        {
+            existing.Update(searchResult: candidate, lastAccessed: now);
+        }
+
+        changed = modified;
+        issueUpdate = modified;
+
+        return existing;
+    }
+
+    private ValueTask QueueUpdateAsync(Package packageToSave, in CancellationToken cancellationToken)
+    {
+        // queue the save to the disk - the important cache update where things have been written has already occurred here.
+        return this._saveQueue.Writer.WriteAsync(item: packageToSave, cancellationToken: cancellationToken);
+    }
+
+    private async ValueTask SavePackageToMetadataAsync(Package package, CancellationToken cancellationToken)
+    {
+        string metadataFileName = Path.Combine(path1: this._serverConfig.Storage.Metadata, $"{package.PackageName}.json");
         SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: metadataFileName, cancellationToken: cancellationToken);
 
         try
         {
             EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
 
-            string json = JsonSerializer.Serialize(value: package, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
+            package.LastSaved = this._currentTimeSource.UtcNow();
+            string json = JsonSerializer.Serialize(value: package, jsonTypeInfo: RpcJsonContext.Default.Package);
             await File.WriteAllTextAsync(path: metadataFileName, contents: json, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
+
+            this._logger.SavedPackageToCache(package.SearchResult.Id, package.PackageName, metadataFileName: metadataFileName);
         }
         catch (Exception exception)
         {
@@ -123,17 +181,17 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
         }
         finally
         {
-            wait.Release();
+            _ = wait.Release();
         }
     }
 
-    private async ValueTask<SearchResult?> ReadPackageFromMetadataAsync(string metadataFileName)
+    private async ValueTask<Package?> ReadPackageFromMetadataAsync(string metadataFileName)
     {
         try
         {
             string json = await File.ReadAllTextAsync(path: metadataFileName, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
 
-            return JsonSerializer.Deserialize(json: json, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
+            return JsonSerializer.Deserialize(json: json, jsonTypeInfo: RpcJsonContext.Default.Package);
         }
         catch (Exception exception)
         {
@@ -148,23 +206,28 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
     {
         if (!Directory.Exists(directory))
         {
-            Directory.CreateDirectory(directory);
+            _ = Directory.CreateDirectory(directory);
         }
     }
 
-    private IReadOnlyList<string> GetMetadataFiles()
+    private async IAsyncEnumerable<Package> GetMetadataAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        try
-        {
-            EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
+        EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
 
-            return Directory.GetFiles(path: this._serverConfig.Storage.Metadata, searchPattern: "*.json");
-        }
-        catch (Exception exception)
+        foreach (string metadataFileName in Directory.EnumerateFiles(path: this._serverConfig.Storage.Metadata, searchPattern: "*.json"))
         {
-            this._logger.CouldNotFindMetadataFiles(directory: this._serverConfig.Storage.Metadata, message: exception.Message, exception: exception);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            return [];
+            Package? existing = await this.ReadPackageFromMetadataAsync(metadataFileName);
+
+            if (existing is null)
+            {
+                continue;
+            }
+
+            this._logger.LoadedPackageFromCache(existing.SearchResult.Id, existing.PackageName, metadataFileName);
+
+            yield return existing;
         }
     }
 }
