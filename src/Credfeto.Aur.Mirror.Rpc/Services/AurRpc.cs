@@ -31,8 +31,6 @@ public sealed class AurRpc : IAurRpc
         this._localAurRpc = localAurRpc;
         this._currentTimeSource = currentTimeSource;
         this._logger = logger;
-
-        // TASK: Look locally for everything and ONLY look in RPC if a significant amount of time has occured since the last query for that same data
     }
 
     public async ValueTask<RpcResponse> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
