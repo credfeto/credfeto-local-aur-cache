@@ -7,6 +7,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ## [Unreleased]
 ### Added
+- Support for PARU
 ### Fixed
 ### Changed
 - Moved caching to separate service and to priorities info reads through the local cache
