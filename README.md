@@ -17,6 +17,10 @@ internet connection, but couldn't find anything similar to work with the AUR.
 When the AUR started to get DDOS'd back in August 2025 updating everything including AUR packages became quite
 unpredictable and with multiple computers because more time-consuming than I was happy with.
 
+Currently, it is set up as just a local cache. If the AUR isn't available for any reason, the cache will return the
+current versions of packages in the cache and not found for anything it does not know about. This will allow a
+``yay -Syu`` to work without erroring about cthe AUR not being available.
+
 ### Why Dotnet?
 
 Dotnet is what I've been using for work and therefore what I'm most familiar with. So while I could have written this in
