@@ -10,14 +10,15 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Config;
+using Credfeto.Aur.Mirror.Models;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Constants;
 using Credfeto.Aur.Mirror.Rpc.Extensions;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
+using Credfeto.Aur.Mirror.Rpc.Models;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using AppJsonContexts = Credfeto.Aur.Mirror.Models.AppJsonContexts;
 
 namespace Credfeto.Aur.Mirror.Rpc.Services;
 
@@ -123,7 +124,7 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
                 {
                     return await JsonSerializer.DeserializeAsync<RpcResponse>(
                             utf8Json: stream,
-                            jsonTypeInfo: AppJsonContexts.Default.RpcResponse,
+                            jsonTypeInfo: RpcJsonContext.Default.RpcResponse,
                             cancellationToken: cancellationToken
                         ) ?? throw new JsonException("Could not deserialize response");
                 }

@@ -17,4 +17,4 @@ namespace Credfeto.Aur.Mirror.Models;
 [JsonSerializable(typeof(SearchResult))]
 [JsonSerializable(typeof(RepoCloneInfo))]
 [JsonSerializable(typeof(IReadOnlyList<RepoCloneInfo>))]
-public sealed partial class AppJsonContexts : JsonSerializerContext;
+internal sealed partial class AppJsonContext : JsonSerializerContext;

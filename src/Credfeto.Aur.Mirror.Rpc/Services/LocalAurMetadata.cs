@@ -11,6 +11,7 @@ using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
+using Credfeto.Aur.Mirror.Rpc.Models;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Credfeto.Date.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
     private static readonly CancellationToken DoNotCancelEarly = CancellationToken.None;
     private readonly ICurrentTimeSource _currentTimeSource;
     private readonly ILogger<LocalAurMetadata> _logger;
-    private readonly ConcurrentDictionary<string, Tracking> _metadata;
+    private readonly ConcurrentDictionary<string, Package> _metadata;
     private readonly ServerConfig _serverConfig;
     private readonly IUpdateLock _updateLock;
 
@@ -54,7 +55,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
                 continue;
             }
 
-            _ = this._metadata.TryAdd(key: existing.Name, new(this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), item: existing));
+            _ = this._metadata.TryAdd(key: existing.Name, new(this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), searchResult: existing));
         }
     }
 
@@ -62,12 +63,12 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
     {
         IReadOnlyList<SearchResult> results =
         [
-            .. this._metadata.Values.Where(item => predicate(item.Item))
+            .. this._metadata.Values.Where(item => predicate(item.SearchResult))
                    .Select(item =>
                            {
                                item.LastAccessed = this._currentTimeSource.UtcNow();
 
-                               return item.Item;
+                               return item.SearchResult;
                            })
         ];
 
@@ -76,11 +77,11 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
 
     public SearchResult? Get(string packageName)
     {
-        if (this._metadata.TryGetValue(key: packageName, out Tracking? result))
+        if (this._metadata.TryGetValue(key: packageName, out Package? result))
         {
             result.LastAccessed = this._currentTimeSource.UtcNow();
 
-            return result.Item;
+            return result.SearchResult;
         }
 
         return null;
@@ -91,11 +92,11 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
         bool save = false;
         bool changed = false;
 
-        if (this._metadata.TryGetValue(key: package.Name, out Tracking? existing))
+        if (this._metadata.TryGetValue(key: package.Name, out Package? existing))
         {
-            if (existing.Item.LastModified < package.LastModified)
+            if (existing.SearchResult.LastModified < package.LastModified)
             {
-                existing.Item = package;
+                existing.SearchResult = package;
                 existing.LastRequestedUpstream = this._currentTimeSource.UtcNow();
                 existing.LastAccessed = this._currentTimeSource.UtcNow();
                 save = true;
@@ -104,7 +105,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
         }
         else
         {
-            _ = this._metadata.TryAdd(key: package.Name, new(this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), item: package));
+            _ = this._metadata.TryAdd(key: package.Name, new(this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), this._currentTimeSource.UtcNow(), searchResult: package));
             save = true;
         }
 
@@ -126,7 +127,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
         {
             EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
 
-            string json = JsonSerializer.Serialize(value: package, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
+            string json = JsonSerializer.Serialize(value: package, jsonTypeInfo: RpcJsonContext.Default.SearchResult);
             await File.WriteAllTextAsync(path: metadataFileName, contents: json, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
         }
         catch (Exception exception)
@@ -145,7 +146,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
         {
             string json = await File.ReadAllTextAsync(path: metadataFileName, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
 
-            return JsonSerializer.Deserialize(json: json, jsonTypeInfo: AppJsonContexts.Default.SearchResult);
+            return JsonSerializer.Deserialize(json: json, jsonTypeInfo: RpcJsonContext.Default.SearchResult);
         }
         catch (Exception exception)
         {
@@ -180,24 +181,5 @@ public sealed class LocalAurMetadata : ILocalAurMetadata
         }
     }
 
-    private sealed class Tracking
-    {
-        public Tracking(DateTimeOffset lastSaved, DateTimeOffset lastAccessed, DateTimeOffset lastRequestedUpstream, SearchResult item)
-        {
-            this.LastSaved = lastSaved;
-            this.LastAccessed = lastAccessed;
-            this.LastRequestedUpstream = lastRequestedUpstream;
-            this.Item = item;
-        }
 
-        public DateTimeOffset LastSaved { get; set; }
-
-        public DateTimeOffset LastModified => DateTimeOffset.FromUnixTimeSeconds(this.Item.LastModified);
-
-        public DateTimeOffset LastAccessed { get; set; }
-
-        public DateTimeOffset LastRequestedUpstream { get; set; }
-
-        public SearchResult Item { get; set; }
-    }
 }

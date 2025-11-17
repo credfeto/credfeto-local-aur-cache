@@ -4,11 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Models;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Server.Helpers;
 using Credfeto.Docker.HealthCheck.Http.Client;
 using Microsoft.AspNetCore.Builder;
-using AppJsonContexts = Credfeto.Aur.Mirror.Models.AppJsonContexts;
 
 namespace Credfeto.Aur.Mirror.Server;
 
@@ -86,7 +86,7 @@ public static class Program
                 ""version"":5
             }";
         RpcResponse rpcResponse =
-            JsonSerializer.Deserialize<RpcResponse>(s, AppJsonContexts.Default.RpcResponse)
+            JsonSerializer.Deserialize<RpcResponse>(s, AppJsonContext.Default.RpcResponse)
             ?? throw new JsonException("Could not deserialize response");
 
         Console.WriteLine(rpcResponse.Count);

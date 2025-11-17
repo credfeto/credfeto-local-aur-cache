@@ -8,6 +8,7 @@ using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Git.Services;
+using Credfeto.Aur.Mirror.Models;
 using Credfeto.Aur.Mirror.Rpc;
 using Credfeto.Date;
 using Credfeto.Services.Startup;
@@ -22,7 +23,6 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
-using AppJsonContexts = Credfeto.Aur.Mirror.Models.AppJsonContexts;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
@@ -95,7 +95,7 @@ internal static class ServerStartup
 
     private static void AddHttpJsonOptions(JsonOptions options)
     {
-        options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContexts.Default);
+        options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContext.Default);
     }
 
     private static WebApplicationBuilder ConfigureSettings(this WebApplicationBuilder builder, string configPath)
