@@ -172,6 +172,8 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
             package.LastSaved = this._currentTimeSource.UtcNow();
             string json = JsonSerializer.Serialize(value: package, jsonTypeInfo: RpcJsonContext.Default.Package);
             await File.WriteAllTextAsync(path: metadataFileName, contents: json, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
+
+            this._logger.SavedPackageToCache(package.SearchResult.Id, package.PackageName, metadataFileName: metadataFileName);
         }
         catch (Exception exception)
         {

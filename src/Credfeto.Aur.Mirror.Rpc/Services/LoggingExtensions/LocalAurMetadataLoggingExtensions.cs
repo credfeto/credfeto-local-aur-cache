@@ -28,4 +28,8 @@ internal static partial class LocalAurMetadataLoggingExtensions
 
     [LoggerMessage(LogLevel.Information, EventId = 8, Message = "Loaded {packageId} ({packageName}) from {metadataFileName}")]
     public static partial void LoadedPackageFromCache(this ILogger<LocalAurMetadata> logger, int packageId, string packageName, string metadataFileName);
+
+    [LoggerMessage(LogLevel.Information, EventId = 9, Message = "Saved {packageId} ({packageName}) to {metadataFileName}")]
+    public static partial void SavedPackageToCache(this ILogger<LocalAurMetadata> logger, int packageId, string packageName, string metadataFileName);
+
 }
