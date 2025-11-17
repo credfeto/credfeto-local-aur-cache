@@ -5,6 +5,11 @@
 ### info
 GET {{Server}}/rpc?arg%5B%5D=firejail-handler-extra&arg%5B%5D=firejail-handler-http&type=info&v=5
 
+### info [direct]
+GET https://aur.archlinux.org/rpc?arg%5B%5D=apple-fonts&type=info&v=5
+
+### info [server]
+GET {{Server}}/rpc?arg%5B%5D=apple-fonts&type=info&v=5
 
 ### info post
 

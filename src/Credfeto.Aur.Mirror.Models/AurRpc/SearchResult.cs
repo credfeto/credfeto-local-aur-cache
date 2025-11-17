@@ -70,33 +70,43 @@ public sealed class SearchResult
     public int Id { get; }
 
     [JsonPropertyName("Keywords")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public IReadOnlyList<string>? Keywords { get; }
 
     [JsonPropertyName("License")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public IReadOnlyList<string>? License { get; }
 
     [JsonPropertyName("Depends")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public IReadOnlyList<string>? Depends { get; }
 
     [JsonPropertyName("MakeDepends")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public IReadOnlyList<string>? MakeDepends { get; }
 
     [JsonPropertyName("OptDepends")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public IReadOnlyList<string>? OptDepends { get; }
 
     [JsonPropertyName("CheckDepends")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public IReadOnlyList<string>? CheckDepends { get; }
 
     [JsonPropertyName("Conflicts")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public IReadOnlyList<string>? Conflicts { get; }
 
     [JsonPropertyName("Replaces")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public IReadOnlyList<string>? Replaces { get; }
 
     [JsonPropertyName("Groups")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public IReadOnlyList<string>? Groups { get; }
 
     [JsonPropertyName("CoMaintainers")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public IReadOnlyList<string>? CoMaintainers { get; }
 
     [JsonPropertyName("LastModified")]
