@@ -27,13 +27,19 @@ internal static partial class Endpoints
         // https://wiki.archlinux.org/title/Aurweb_RPC_interface
 
         // note Yay is using the old interface
+        // note Paru is using the old interface
         // https://aur.archlinux.org/rpc/olddoc.html so ideally need to understand that and forward to the new interface
 
         RouteGroupBuilder group = app.MapGroup("/rpc");
 
         group.MapGet(pattern: "",
                      handler: static (HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
-                                  ExecuteLegacyRpcAsync(httpContext: httpContext, aurRpc: aurRpc, cancellationToken: cancellationToken));
+                                  ExecuteLegacyRpcQueryAsync(httpContext: httpContext, aurRpc: aurRpc, cancellationToken: cancellationToken));
+
+        group.MapPost(pattern: "",
+                     handler: static (HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
+                                  ExecuteLegacyRpcPostAsync(httpContext: httpContext, aurRpc: aurRpc, cancellationToken: cancellationToken));
+
 
         RouteGroupBuilder v5Group = group.MapGroup("v5");
 
@@ -116,7 +122,8 @@ internal static partial class Endpoints
         return Results.Ok(result);
     }
 
-    private static async ValueTask<IResult> ExecuteLegacyRpcAsync(HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken)
+    [SuppressMessage("Philips.CodeAnalysis", "PH2071: Duplicate Code", Justification = "Needs refactoring")]
+    private static async ValueTask<IResult> ExecuteLegacyRpcQueryAsync(HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken)
     {
         IQueryCollection query = httpContext.Request.Query;
 
@@ -156,20 +163,64 @@ internal static partial class Endpoints
         }
 
         return Results.Ok(RpcResults.InfoNotFound);
-
-        static bool IsSearchQuery(in StringValues queryType)
-        {
-            return IsMatch(queryType: queryType, match: "search");
-        }
-
-        static bool IsInfoQuery(in StringValues queryType)
-        {
-            return IsMatch(queryType: queryType, match: "info") || IsMatch(queryType: queryType, match: "multiinfo");
-        }
-
-        static bool IsMatch(in StringValues queryType, string match)
-        {
-            return queryType == match;
-        }
     }
+
+    [SuppressMessage("Philips.CodeAnalysis", "PH2071: Duplicate Code", Justification = "Needs refactoring")]
+    private static async ValueTask<IResult> ExecuteLegacyRpcPostAsync(HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken)
+    {
+        IFormCollection form = httpContext.Request.Form;
+
+        if (!form.TryGetValue(key: "type", out StringValues queryType))
+        {
+            return Results.Ok(RpcResults.SearchNotFound);
+        }
+
+        if (IsSearchQuery(queryType))
+        {
+            string by = "name-desc";
+
+            if (form.TryGetValue(key: "by", out StringValues byValue))
+            {
+                by = byValue.ToString();
+            }
+
+            if (form.TryGetValue(key: "arg", out StringValues keyword))
+            {
+                return await SearchUserAgentAsync(keyword.ToString(), by: by, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
+            }
+
+            return Results.Ok(RpcResults.SearchNotFound);
+        }
+
+        if (IsInfoQuery(queryType))
+        {
+            if (form.TryGetValue(key: "arg", out StringValues package))
+            {
+                return await PackageInfoSingleAsync(package.ToString(), aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
+            }
+
+            if (form.TryGetValue(key: "arg[]", out StringValues packages))
+            {
+                return await PackageInfoMultiAsync(packages.ToString(), aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
+            }
+        }
+
+        return Results.Ok(RpcResults.InfoNotFound);
+
+    }
+    static bool IsSearchQuery(in StringValues queryType)
+    {
+        return IsMatch(queryType: queryType, match: "search");
+    }
+
+    static bool IsInfoQuery(in StringValues queryType)
+    {
+        return IsMatch(queryType: queryType, match: "info") || IsMatch(queryType: queryType, match: "multiinfo");
+    }
+
+    static bool IsMatch(in StringValues queryType, string match)
+    {
+        return queryType == match;
+    }
+
 }
