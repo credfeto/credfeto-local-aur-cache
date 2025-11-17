@@ -93,6 +93,11 @@ public sealed class AurRpc : IAurRpc
 
     private bool NeedsUpstreamQuery(IReadOnlyList<string> requestedPackages, IReadOnlyList<Package> localPackages)
     {
+        if (localPackages is [])
+        {
+            return true;
+        }
+
         ConditionContext context = new(RequestedPackages: requestedPackages, this._currentTimeSource.UtcNow());
 
         return localPackages.Any(package => this.NeedsUpstreamQuery(package: package, context: context));
