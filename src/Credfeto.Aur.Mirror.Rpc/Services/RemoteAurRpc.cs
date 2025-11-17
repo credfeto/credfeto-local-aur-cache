@@ -10,7 +10,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Config;
-using Credfeto.Aur.Mirror.Models;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Constants;
 using Credfeto.Aur.Mirror.Rpc.Extensions;
@@ -28,11 +27,7 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
     private readonly ILogger<RemoteAurRpc> _logger;
     private readonly ServerConfig _serverConfig;
 
-    public RemoteAurRpc(
-        IHttpClientFactory httpClientFactory,
-        IOptions<ServerConfig> config,
-        ILogger<RemoteAurRpc> logger
-    )
+    public RemoteAurRpc(IHttpClientFactory httpClientFactory, IOptions<ServerConfig> config, ILogger<RemoteAurRpc> logger)
     {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;
@@ -42,43 +37,21 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
         // TASK: Look locally for everything and ONLY look in RPC if a significant amount of time has occured since the last query for that same data
     }
 
-    public async ValueTask<RpcResponse> SearchAsync(
-        string keyword,
-        string by,
-        ProductInfoHeaderValue? userAgent,
-        CancellationToken cancellationToken
-    )
+    public async ValueTask<RpcResponse> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
         HttpClient client = this.GetClient(userAgent: userAgent, out Uri baseUri);
 
         Uri requestUri = MakeUri(baseUri: baseUri, $"/v5/search/{keyword}?by={by}");
-        RpcResponse upstream = await this.RequestUpstreamCommonAsync(
-            client: client,
-            requestUri: requestUri,
-            cancellationToken: cancellationToken
-        );
+        RpcResponse upstream = await this.RequestUpstreamCommonAsync(client: client, requestUri: requestUri, cancellationToken: cancellationToken);
 
         IReadOnlyList<string> packageNames = [.. upstream.Results.Select(r => r.Name)];
 
-        RpcResponse infoUpstream = await this.InfoAsync(
-            packages: packageNames,
-            userAgent: userAgent,
-            cancellationToken: cancellationToken
-        );
+        RpcResponse infoUpstream = await this.InfoAsync(packages: packageNames, userAgent: userAgent, cancellationToken: cancellationToken);
 
-        return new(
-            count: infoUpstream.Count,
-            results: infoUpstream.Results,
-            rpcType: upstream.RpcType,
-            version: upstream.Version
-        );
+        return new(count: infoUpstream.Count, results: infoUpstream.Results, rpcType: upstream.RpcType, version: upstream.Version);
     }
 
-    public async ValueTask<RpcResponse> InfoAsync(
-        IReadOnlyList<string> packages,
-        ProductInfoHeaderValue? userAgent,
-        CancellationToken cancellationToken
-    )
+    public async ValueTask<RpcResponse> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
         this._logger.PackageInfo(packages);
 
@@ -90,43 +63,25 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
         HttpClient client = this.GetClient(userAgent: userAgent, out Uri baseUri);
 
         Uri requestUri = MakeInfoUri(baseUri: baseUri, packages: packages);
-        RpcResponse upstream = await this.RequestUpstreamCommonAsync(
-            client: client,
-            requestUri: requestUri,
-            cancellationToken: cancellationToken
-        );
+        RpcResponse upstream = await this.RequestUpstreamCommonAsync(client: client, requestUri: requestUri, cancellationToken: cancellationToken);
 
         return upstream;
     }
 
-    private async ValueTask<RpcResponse> RequestUpstreamCommonAsync(
-        HttpClient client,
-        Uri requestUri,
-        CancellationToken cancellationToken
-    )
+    private async ValueTask<RpcResponse> RequestUpstreamCommonAsync(HttpClient client, Uri requestUri, CancellationToken cancellationToken)
     {
         this._logger.RequestingUpstream(requestUri);
 
-        using (
-            HttpResponseMessage result = await client.GetAsync(
-                requestUri: requestUri,
-                cancellationToken: cancellationToken
-            )
-        )
+        using (HttpResponseMessage result = await client.GetAsync(requestUri: requestUri, cancellationToken: cancellationToken))
         {
             if (result.IsSuccessStatusCode)
             {
                 this._logger.SuccessFromUpstream(uri: requestUri, statusCode: result.StatusCode);
 
-                await using (
-                    Stream stream = await result.Content.ReadAsStreamAsync(cancellationToken: cancellationToken)
-                )
+                await using (Stream stream = await result.Content.ReadAsStreamAsync(cancellationToken: cancellationToken))
                 {
-                    return await JsonSerializer.DeserializeAsync<RpcResponse>(
-                            utf8Json: stream,
-                            jsonTypeInfo: RpcJsonContext.Default.RpcResponse,
-                            cancellationToken: cancellationToken
-                        ) ?? throw new JsonException("Could not deserialize response");
+                    return await JsonSerializer.DeserializeAsync<RpcResponse>(utf8Json: stream, jsonTypeInfo: RpcJsonContext.Default.RpcResponse, cancellationToken: cancellationToken) ??
+                           throw new JsonException("Could not deserialize response");
                 }
             }
 
@@ -137,11 +92,7 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
     [DoesNotReturn]
     private static RpcResponse Failed(Uri requestUri, HttpStatusCode resultStatusCode)
     {
-        throw new HttpRequestException(
-            $"Failed to download {requestUri}: {resultStatusCode.GetName()}",
-            inner: null,
-            statusCode: resultStatusCode
-        );
+        throw new HttpRequestException($"Failed to download {requestUri}: {resultStatusCode.GetName()}", inner: null, statusCode: resultStatusCode);
     }
 
     private static Uri MakeUri(Uri baseUri, string pathAndQuery)
@@ -177,6 +128,8 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
     {
         baseUri = new(uriString: this._serverConfig.Upstream.Rpc, uriKind: UriKind.Absolute);
 
-        return this._httpClientFactory.CreateClient(nameof(AurRpc)).WithBaseAddress(baseUri).WithUserAgent(userAgent);
+        return this._httpClientFactory.CreateClient(nameof(AurRpc))
+                   .WithBaseAddress(baseUri)
+                   .WithUserAgent(userAgent);
     }
 }

@@ -1,10 +1,12 @@
 using System;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 
 namespace Credfeto.Aur.Mirror.Rpc.Models;
 
-internal sealed class Package
+[DebuggerDisplay("{PackageName}: Modified {LastModified} Requested {LastRequestedUpstream} Accessed {LastAccessed} Saved {LastSaved}")]
+public sealed class Package
 {
     [JsonConstructor]
     public Package(in DateTimeOffset lastSaved, in DateTimeOffset lastAccessed, in DateTimeOffset lastRequestedUpstream, SearchResult searchResult)
@@ -31,6 +33,6 @@ internal sealed class Package
     {
         this.SearchResult = searchResult;
         this.LastAccessed = lastAccessed;
-        this.LastRequestedUpstream  = lastAccessed;
+        this.LastRequestedUpstream = lastAccessed;
     }
 }

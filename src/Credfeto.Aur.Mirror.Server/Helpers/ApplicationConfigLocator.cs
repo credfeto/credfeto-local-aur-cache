@@ -4,18 +4,10 @@ using System.IO;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
-[SuppressMessage(
-    category: "ReSharper",
-    checkId: "UnusedType.Global",
-    Justification = "Used in exe code. Not possible to unit test."
-)]
+[SuppressMessage(category: "ReSharper", checkId: "UnusedType.Global", Justification = "Used in exe code. Not possible to unit test.")]
 internal static class ApplicationConfigLocator
 {
-    [SuppressMessage(
-        category: "ReSharper",
-        checkId: "UnusedMember.Global",
-        Justification = "Used in exe code. Not possible to unit test."
-    )]
+    [SuppressMessage(category: "ReSharper", checkId: "UnusedMember.Global", Justification = "Used in exe code. Not possible to unit test.")]
     public static string ConfigurationFilesPath { get; } = LookupConfigurationFilesPath();
 
     private static string LookupConfigurationFilesPath()
@@ -44,6 +36,8 @@ internal static class ApplicationConfigLocator
 
         string appSettings = Path.Combine(path1: path, path2: "appsettings.json");
 
-        return File.Exists(appSettings) ? path : null;
+        return File.Exists(appSettings)
+            ? path
+            : null;
     }
 }

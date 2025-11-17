@@ -60,8 +60,7 @@ public sealed class GitServer : IGitServer
                 throw new DataException("Git could not be started.");
             }
 
-            await source
-                .CopyToAsync(destination: process.StandardInput.BaseStream, cancellationToken: cancellationToken);
+            await source.CopyToAsync(destination: process.StandardInput.BaseStream, cancellationToken: cancellationToken);
 
             if (options.EndStreamWithNull)
             {
@@ -143,8 +142,6 @@ public sealed class GitServer : IGitServer
             return new(memoryStream.ToArray(), ContentType: "application/octet-stream");
         }
     }
-
-
 
     private async ValueTask CloneRepositoryAsync(string upstreamRepo, string repoPath, CancellationToken cancellationToken)
     {

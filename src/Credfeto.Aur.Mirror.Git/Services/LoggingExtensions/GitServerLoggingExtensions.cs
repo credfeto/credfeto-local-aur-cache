@@ -13,31 +13,12 @@ internal static partial class GitServerLoggingExtensions
     [LoggerMessage(LogLevel.Information, EventId = 3, Message = "Reading File: {repo} -> {path}")]
     public static partial void ReadingFile(this ILogger<GitServer> logger, string repo, string path);
 
-    [LoggerMessage(
-        LogLevel.Information,
-        EventId = 4,
-        Message = "Requesting clone/update of {repo} from {upstream} into {path}"
-    )]
-    public static partial void RequestingCloneOrUpdateOfRepo(
-        this ILogger<GitServer> logger,
-        string repo,
-        string upstream,
-        string path
-    );
+    [LoggerMessage(LogLevel.Information, EventId = 4, Message = "Requesting clone/update of {repo} from {upstream} into {path}")]
+    public static partial void RequestingCloneOrUpdateOfRepo(this ILogger<GitServer> logger, string repo, string upstream, string path);
 
     [LoggerMessage(LogLevel.Information, EventId = 5, Message = "Failed to clone {upstream} into {path}: {message}")]
-    public static partial void FailedToCloneGit(
-        this ILogger<GitServer> logger,
-        string upstream,
-        string path,
-        string message
-    );
+    public static partial void FailedToCloneGit(this ILogger<GitServer> logger, string upstream, string path, string message);
 
     [LoggerMessage(LogLevel.Information, EventId = 6, Message = "Failed to update {upstream} in {path}: {message}")]
-    public static partial void FailedToUpdateGit(
-        this ILogger<GitServer> logger,
-        string upstream,
-        string path,
-        string message
-    );
+    public static partial void FailedToUpdateGit(this ILogger<GitServer> logger, string upstream, string path, string message);
 }

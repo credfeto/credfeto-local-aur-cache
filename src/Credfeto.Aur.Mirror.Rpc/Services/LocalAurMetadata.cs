@@ -47,16 +47,6 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
         // TASK: Store local config in a DB that's quick to search rather than filesystem
     }
 
-    private IDisposable SubscribeToPackageSaveQueue()
-    {
-        return this._saveQueue.Reader.ReadAllAsync(DoNotCancelEarly)
-                   .ToObservable()
-                   .Select(package => Observable.FromAsync(cancellationToken => this.SavePackageToMetadataAsync(package: package, cancellationToken: cancellationToken)
-                                                                                    .AsTask()))
-                   .Concat()
-                   .Subscribe();
-    }
-
     public void Dispose()
     {
         this._subscription.Dispose();
@@ -70,22 +60,22 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
         }
     }
 
-    public async ValueTask<IReadOnlyList<SearchResult>> SearchAsync(Func<SearchResult, bool> predicate, CancellationToken cancellationToken)
+    public async ValueTask<IReadOnlyList<Package>> SearchAsync(Func<SearchResult, bool> predicate, CancellationToken cancellationToken)
     {
         return await Task.WhenAll(this._metadata.Values.Where(item => predicate(item.SearchResult))
-                                      .Select(QueueUpdateAndReturnSearchResultAsync));
+                                      .Select(QueueUpdateAndReturnAsync));
 
-        async Task<SearchResult> QueueUpdateAndReturnSearchResultAsync(Package item)
+        async Task<Package> QueueUpdateAndReturnAsync(Package item)
         {
             item.LastAccessed = this._currentTimeSource.UtcNow();
 
             await this.QueueUpdateAsync(packageToSave: item, cancellationToken: cancellationToken);
 
-            return item.SearchResult;
+            return item;
         }
     }
 
-    public SearchResult? Get(string packageName)
+    public Package? Get(string packageName)
     {
         if (!this._metadata.TryGetValue(key: packageName, out Package? result))
         {
@@ -94,7 +84,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
 
         result.LastAccessed = this._currentTimeSource.UtcNow();
 
-        return result.SearchResult;
+        return result;
     }
 
     public async ValueTask UpdateAsync(SearchResult package, Func<SearchResult, bool, ValueTask> onUpdate, CancellationToken cancellationToken)
@@ -107,6 +97,16 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
         {
             await onUpdate(arg1: package, arg2: changed);
         }
+    }
+
+    private IDisposable SubscribeToPackageSaveQueue()
+    {
+        return this._saveQueue.Reader.ReadAllAsync(DoNotCancelEarly)
+                   .ToObservable()
+                   .Select(package => Observable.FromAsync(cancellationToken => this.SavePackageToMetadataAsync(package: package, cancellationToken: cancellationToken)
+                                                                                    .AsTask()))
+                   .Concat()
+                   .Subscribe();
     }
 
     private Package ShouldIssueUpdate(SearchResult package, out bool issueUpdate, out bool changed)

@@ -11,11 +11,7 @@ internal static partial class RemoteAurRpcLoggingExtensions
     public static partial void RequestingUpstream(this ILogger<RemoteAurRpc> logger, Uri uri);
 
     [LoggerMessage(LogLevel.Information, EventId = 2, Message = "Requesting from upstream {uri} => {statusCode}")]
-    public static partial void SuccessFromUpstream(
-        this ILogger<RemoteAurRpc> logger,
-        Uri uri,
-        HttpStatusCode statusCode
-    );
+    public static partial void SuccessFromUpstream(this ILogger<RemoteAurRpc> logger, Uri uri, HttpStatusCode statusCode);
 
     [LoggerMessage(LogLevel.Information, EventId = 3, Message = "Retrieving package infos: {packages}")]
     private static partial void PackageInfo(this ILogger<RemoteAurRpc> logger, string packages);
