@@ -223,6 +223,8 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
                 continue;
             }
 
+            this._logger.LoadedPackageFromCache(existing.SearchResult.Id, existing.PackageName, metadataFileName);
+
             yield return existing;
         }
     }
