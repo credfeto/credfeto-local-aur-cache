@@ -7,16 +7,20 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ## [Unreleased]
 ### Added
-- Support for PARU
 ### Fixed
 ### Changed
-- Moved caching to separate service and to priorities info reads through the local cache
 ### Removed
 ### Deployment Changes
 
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
 -->
+## [0.0.5] - 2025-11-17
+### Added
+- Support for PARU
+### Changed
+- Moved caching to separate service and to priorities info reads through the local cache
+
 ## [0.0.4] - 2025-11-13
 ### Added
 - Support serving repos over http
