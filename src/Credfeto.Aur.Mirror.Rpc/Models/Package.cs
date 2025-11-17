@@ -25,5 +25,12 @@ internal sealed class Package
 
     public DateTimeOffset LastRequestedUpstream { get; set; }
 
-    public SearchResult SearchResult { get; set; }
+    public SearchResult SearchResult { get; private set; }
+
+    public void Update(SearchResult searchResult, in DateTimeOffset lastAccessed)
+    {
+        this.SearchResult = searchResult;
+        this.LastAccessed = lastAccessed;
+        this.LastRequestedUpstream  = lastAccessed;
+    }
 }
