@@ -147,8 +147,8 @@ public sealed class GitServer : IGitServer
     {
         (string[] output, int exitCode) = await GitCommandLine.ExecAsync(gitExecutable: this._serverConfig.Git.Executable,
                                                                          clonePath: upstreamRepo,
-                                                                         repoPath: repoPath,
-                                                                         $"clone --mirror {upstreamRepo} {repoPath}",
+                                                                         workingDirectory: this._serverConfig.Storage.Repos,
+                                                                         $"clone --mirror \"{upstreamRepo}\" \"{repoPath}\"",
                                                                          cancellationToken: cancellationToken);
 
         if (exitCode != 0)
@@ -164,7 +164,7 @@ public sealed class GitServer : IGitServer
     {
         (string[] output, int exitCode) = await GitCommandLine.ExecAsync(gitExecutable: this._serverConfig.Git.Executable,
                                                                          clonePath: upstreamRepo,
-                                                                         repoPath: repoPath,
+                                                                         workingDirectory: repoPath,
                                                                          $"-C \"{repoPath}\" fetch",
                                                                          cancellationToken: cancellationToken);
 

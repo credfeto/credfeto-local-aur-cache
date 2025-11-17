@@ -9,14 +9,14 @@ namespace Credfeto.Aur.Mirror.Git.Helpers;
 
 internal static class GitCommandLine
 {
-    public static async ValueTask<(string[] Output, int ExitCode)> ExecAsync(string gitExecutable, string clonePath, string repoPath, string arguments, CancellationToken cancellationToken)
+    public static async ValueTask<(string[] Output, int ExitCode)> ExecAsync(string gitExecutable, string clonePath, string workingDirectory, string arguments, CancellationToken cancellationToken)
     {
-        EnsureNotLocked(repoUrl: clonePath, workingDirectory: repoPath);
+        EnsureNotLocked(repoUrl: clonePath, workingDirectory: workingDirectory);
 
         ProcessStartInfo psi = new()
                                {
                                    FileName = gitExecutable,
-                                   WorkingDirectory = repoPath,
+                                   WorkingDirectory = workingDirectory,
                                    Arguments = arguments,
                                    RedirectStandardOutput = true,
                                    RedirectStandardError = true,

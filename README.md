@@ -143,7 +143,7 @@ If using TLS:
 In `$HOME/.config/paru/paru.conf` AurUrl and AurRpcUrl should be set to point at the server
 
 ```ini
-[config]
+[options]
 AurUrl = http://localhost:8080
 AurRpcUrl = https://localhost:8080/rpc?
 ```
@@ -151,7 +151,7 @@ AurRpcUrl = https://localhost:8080/rpc?
 When accessing remotely from another client pc then adjust localhost to your server ip to access the cache.
 
 ```ini
-[config]
+[options]
 AurUrl = http://192.168.101.27:8080
 AurRpcUrl = https://192.168.101.27:8080/rpc?
 ```
@@ -159,7 +159,7 @@ AurRpcUrl = https://192.168.101.27:8080/rpc?
 If using TLS:
 
 ```ini
-[config]
+[options]
 AurUrl = http2://my.server.domain:8081
 AurRpcUrl = https://my.server.domain:8081/rpc?
 ```
