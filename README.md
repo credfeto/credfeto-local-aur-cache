@@ -2,11 +2,11 @@
 
 Server for caching AUR locally.
 
-Current State: 
+Current State:
 
 * Server: Experimental
 * Client: Yay: Working
-* Client: Paru: Broken
+* Client: Paru: Working
 
 ## Why?
 
@@ -34,7 +34,8 @@ cache too.
 
 Note this server just serves the metadata and the PKGBUILD repos not any repos etc used by the individual packages.
 
-Note this does not currently support switching to the github [mirror](https://github.com/credfeto/credfeto-local-aur-cache/issues/7) for the PKGBUILD downloads but this is being investigatedNote this does not currently support switching to the github [mirror](https://github.com/credfeto/credfeto-local-aur-cache/issues/7) for the PKGBUILD downloads.
+Note this does not currently support switching to the
+github [mirror](https://github.com/credfeto/credfeto-local-aur-cache/issues/7) for the PKGBUILD downloads.
 
 ## Usage
 
@@ -75,15 +76,17 @@ It is recommended if using TLS to put the server behind NGINX or similar and use
 
 ### Server Configuration
 
-Should be mapped into `/usr/src/app/appsettings-local.json`:
+Should be mapped into `/usr/src/app/appsettings-local.json` or specified via the named environment variables
 
-| Setting                      | Description                                                           | Default                        |
-|------------------------------|-----------------------------------------------------------------------|--------------------------------|
-| ``Proxy::Git::Executable``   | Where the git exe lives                                               | ``/usr/bin/git``               |
-| ``Proxy::Upstream::Rpc``     | Where the git exe lives                                               | https://aur.archlinux.org/rpc? |
-| ``Proxy::Upstream::Repos``   | Where to clone the repos from                                         | https://aur.archlinux.org      |
-| ``Proxy::Storage::Metadata`` | Directory to store the metadata that's cached from the upstream RPC   | /data/metadata                 |
-| ``Proxy::Storage::Repos``    | Directory to store the metadata that's cached from the upstream Repos | /data/repos                    |
+| Setting                      | Environment Variable         | Description                                                           | Default                            |
+|------------------------------|------------------------------|-----------------------------------------------------------------------|------------------------------------|
+| ``Proxy::Git::Executable``   | ``Proxy__Git__Executable``   | Where the git exe lives                                               | ``/usr/bin/git``                   |
+| ``Proxy::Upstream::Rpc``     | ``Proxy__Upstream__Rpc``     | Where the git exe lives                                               | ``https://aur.archlinux.org/rpc?`` |
+| ``Proxy::Upstream::Repos``   | ``Proxy__Upstream__Repos``   | Where to clone the repos from                                         | ``https://aur.archlinux.org``      |
+| ``Proxy::Storage::Metadata`` | ``Proxy__Storage__Metadata`` | Directory to store the metadata that's cached from the upstream RPC   | ``/data/metadata``                 |
+| ``Proxy::Storage::Repos``    | ``Proxy__Storage__Repos``    | Directory to store the metadata that's cached from the upstream Repos | ``/data/repos``                    |
+
+appsettings-local.json:
 
 ```json
 {
