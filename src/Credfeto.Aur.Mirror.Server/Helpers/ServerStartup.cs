@@ -86,7 +86,6 @@ internal static class ServerStartup
                .AddRunOnStartupServices()
                .AddAurRpcApi()
                .AddGitRepos()
-               .AddSingleton<ILocallyInstalled, LocallyInstalled>()
                .ConfigureHttpJsonOptions(AddHttpJsonOptions);
 
         return builder;

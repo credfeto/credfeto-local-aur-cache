@@ -21,6 +21,12 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     }
 
     [Fact]
+    public void LocallyInstalledMustBeRegistered()
+    {
+        this.RequireService<ILocallyInstalled>();
+    }
+
+    [Fact]
     public void GitServerMustBeRegistered()
     {
         this.RequireService<IGitServer>();
