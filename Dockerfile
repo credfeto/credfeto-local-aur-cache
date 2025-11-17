@@ -6,11 +6,11 @@ WORKDIR /usr/src/app
 COPY Credfeto.Aur.Mirror.Server .
 COPY appsettings.json .
 
-CMD mkdir /data && \
+RUN mkdir /data && \
     mkdir /data/metadata && \
-    mkdir /data/repos
-
-RUN apt-get update && apt-get install -y git
+    mkdir /data/repos && \
+    apt-get update && \
+    apt-get install -y git
 
 EXPOSE 8080
 ENTRYPOINT [ "/usr/src/app/Credfeto.Aur.Mirror.Server" ]
