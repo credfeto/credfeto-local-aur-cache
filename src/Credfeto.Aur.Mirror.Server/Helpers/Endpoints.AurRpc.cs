@@ -122,7 +122,7 @@ internal static partial class Endpoints
         return Results.Ok(result);
     }
 
-    [SuppressMessage("Philips.CodeAnalysis", "PH2071: Duplicate Code", Justification = "Needs refactoring")]
+    
     private static async ValueTask<IResult> ExecuteLegacyRpcQueryAsync(HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken)
     {
         IQueryCollection query = httpContext.Request.Query;
