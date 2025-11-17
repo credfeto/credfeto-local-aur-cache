@@ -28,6 +28,8 @@ This runs a local http (and optional https) server which responds to the two par
 Transparently, whenever a package's metadata has been downloaded then the git repo should have been downloaded to the
 cache too.
 
+Note this server just serves the metadata and the PKGBUILD repos not any repos etc used by the individual packages.
+
 ## Usage
 
 Example usage with other services [Docker](https://github.com/credfeto/credfeto-linux-package-cache)
@@ -63,7 +65,41 @@ docker run \
 
 Note that the server supports http3 for TLS hence UDP being mapped.
 
-Its recommended if using TLS to put the server behind NGINX or similar and use
+It is recommended if using TLS to put the server behind NGINX or similar and use
+
+### Server Configuration
+
+Should be mapped into `/usr/src/app/appsettings-local.json`:
+
+| Setting                      | Description                                                           | Default                        |
+|------------------------------|-----------------------------------------------------------------------|--------------------------------|
+| ``Proxy::Git::Executable``   | Where the git exe lives                                               | ``/usr/bin/git``               |
+| ``Proxy::Upstream::Rpc``     | Where the git exe lives                                               | https://aur.archlinux.org/rpc? |
+| ``Proxy::Upstream::Repos``   | Where to clone the repos from                                         | https://aur.archlinux.org      |
+| ``Proxy::Storage::Metadata`` | Directory to store the metadata that's cached from the upstream RPC   | /data/metadata                 |
+| ``Proxy::Storage::Repos``    | Directory to store the metadata that's cached from the upstream Repos | /data/repos                    |
+
+```json
+{
+  "Proxy": {
+    "Git": {
+      "Exeutable": "/usr/bin/git"
+    },
+    "Upstream": {
+      "Rpc": "https://aur.archlinux.org/rpc?",
+      "Repos": "https://aur.archlinux.org"
+    },
+    "Storage": {
+      "Metadata": "/data/metadata",
+      "Repos": "/data/repos"
+    }
+  }
+}
+```
+
+### Server Extensions
+
+``http://localhost:8080/cache``  - gets a list of the locally installed packaged and the date they were last accessed
 
 ## Client configuration
 
@@ -107,6 +143,7 @@ AurRpcUrl = https://localhost:8080/rpc?
 ```
 
 When accessing remotely from another client pc then adjust localhost to your server ip to access the cache.
+
 ```ini
 [config]
 AurUrl = http://192.168.101.27:8080
