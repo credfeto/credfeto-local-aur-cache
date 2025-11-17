@@ -2,7 +2,11 @@
 
 Server for caching AUR locally.
 
-Current State: Experimental
+Current State: 
+
+* Server: Experimental
+* Client: Yay: Working
+* Client: Paru: Broken
 
 ## Why?
 
@@ -29,6 +33,8 @@ Transparently, whenever a package's metadata has been downloaded then the git re
 cache too.
 
 Note this server just serves the metadata and the PKGBUILD repos not any repos etc used by the individual packages.
+
+Note this does not currently support switching to the github [mirror](https://github.com/credfeto/credfeto-local-aur-cache/issues/7) for the PKGBUILD downloads but this is being investigatedNote this does not currently support switching to the github [mirror](https://github.com/credfeto/credfeto-local-aur-cache/issues/7) for the PKGBUILD downloads.
 
 ## Usage
 
