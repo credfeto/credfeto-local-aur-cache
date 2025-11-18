@@ -56,7 +56,7 @@ docker run \
         -v /cache/aur/metadata:/data/metadata:rw\
         -v /cache/aur/repos:/data/repos:rw \
         -p "8080:8080/tcp" \
-        docker-registry.markridgwell.com/credfeto/aur-proxy:stable \
+        credfeto/aur-proxy:stable \
         -d
 ```
 
@@ -70,7 +70,7 @@ docker run \
         -v ./certificates/aur.local.pfx:/usr/src/app/server.pfx:r \
         -p "8081:8081/tcp" \
         -p "8081:8081/udp" \
-        docker-registry.markridgwell.com/credfeto/aur-proxy:stable \
+        credfeto/aur-proxy:stable \
         -d
 ```
 
