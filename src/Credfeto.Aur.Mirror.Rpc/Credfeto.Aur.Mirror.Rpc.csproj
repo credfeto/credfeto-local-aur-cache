@@ -53,7 +53,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Git.Interfaces\Credfeto.Aur.Mirror.Git.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Interfaces\Credfeto.Aur.Mirror.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Rpc.Interfaces\Credfeto.Aur.Mirror.Rpc.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
