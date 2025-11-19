@@ -60,8 +60,7 @@ docker run \
         -d
 ```
 
-`If mapping a trusted local TLS certificate, then this should be mapped as:
-`
+If mapping a trusted local TLS certificate, then this should be mapped as:
 
 ```bash
 docker run \
