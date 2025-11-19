@@ -125,7 +125,7 @@ appsettings-local.json:
 {
   "Proxy": {
     "Git": {
-      "Exeutable": "/usr/bin/git"
+      "Executable": "/usr/bin/git"
     },
     "Upstream": {
       "Rpc": "https://aur.archlinux.org/rpc?",
