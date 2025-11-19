@@ -39,7 +39,7 @@ cache too.
 Note this server just serves the metadata and the PKGBUILD repos not any repos etc used by the individual packages.
 
 Note this does not currently support switching to the
-github [mirror](https://github.com/credfeto/credfeto-local-aur-cache/issues/7) for the PKGBUILD downloads.
+GitHub [mirror](https://github.com/credfeto/credfeto-local-aur-cache/issues/7) for the PKGBUILD downloads.
 
 ## Usage
 
@@ -77,6 +77,36 @@ docker run \
 Note that the server supports http3 for TLS hence UDP being mapped.
 
 It is recommended if using TLS to put the server behind NGINX or similar and use
+
+### Docker Compose example
+
+```yml
+# docker-compose.yml
+services:
+  cache-aur:
+    image: credfeto/aur-proxy:stable
+    container_name: cache-aur
+    hostname: cache-aur
+    restart: always
+    stop_grace_period: 5s
+    stop_signal: SIGINT
+    volumes:
+      - cache-aur-metadata:/data/metadata:rw
+      - cache-aur-repos:/data/repos:rw
+      - ./aur.local.pfx:/usr/src/app/server.pfx:r
+    ports:
+      - "8080:8080/tcp"
+      - "8081:8081/tcp"
+      - "8081:8081/udp"
+
+volumes:
+  cache-aur-metadata:
+    name: cache-aur-metadata
+    external: true
+  cache-aur-repos:
+    name: cache-aur-repos
+    external: true
+```
 
 ### Server Configuration
 
