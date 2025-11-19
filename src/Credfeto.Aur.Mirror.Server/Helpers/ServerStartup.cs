@@ -114,7 +114,7 @@ internal static class ServerStartup
     }
 
     [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "Lives for program lifetime")]
-    [SuppressMessage(category: "SmartAnalyzers.CSharpExtensions.Annotations", checkId: "CSE007:DisposeObjectsBeforeLosingScope", Justification = "Lives for program lifetime")]
+    
     private static void ConfigureLogging(ILoggingBuilder logger)
     {
         logger.ClearProviders()
