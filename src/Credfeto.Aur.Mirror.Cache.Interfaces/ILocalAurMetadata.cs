@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Models.AurRpc;
-using Credfeto.Aur.Mirror.Rpc.Models;
 
-namespace Credfeto.Aur.Mirror.Rpc.Interfaces;
+namespace Credfeto.Aur.Mirror.Cache.Interfaces;
 
 public interface ILocalAurMetadata
 {
