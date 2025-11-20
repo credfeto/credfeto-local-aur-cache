@@ -14,8 +14,8 @@ internal static partial class LocalAurRpcLoggingExtensions
     [LoggerMessage(LogLevel.Error, EventId = 3, Message = "Failed to read saved metadata from folder: {directory}: {message}")]
     public static partial void CouldNotFindMetadataFiles(this ILogger<LocalAurRpc> logger, string directory, string message, Exception exception);
 
-    [LoggerMessage(LogLevel.Information, EventId = 4, Message = "Checking Package {packageId}) ({packageName}) from {upstreamRepo}")]
-    public static partial void CheckingPackage(this ILogger<LocalAurRpc> logger, int packageId, string packageName, string upstreamRepo);
+    [LoggerMessage(LogLevel.Information, EventId = 4, Message = "Checking Package {packageId}) ({packageName})")]
+    public static partial void CheckingPackage(this ILogger<LocalAurRpc> logger, int packageId, string packageName);
 
     [LoggerMessage(LogLevel.Information, EventId = 5, Message = "Found Metadata for {packageId}) ({packageName}) in {metadataFileName}")]
     public static partial void FoundMetadata(this ILogger<LocalAurRpc> logger, int packageId, string packageName, string metadataFileName);
