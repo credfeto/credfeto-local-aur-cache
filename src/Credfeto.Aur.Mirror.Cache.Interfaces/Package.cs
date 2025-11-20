@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 
-namespace Credfeto.Aur.Mirror.Rpc.Models;
+namespace Credfeto.Aur.Mirror.Cache.Interfaces;
 
 [DebuggerDisplay("{PackageName}: Modified {LastModified} Requested {LastRequestedUpstream} Accessed {LastAccessed} Saved {LastSaved}")]
 public sealed class Package

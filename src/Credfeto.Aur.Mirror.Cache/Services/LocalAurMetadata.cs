@@ -9,18 +9,17 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Cache.Interfaces;
+using Credfeto.Aur.Mirror.Cache.Services.LoggingExtensions;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
-using Credfeto.Aur.Mirror.Rpc.Interfaces;
-using Credfeto.Aur.Mirror.Rpc.Models;
-using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Credfeto.Date.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NonBlocking;
 
-namespace Credfeto.Aur.Mirror.Rpc.Services;
+namespace Credfeto.Aur.Mirror.Cache.Services;
 
 public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
 {
@@ -170,7 +169,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
             EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
 
             package.LastSaved = this._currentTimeSource.UtcNow();
-            string json = JsonSerializer.Serialize(value: package, jsonTypeInfo: RpcJsonContext.Default.Package);
+            string json = JsonSerializer.Serialize<Package>(value: package, jsonTypeInfo: CacheJsonContext.Default.Package);
             await File.WriteAllTextAsync(path: metadataFileName, contents: json, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
 
             this._logger.SavedPackageToCache(package.SearchResult.Id, package.PackageName, metadataFileName: metadataFileName);
@@ -191,7 +190,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
         {
             string json = await File.ReadAllTextAsync(path: metadataFileName, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
 
-            return JsonSerializer.Deserialize(json: json, jsonTypeInfo: RpcJsonContext.Default.Package);
+            return JsonSerializer.Deserialize<Package>(json: json, jsonTypeInfo: CacheJsonContext.Default.Package);
         }
         catch (Exception exception)
         {

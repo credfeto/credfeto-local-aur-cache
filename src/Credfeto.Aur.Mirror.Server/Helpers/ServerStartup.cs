@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Threading;
+using Credfeto.Aur.Mirror.Cache;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git;
 using Credfeto.Aur.Mirror.Rpc;
@@ -83,6 +84,7 @@ internal static class ServerStartup
                .AddRunOnStartupServices()
                .AddAurRpcApi()
                .AddGitRepos()
+               .AddMetadataCache()
                .ConfigureHttpJsonOptions(AddHttpJsonOptions);
 
         return builder;
@@ -114,7 +116,7 @@ internal static class ServerStartup
     }
 
     [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "Lives for program lifetime")]
-    
+
     private static void ConfigureLogging(ILoggingBuilder logger)
     {
         logger.ClearProviders()
