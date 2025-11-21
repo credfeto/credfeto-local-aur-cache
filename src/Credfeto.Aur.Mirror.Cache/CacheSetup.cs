@@ -11,6 +11,7 @@ public static class CacheSetup
     public static IServiceCollection AddMetadataCache(this IServiceCollection services)
     {
         return services.AddSingleton<ILocalAurMetadata, LocalAurMetadata>()
+                       .AddSingleton<IBackgroundMetadataUpdater, BackgroundMetadataUpdater>()
                        .AddRunOnStartupTask<LoadCachedMetadata>();
     }
 }
