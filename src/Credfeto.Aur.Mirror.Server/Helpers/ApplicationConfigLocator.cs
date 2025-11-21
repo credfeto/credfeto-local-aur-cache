@@ -3,10 +3,8 @@ using System.IO;
 
 namespace Credfeto.Aur.Mirror.Server.Helpers;
 
-
 internal static class ApplicationConfigLocator
 {
-    
     public static string ConfigurationFilesPath { get; } = LookupConfigurationFilesPath();
 
     private static string LookupConfigurationFilesPath()
@@ -35,8 +33,6 @@ internal static class ApplicationConfigLocator
 
         string appSettings = Path.Combine(path1: path, path2: "appsettings.json");
 
-        return File.Exists(appSettings)
-            ? path
-            : null;
+        return File.Exists(appSettings) ? path : null;
     }
 }
