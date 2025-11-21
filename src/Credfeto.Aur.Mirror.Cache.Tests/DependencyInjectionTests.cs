@@ -1,13 +1,13 @@
 using Credfeto.Aur.Mirror.Cache.Interfaces;
-using Credfeto.Aur.Mirror.Git.Interfaces;
+using Credfeto.Aur.Mirror.Cache.Startup;
 using Credfeto.Aur.Mirror.Interfaces;
-using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Date.Interfaces;
+using Credfeto.Services.Startup.Interfaces;
 using FunFair.Test.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Credfeto.Aur.Mirror.Rpc.Tests;
+namespace Credfeto.Aur.Mirror.Cache.Tests;
 
 public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
 {
@@ -19,21 +19,19 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     private static IServiceCollection Configure(IServiceCollection services)
     {
         return services.AddMockedService<ICurrentTimeSource>()
-                       .AddMockedService<IGitServer>()
                        .AddMockedService<IUpdateLock>()
-                       .AddMockedService<ILocalAurMetadata>()
-                       .AddAurRpcApi();
+                       .AddMetadataCache();
     }
 
     [Fact]
-    public void AurRpcMustBeRegistered()
+    public void LocalAurMetadataMustBeRegistered()
     {
-        this.RequireService<IAurRpc>();
+        this.RequireService<ILocalAurMetadata>();
     }
 
     [Fact]
-    public void AurReposMustBeRegistered()
+    public void LocalCachedMetadataMustBeRegistered()
     {
-        this.RequireService<IAurRepos>();
+        this.RequireServiceInCollectionFor<IRunOnStartup, LoadCachedMetadata>();
     }
 }

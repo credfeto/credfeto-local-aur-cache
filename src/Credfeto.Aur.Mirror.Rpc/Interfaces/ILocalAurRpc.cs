@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Cache.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
-using Credfeto.Aur.Mirror.Rpc.Models;
 
 namespace Credfeto.Aur.Mirror.Rpc.Interfaces;
 

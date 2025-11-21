@@ -16,7 +16,6 @@ public static class RpcSetup
                        .AddSingleton<IAurRepos, AurRepos>()
                        .AddSingleton<ILocalAurRpc, LocalAurRpc>()
                        .AddSingleton<IRemoteAurRpc, RemoteAurRpc>()
-                       .AddSingleton<ILocalAurMetadata, LocalAurMetadata>()
-                       .AddRunOnStartupTask<LoadCachedMetadata>();
+                       .AddRunOnStartupTask<ProcessBackgroundUpdates>();
     }
 }

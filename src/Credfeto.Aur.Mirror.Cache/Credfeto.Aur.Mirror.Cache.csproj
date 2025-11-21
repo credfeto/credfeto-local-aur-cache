@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
@@ -53,10 +53,14 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Cache.Interfaces\Credfeto.Aur.Mirror.Cache.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Git.Interfaces\Credfeto.Aur.Mirror.Git.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Credfeto.Enumeration.Source.Generation.Attributes" Version="1.2.129.1430" />
+    <PackageReference Include="Credfeto.Extensions.Linq" Version="1.0.139.1284" />
+    <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.135.1309" />
     <PackageReference Include="NonBlocking" Version="2.1.2" />
+    <PackageReference Include="System.Interactive.Async" Version="6.0.3" />
+    <PackageReference Include="System.Reactive" Version="6.1.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="All" ExcludeAssets="runtime" />

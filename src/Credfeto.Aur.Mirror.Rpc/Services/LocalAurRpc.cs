@@ -4,15 +4,13 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Aur.Mirror.Config;
+using Credfeto.Aur.Mirror.Cache.Interfaces;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
-using Credfeto.Aur.Mirror.Rpc.Models;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Credfeto.Extensions.Linq;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Credfeto.Aur.Mirror.Rpc.Services;
 
@@ -22,24 +20,22 @@ public sealed class LocalAurRpc : ILocalAurRpc
     private readonly IGitServer _gitServer;
     private readonly ILocalAurMetadata _localAurMetadata;
     private readonly ILogger<LocalAurRpc> _logger;
-    private readonly ServerConfig _serverConfig;
 
-    public LocalAurRpc(IOptions<ServerConfig> config, IGitServer gitServer, ILocalAurMetadata localAurMetadata, ILogger<LocalAurRpc> logger)
+    public LocalAurRpc(IGitServer gitServer, ILocalAurMetadata localAurMetadata, ILogger<LocalAurRpc> logger)
     {
         this._gitServer = gitServer;
         this._localAurMetadata = localAurMetadata;
         this._logger = logger;
         this._gitServer = gitServer;
         this._logger = logger;
-        this._serverConfig = config.Value;
 
         // TASK: Store local config in a DB that's quick to search rather than filesystem
-        // TASK: Look locally for everything and ONLY look in RPC if a significant amount of time has occured since the last query for that same data
+        // TASK: Look locally for everything and ONLY look in RPC if a significant amount of time has occurred since the last query for that same data
     }
 
     public ValueTask<IReadOnlyList<Package>> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
-        return this._localAurMetadata.SearchAsync(predicate: item => IsSearchMatch(existing: item, keyword: keyword, by: by), cancellationToken: cancellationToken);
+        return this._localAurMetadata.SearchAsync(predicate: item => IsSearchMatch(existing: item.SearchResult, keyword: keyword, by: by), cancellationToken: cancellationToken);
     }
 
     public ValueTask<IReadOnlyList<Package>> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
@@ -68,11 +64,11 @@ public sealed class LocalAurRpc : ILocalAurRpc
 
     private ValueTask OnRepoChangedAsync(SearchResult package, bool changed)
     {
-        string upstreamRepo = this._serverConfig.Upstream.Repos + "/" + package.Name + ".git";
 
-        this._logger.CheckingPackage(packageId: package.Id, packageName: package.Name, upstreamRepo: upstreamRepo);
 
-        return this._gitServer.EnsureRepositoryHasBeenClonedAsync(repoName: package.Name, upstreamRepo: upstreamRepo, changed: changed, cancellationToken: DoNotCancelEarly);
+        this._logger.CheckingPackage(packageId: package.Id, packageName: package.Name);
+
+        return this._gitServer.EnsureRepositoryHasBeenClonedAsync(repoName: package.Name, changed: changed, cancellationToken: DoNotCancelEarly);
     }
 
     private static bool IsSearchMatch(SearchResult existing, string keyword, string by)

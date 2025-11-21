@@ -1,7 +1,8 @@
 using System.Text.Json.Serialization;
+using Credfeto.Aur.Mirror.Cache.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 
-namespace Credfeto.Aur.Mirror.Rpc.Models;
+namespace Credfeto.Aur.Mirror.Cache;
 
 [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization | JsonSourceGenerationMode.Metadata,
                              PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
@@ -11,4 +12,4 @@ namespace Credfeto.Aur.Mirror.Rpc.Models;
 [JsonSerializable(typeof(Package))]
 [JsonSerializable(typeof(SearchResult))]
 [JsonSerializable(typeof(RpcResponse))]
-internal sealed partial class RpcJsonContext : JsonSerializerContext;
+internal sealed partial class CacheJsonContext : JsonSerializerContext;

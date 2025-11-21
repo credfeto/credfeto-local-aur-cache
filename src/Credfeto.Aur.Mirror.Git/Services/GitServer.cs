@@ -28,7 +28,8 @@ public sealed class GitServer : IGitServer
     private readonly ServerConfig _serverConfig;
     private readonly IUpdateLock _updateLock;
 
-    public GitServer(IOptions<ServerConfig> config, IUpdateLock updateLock, ILocallyInstalled locallyInstalled, ILogger<GitServer> logger)
+    public GitServer(IOptions<ServerConfig> config, IUpdateLock updateLock, ILocallyInstalled locallyInstalled,
+                     ILogger<GitServer> logger)
     {
         this._serverConfig = config.Value;
         this._updateLock = updateLock;
@@ -39,6 +40,12 @@ public sealed class GitServer : IGitServer
     public async ValueTask<GitCommandResponse> ExecuteResultAsync(GitCommandOptions options, Stream source, CancellationToken cancellationToken)
     {
         string repoBasePath = this.GetRepoBasePath(options.RepositoryName);
+
+        if (!this.RepoExists(repoBasePath))
+        {
+            await this.EnsureRepositoryHasBeenClonedAsync(options.RepositoryName, false, cancellationToken: cancellationToken);
+
+        }
 
         string arguments = options.BuildCommand(repoBasePath);
         this._logger.ExecutingCommand(arguments);
@@ -85,16 +92,18 @@ public sealed class GitServer : IGitServer
 
                 await process.WaitForExitAsync(cancellationToken);
 
-                await this._locallyInstalled.MarkAsClonedAsync(repo: options.RepositoryName, cancellationToken: cancellationToken);
+                await this._locallyInstalled.MarkAsClonedAsync(packageName: options.RepositoryName, cancellationToken: cancellationToken);
 
                 return new(memoryStream.ToArray(), ContentType: options.ContentType);
             }
         }
     }
 
-    public async ValueTask EnsureRepositoryHasBeenClonedAsync(string repoName, string upstreamRepo, bool changed, CancellationToken cancellationToken)
+    public async ValueTask EnsureRepositoryHasBeenClonedAsync(string repoName, bool changed, CancellationToken cancellationToken)
     {
         string repoBasePath = this.GetRepoBasePath(repoName);
+
+        string upstreamRepo = this.GetUpstreamRepoUrl(repoName);
 
         this._logger.RequestingCloneOrUpdateOfRepo(repo: repoName, upstream: upstreamRepo, path: repoBasePath);
         SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: repoBasePath, cancellationToken: cancellationToken);
@@ -125,11 +134,22 @@ public sealed class GitServer : IGitServer
         }
     }
 
+    private string GetUpstreamRepoUrl(string repoName)
+    {
+        return this._serverConfig.Upstream.Repos + "/" + repoName + ".git";
+    }
+
     public async ValueTask<GitCommandResponse> GetFileAsync(string repoName, string path, CancellationToken cancellationToken)
     {
-        this._logger.ReadingFile(repo: repoName, path: path);
-        string repoBasePath = this.GetRepoBasePath(repoName);
 
+        if (!this.RepoExists(repoName))
+        {
+            await this.EnsureRepositoryHasBeenClonedAsync(repoName, false, cancellationToken: cancellationToken);
+        }
+
+        this._logger.ReadingFile(repo: repoName, path: path);
+
+        string repoBasePath = this.GetRepoBasePath(repoName);
         string fileName = Path.Combine(path1: repoBasePath, path2: path);
 
         await using (RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream())
@@ -140,6 +160,39 @@ public sealed class GitServer : IGitServer
             }
 
             return new(memoryStream.ToArray(), ContentType: "application/octet-stream");
+        }
+    }
+
+    private bool RepoExists(string repoName)
+    {
+        string repoBasePath = this.GetRepoBasePath(repoName);
+        if (!Directory.Exists(repoBasePath))
+        {
+            this._logger.RepoMissing(repoName, repoBasePath);
+            return false;
+        }
+
+        try
+        {
+            string? repoFolder = Repository.Discover(repoBasePath);
+
+            if (string.IsNullOrEmpty(repoFolder))
+            {
+                this._logger.RepoMissing(repoName, repoBasePath);
+                return false;
+            }
+
+            using (new Repository(repoFolder))
+            {
+                this._logger.RepoExists(repoName, repoBasePath);
+                return true;
+            }
+        }
+        catch (Exception exception)
+        {
+            this._logger.RepoInvalid(repoName, repoBasePath, exception.Message, exception);
+
+            return false;
         }
     }
 

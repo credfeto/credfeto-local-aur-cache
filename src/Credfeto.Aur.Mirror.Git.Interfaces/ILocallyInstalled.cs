@@ -7,7 +7,7 @@ namespace Credfeto.Aur.Mirror.Git.Interfaces;
 
 public interface ILocallyInstalled
 {
-    ValueTask MarkAsClonedAsync(string repo, CancellationToken cancellationToken);
+    ValueTask MarkAsClonedAsync(string packageName, CancellationToken cancellationToken);
 
     ValueTask<IReadOnlyList<RepoCloneInfo>> GetRecentlyClonedAsync(CancellationToken cancellationToken);
 }

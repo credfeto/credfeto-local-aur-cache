@@ -108,6 +108,7 @@
     <PackageReference Include="ToStringWithoutOverrideAnalyzer" Version="0.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Credfeto.Aur.Mirror.Cache\Credfeto.Aur.Mirror.Cache.csproj" />
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Git\Credfeto.Aur.Mirror.Git.csproj" />
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Rpc\Credfeto.Aur.Mirror.Rpc.csproj" />
   </ItemGroup>

@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/Cache/">
+    <Project Path="Credfeto.Aur.Mirror.Cache.Interfaces/Credfeto.Aur.Mirror.Cache.Interfaces.csproj" />
+    <Project Path="Credfeto.Aur.Mirror.Cache.Tests/Credfeto.Aur.Mirror.Cache.Tests.csproj" />
+    <Project Path="Credfeto.Aur.Mirror.Cache/Credfeto.Aur.Mirror.Cache.csproj" />
+  </Folder>
   <Folder Name="/Config/">
     <File Path="../CHANGELOG.md" />
     <File Path="../Dockerfile" />

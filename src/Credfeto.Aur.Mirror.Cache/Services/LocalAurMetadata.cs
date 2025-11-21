@@ -9,18 +9,17 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Cache.Interfaces;
+using Credfeto.Aur.Mirror.Cache.Services.LoggingExtensions;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
-using Credfeto.Aur.Mirror.Rpc.Interfaces;
-using Credfeto.Aur.Mirror.Rpc.Models;
-using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Credfeto.Date.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NonBlocking;
 
-namespace Credfeto.Aur.Mirror.Rpc.Services;
+namespace Credfeto.Aur.Mirror.Cache.Services;
 
 public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
 {
@@ -60,9 +59,9 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
         }
     }
 
-    public async ValueTask<IReadOnlyList<Package>> SearchAsync(Func<SearchResult, bool> predicate, CancellationToken cancellationToken)
+    public async ValueTask<IReadOnlyList<Package>> SearchAsync(Func<Package, bool> predicate, CancellationToken cancellationToken)
     {
-        return await Task.WhenAll(this._metadata.Values.Where(item => predicate(item.SearchResult))
+        return await Task.WhenAll(this._metadata.Values.Where(predicate)
                                       .Select(QueueUpdateAndReturnAsync));
 
         async Task<Package> QueueUpdateAndReturnAsync(Package item)
@@ -91,12 +90,19 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
     {
         Package toSave = this.ShouldIssueUpdate(package: package, out bool issueUpdate, out bool changed);
 
-        await this.QueueUpdateAsync(packageToSave: toSave, cancellationToken: cancellationToken);
+        await this.UpdateAsync(toSave, _ => { }, cancellationToken);
 
         if (issueUpdate)
         {
             await onUpdate(arg1: package, arg2: changed);
         }
+    }
+
+    public ValueTask UpdateAsync(Package package, Action<Package> onUpdate, CancellationToken cancellationToken)
+    {
+        onUpdate(package);
+
+        return this.QueueUpdateAsync(packageToSave: package, cancellationToken: cancellationToken);
     }
 
     private IDisposable SubscribeToPackageSaveQueue()
@@ -134,7 +140,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
     {
         DateTimeOffset now = this._currentTimeSource.UtcNow();
 
-        return new(lastSaved: now, lastAccessed: now, lastRequestedUpstream: now, searchResult: package);
+        return new(lastSaved: now, lastAccessed: now, lastRequestedUpstream: now, searchResult: package, lastCloned: null);
     }
 
     private Package OnPackageChanged(SearchResult candidate, Package existing, out bool issueUpdate, out bool changed)
@@ -170,10 +176,10 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
             EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
 
             package.LastSaved = this._currentTimeSource.UtcNow();
-            string json = JsonSerializer.Serialize(value: package, jsonTypeInfo: RpcJsonContext.Default.Package);
+            string json = JsonSerializer.Serialize<Package>(value: package, jsonTypeInfo: CacheJsonContext.Default.Package);
             await File.WriteAllTextAsync(path: metadataFileName, contents: json, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
 
-            this._logger.SavedPackageToCache(package.SearchResult.Id, package.PackageName, metadataFileName: metadataFileName);
+            this._logger.SavedPackageToCache(packageId: package.SearchResult.Id, packageName: package.PackageName, metadataFileName: metadataFileName);
         }
         catch (Exception exception)
         {
@@ -191,7 +197,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
         {
             string json = await File.ReadAllTextAsync(path: metadataFileName, encoding: Encoding.UTF8, cancellationToken: DoNotCancelEarly);
 
-            return JsonSerializer.Deserialize(json: json, jsonTypeInfo: RpcJsonContext.Default.Package);
+            return JsonSerializer.Deserialize<Package>(json: json, jsonTypeInfo: CacheJsonContext.Default.Package);
         }
         catch (Exception exception)
         {
@@ -225,7 +231,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
                 continue;
             }
 
-            this._logger.LoadedPackageFromCache(existing.SearchResult.Id, existing.PackageName, metadataFileName);
+            this._logger.LoadedPackageFromCache(packageId: existing.SearchResult.Id, packageName: existing.PackageName, metadataFileName: metadataFileName);
 
             yield return existing;
         }

@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
+namespace Credfeto.Aur.Mirror.Cache.Services.LoggingExtensions;
 
 internal static partial class LocalAurMetadataLoggingExtensions
 {
