@@ -5,14 +5,12 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Cache.Interfaces;
-using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Credfeto.Extensions.Linq;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Credfeto.Aur.Mirror.Rpc.Services;
 
@@ -37,7 +35,7 @@ public sealed class LocalAurRpc : ILocalAurRpc
 
     public ValueTask<IReadOnlyList<Package>> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
     {
-        return this._localAurMetadata.SearchAsync(predicate: item => IsSearchMatch(existing: item, keyword: keyword, by: by), cancellationToken: cancellationToken);
+        return this._localAurMetadata.SearchAsync(predicate: item => IsSearchMatch(existing: item.SearchResult, keyword: keyword, by: by), cancellationToken: cancellationToken);
     }
 
     public ValueTask<IReadOnlyList<Package>> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)

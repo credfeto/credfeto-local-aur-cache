@@ -28,7 +28,8 @@ public sealed class GitServer : IGitServer
     private readonly ServerConfig _serverConfig;
     private readonly IUpdateLock _updateLock;
 
-    public GitServer(IOptions<ServerConfig> config, IUpdateLock updateLock, ILocallyInstalled locallyInstalled, ILogger<GitServer> logger)
+    public GitServer(IOptions<ServerConfig> config, IUpdateLock updateLock, ILocallyInstalled locallyInstalled,
+                     ILogger<GitServer> logger)
     {
         this._serverConfig = config.Value;
         this._updateLock = updateLock;
@@ -91,7 +92,7 @@ public sealed class GitServer : IGitServer
 
                 await process.WaitForExitAsync(cancellationToken);
 
-                await this._locallyInstalled.MarkAsClonedAsync(repo: options.RepositoryName, cancellationToken: cancellationToken);
+                await this._locallyInstalled.MarkAsClonedAsync(packageName: options.RepositoryName, cancellationToken: cancellationToken);
 
                 return new(memoryStream.ToArray(), ContentType: options.ContentType);
             }

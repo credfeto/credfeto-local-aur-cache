@@ -52,6 +52,7 @@
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xhfc-gr8f-ffwc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Credfeto.Aur.Mirror.Cache.Interfaces\Credfeto.Aur.Mirror.Cache.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Git.Interfaces\Credfeto.Aur.Mirror.Git.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>

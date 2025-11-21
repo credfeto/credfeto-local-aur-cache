@@ -10,7 +10,7 @@ public interface ILocalAurMetadata
 {
     ValueTask LoadAsync(CancellationToken cancellationToken);
 
-    ValueTask<IReadOnlyList<Package>> SearchAsync(Func<SearchResult, bool> predicate, CancellationToken cancellationToken);
+    ValueTask<IReadOnlyList<Package>> SearchAsync(Func<Package, bool> predicate, CancellationToken cancellationToken);
 
     Package? Get(string packageName);
 

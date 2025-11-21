@@ -59,9 +59,9 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
         }
     }
 
-    public async ValueTask<IReadOnlyList<Package>> SearchAsync(Func<SearchResult, bool> predicate, CancellationToken cancellationToken)
+    public async ValueTask<IReadOnlyList<Package>> SearchAsync(Func<Package, bool> predicate, CancellationToken cancellationToken)
     {
-        return await Task.WhenAll(this._metadata.Values.Where(item => predicate(item.SearchResult))
+        return await Task.WhenAll(this._metadata.Values.Where(predicate)
                                       .Select(QueueUpdateAndReturnAsync));
 
         async Task<Package> QueueUpdateAndReturnAsync(Package item)
@@ -140,7 +140,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
     {
         DateTimeOffset now = this._currentTimeSource.UtcNow();
 
-        return new(lastSaved: now, lastAccessed: now, lastRequestedUpstream: now, searchResult: package);
+        return new(lastSaved: now, lastAccessed: now, lastRequestedUpstream: now, searchResult: package, lastCloned: null);
     }
 
     private Package OnPackageChanged(SearchResult candidate, Package existing, out bool issueUpdate, out bool changed)
