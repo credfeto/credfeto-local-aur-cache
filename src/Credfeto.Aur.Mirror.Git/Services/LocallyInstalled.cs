@@ -38,6 +38,10 @@ public sealed class LocallyInstalled : ILocallyInstalled
 
     public async ValueTask MarkAsClonedAsync(string repo, CancellationToken cancellationToken)
     {
+        // ILocalAurMetadata metadata;
+        //
+        // metadata.MarkAsCloned(repo, cancellationToken);
+
         DateTimeOffset whenCloned = this._dateTimeSource.UtcNow();
 
         bool exists = this._cloned.TryRemove(key: repo, value: out _);
