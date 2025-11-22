@@ -7,8 +7,8 @@ internal static partial class Endpoints
     public static WebApplication ConfigureEndpoints(this WebApplication app)
     {
         return app.ConfigureTestEndpoints()
-                  .ConfigureAurRpcEndpoints()
-                  .ConfigureAurRepoEndpoints()
-                  .ConfigureCacheEndpoints();
+            .ConfigureAurRpcEndpoints()
+            .ConfigureAurRepoEndpoints()
+            .ConfigureCacheEndpoints();
     }
 }
