@@ -10,14 +10,11 @@ namespace Credfeto.Aur.Mirror.Git.Tests;
 public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
 {
     public DependencyInjectionTests(ITestOutputHelper output)
-        : base(output: output, dependencyInjectionRegistration: Configure)
-    {
-    }
+        : base(output: output, dependencyInjectionRegistration: Configure) { }
 
     private static IServiceCollection Configure(IServiceCollection services)
     {
-        return services.AddMockedService<ICurrentTimeSource>()
-                       .AddGitRepos();
+        return services.AddMockedService<ICurrentTimeSource>().AddGitRepos();
     }
 
     [Fact]
