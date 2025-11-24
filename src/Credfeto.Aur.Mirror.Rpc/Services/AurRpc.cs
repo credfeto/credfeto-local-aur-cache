@@ -25,7 +25,12 @@ public sealed class AurRpc : IAurRpc
     private readonly ILogger<AurRpc> _logger;
     private readonly IRemoteAurRpc _remoteAurRpc;
 
-    public AurRpc(IRemoteAurRpc remoteAurRpc, ILocalAurRpc localAurRpc, ICurrentTimeSource currentTimeSource, ILogger<AurRpc> logger)
+    public AurRpc(
+        IRemoteAurRpc remoteAurRpc,
+        ILocalAurRpc localAurRpc,
+        ICurrentTimeSource currentTimeSource,
+        ILogger<AurRpc> logger
+    )
     {
         this._remoteAurRpc = remoteAurRpc;
         this._localAurRpc = localAurRpc;
@@ -33,13 +38,23 @@ public sealed class AurRpc : IAurRpc
         this._logger = logger;
     }
 
-    public async ValueTask<RpcResponse> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    public async ValueTask<RpcResponse> SearchAsync(
+        string keyword,
+        string by,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    )
     {
         this._logger.SearchingFor(keyword: keyword, by: by);
 
         try
         {
-            RpcResponse upstream = await this._remoteAurRpc.SearchAsync(keyword: keyword, by: by, userAgent: userAgent, cancellationToken: cancellationToken);
+            RpcResponse upstream = await this._remoteAurRpc.SearchAsync(
+                keyword: keyword,
+                by: by,
+                userAgent: userAgent,
+                cancellationToken: cancellationToken
+            );
 
             await this._localAurRpc.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent);
 
@@ -47,15 +62,29 @@ public sealed class AurRpc : IAurRpc
         }
         catch (HttpRequestException exception)
         {
-            this._logger.FailedToSearchUpstreamPackageInfo(keyword: keyword, by: by, message: exception.Message, exception: exception);
+            this._logger.FailedToSearchUpstreamPackageInfo(
+                keyword: keyword,
+                by: by,
+                message: exception.Message,
+                exception: exception
+            );
 
-            IReadOnlyList<Package> results = await this._localAurRpc.SearchAsync(keyword: keyword, by: by, userAgent: userAgent, cancellationToken: cancellationToken);
+            IReadOnlyList<Package> results = await this._localAurRpc.SearchAsync(
+                keyword: keyword,
+                by: by,
+                userAgent: userAgent,
+                cancellationToken: cancellationToken
+            );
 
             return PackagesAsSearch(results);
         }
     }
 
-    public async ValueTask<RpcResponse> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    public async ValueTask<RpcResponse> InfoAsync(
+        IReadOnlyList<string> packages,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    )
     {
         this._logger.PackageInfo(packages);
 
@@ -68,7 +97,11 @@ public sealed class AurRpc : IAurRpc
                 return RpcResults.InfoNotFound;
             }
 
-            localPackages = await this._localAurRpc.InfoAsync(packages: packages, userAgent: userAgent, cancellationToken: cancellationToken);
+            localPackages = await this._localAurRpc.InfoAsync(
+                packages: packages,
+                userAgent: userAgent,
+                cancellationToken: cancellationToken
+            );
 
             if (!this.NeedsUpstreamQuery(requestedPackages: packages, localPackages: localPackages))
             {
@@ -77,7 +110,11 @@ public sealed class AurRpc : IAurRpc
                 return PackagesAsInfo(localPackages);
             }
 
-            RpcResponse upstream = await this._remoteAurRpc.InfoAsync(packages: packages, userAgent: userAgent, cancellationToken: cancellationToken);
+            RpcResponse upstream = await this._remoteAurRpc.InfoAsync(
+                packages: packages,
+                userAgent: userAgent,
+                cancellationToken: cancellationToken
+            );
 
             await this._localAurRpc.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent);
 
@@ -85,7 +122,11 @@ public sealed class AurRpc : IAurRpc
         }
         catch (HttpRequestException exception)
         {
-            this._logger.FailedToGetUpstreamPackageInfo(packages: packages, message: exception.Message, exception: exception);
+            this._logger.FailedToGetUpstreamPackageInfo(
+                packages: packages,
+                message: exception.Message,
+                exception: exception
+            );
 
             return PackagesAsInfo(localPackages ?? []);
         }
@@ -105,7 +146,9 @@ public sealed class AurRpc : IAurRpc
 
     private bool NeedsUpstreamQuery(Package package, in ConditionContext context)
     {
-        return this.NotCachedLocally(package: package, context: context) || this.LastAccessedTooOld(package: package, context: context) || this.LastRequestedTooOld(package: package, context: context);
+        return this.NotCachedLocally(package: package, context: context)
+            || this.LastAccessedTooOld(package: package, context: context)
+            || this.LastRequestedTooOld(package: package, context: context);
     }
 
     private bool NotCachedLocally(Package package, in ConditionContext context)
@@ -129,7 +172,12 @@ public sealed class AurRpc : IAurRpc
             return false;
         }
 
-        this._logger.NotAccessedRecently(package: package.PackageName, lastAccessed: package.LastAccessed, age: lastAccessedAge, maxAge: MaxAgeAccess);
+        this._logger.NotAccessedRecently(
+            package: package.PackageName,
+            lastAccessed: package.LastAccessed,
+            age: lastAccessedAge,
+            maxAge: MaxAgeAccess
+        );
 
         return true;
     }
@@ -143,19 +191,34 @@ public sealed class AurRpc : IAurRpc
             return false;
         }
 
-        this._logger.NotRequestedRecently(package: package.PackageName, lastRequested: package.LastRequestedUpstream, age: lastRequestedAge, maxAge: MaxAgeRequest);
+        this._logger.NotRequestedRecently(
+            package: package.PackageName,
+            lastRequested: package.LastRequestedUpstream,
+            age: lastRequestedAge,
+            maxAge: MaxAgeRequest
+        );
 
         return true;
     }
 
     private static RpcResponse PackagesAsSearch(IReadOnlyList<Package> packages)
     {
-        return new(count: packages.Count, [..packages.Select(item => item.SearchResult)], rpcType: "search", version: RpcResults.RpcVersion);
+        return new(
+            count: packages.Count,
+            [.. packages.Select(item => item.SearchResult)],
+            rpcType: "search",
+            version: RpcResults.RpcVersion
+        );
     }
 
     private static RpcResponse PackagesAsInfo(IReadOnlyList<Package> packages)
     {
-        return new(count: packages.Count, [..packages.Select(item => item.SearchResult)], rpcType: "multiinfo", version: RpcResults.RpcVersion);
+        return new(
+            count: packages.Count,
+            [.. packages.Select(item => item.SearchResult)],
+            rpcType: "multiinfo",
+            version: RpcResults.RpcVersion
+        );
     }
 
     [DebuggerDisplay("{RequestedPackages} {Now}")]
