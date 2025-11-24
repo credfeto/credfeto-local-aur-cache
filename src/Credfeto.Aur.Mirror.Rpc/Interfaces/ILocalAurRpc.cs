@@ -9,9 +9,18 @@ namespace Credfeto.Aur.Mirror.Rpc.Interfaces;
 
 public interface ILocalAurRpc
 {
-    ValueTask<IReadOnlyList<Package>> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken);
+    ValueTask<IReadOnlyList<Package>> SearchAsync(
+        string keyword,
+        string by,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    );
 
-    ValueTask<IReadOnlyList<Package>> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken);
+    ValueTask<IReadOnlyList<Package>> InfoAsync(
+        IReadOnlyList<string> packages,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    );
 
     ValueTask SyncUpstreamReposAsync(RpcResponse upstream, ProductInfoHeaderValue? userAgent);
 }
