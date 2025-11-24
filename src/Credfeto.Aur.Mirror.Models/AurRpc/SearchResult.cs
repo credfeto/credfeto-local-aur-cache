@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -9,30 +9,32 @@ namespace Credfeto.Aur.Mirror.Models.AurRpc;
 public sealed class SearchResult
 {
     [JsonConstructor]
-    public SearchResult(string description,
-                        long firstSubmitted,
-                        int id,
-                        IReadOnlyList<string>? keywords,
-                        IReadOnlyList<string>? license,
-                        IReadOnlyList<string>? depends,
-                        IReadOnlyList<string>? makeDepends,
-                        IReadOnlyList<string>? optDepends,
-                        IReadOnlyList<string>? checkDepends,
-                        IReadOnlyList<string>? conflicts,
-                        IReadOnlyList<string>? replaces,
-                        IReadOnlyList<string>? groups,
-                        IReadOnlyList<string>? coMaintainers,
-                        long lastModified,
-                        string maintainer,
-                        string name,
-                        int numVotes,
-                        long? outOfDate,
-                        string packageBase,
-                        int packageBaseId,
-                        double popularity,
-                        string url,
-                        string urlPath,
-                        string version)
+    public SearchResult(
+        string description,
+        long firstSubmitted,
+        int id,
+        IReadOnlyList<string>? keywords,
+        IReadOnlyList<string>? license,
+        IReadOnlyList<string>? depends,
+        IReadOnlyList<string>? makeDepends,
+        IReadOnlyList<string>? optDepends,
+        IReadOnlyList<string>? checkDepends,
+        IReadOnlyList<string>? conflicts,
+        IReadOnlyList<string>? replaces,
+        IReadOnlyList<string>? groups,
+        IReadOnlyList<string>? coMaintainers,
+        long lastModified,
+        string maintainer,
+        string name,
+        int numVotes,
+        long? outOfDate,
+        string packageBase,
+        int packageBaseId,
+        double popularity,
+        string url,
+        string urlPath,
+        string version
+    )
     {
         this.Description = description;
         this.FirstSubmitted = firstSubmitted;
@@ -133,11 +135,19 @@ public sealed class SearchResult
     [JsonPropertyName("Popularity")]
     public double Popularity { get; }
 
-    [SuppressMessage(category: "Microsoft.Naming", checkId: "CA1056: Uri properties should not be strings", Justification = "RPC Property")]
+    [SuppressMessage(
+        category: "Microsoft.Naming",
+        checkId: "CA1056: Uri properties should not be strings",
+        Justification = "RPC Property"
+    )]
     [JsonPropertyName("URL")]
     public string Url { get; }
 
-    [SuppressMessage(category: "Microsoft.Naming", checkId: "CA1056: Uri properties should not be strings", Justification = "RPC Property")]
+    [SuppressMessage(
+        category: "Microsoft.Naming",
+        checkId: "CA1056: Uri properties should not be strings",
+        Justification = "RPC Property"
+    )]
     [JsonPropertyName("URLPath")]
     public string UrlPath { get; }
 
