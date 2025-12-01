@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Cache.Interfaces;
 using Credfeto.Aur.Mirror.Cache.Services;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Interfaces;
@@ -40,6 +42,9 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
 
         ServerConfig serverConfig = new();
 
+        serverConfig.Storage.Metadata = this.CreateFolderInTempFolder( "Metadata");
+        serverConfig.Storage.Repos = this.CreateFolderInTempFolder("Repos");
+
         _ = config.Value.Returns(serverConfig);
 
         this._localAurMetadata = new(config: config, updateLock: updateLock, currentTimeSource: currentTimeSource, logger: logger);
@@ -52,9 +57,15 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
 
         SearchResult newSearchResult = MockReferenceData.SearchResult;
 
+        Package? foundBeforeAdding = this._localAurMetadata.Get(newSearchResult.Name);
+        Assert.Null(foundBeforeAdding);
+
         await this._localAurMetadata.UpdateAsync(package: newSearchResult, onUpdate: updateContext.UpdateAsync, this.CancellationToken());
 
         ShouldBeSet(updateContext: updateContext, newSearchResult: newSearchResult, expectedChanged: false);
+
+        Package? foundAfterAdding = this._localAurMetadata.Get(newSearchResult.Name);
+        Assert.NotNull(foundAfterAdding);
     }
 
     [Fact]
@@ -144,4 +155,35 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
             return ValueTask.CompletedTask;
         }
     }
+
+    private string CreateFolderInTempFolder(string name)
+    {
+        string fullPath = Path.Combine(path1: this.TempFolder, path2: name);
+        this.EnsureDirectoryExists(fullPath);
+
+        return fullPath;
+    }
+
+    private void EnsureDirectoryExists(string fullPath)
+    {
+        if (Directory.Exists(fullPath))
+        {
+            this.Output.WriteLine($"Directory {fullPath} already exists");
+
+            return;
+        }
+
+        try
+        {
+            DirectoryInfo di = Directory.CreateDirectory(fullPath);
+            this.Output.WriteLine($"Directory {fullPath} created as {di.FullName} on {di.CreationTimeUtc}");
+        }
+        catch (Exception exception)
+        {
+            this.Output.WriteLine($"Directory {fullPath} could not be created: {exception.Message}");
+
+            throw;
+        }
+    }
+
 }
