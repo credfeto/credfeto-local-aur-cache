@@ -1,105 +1,47 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Aur.Mirror.Config;
+using Credfeto.Aur.Mirror.Cache.Interfaces;
 using Credfeto.Aur.Mirror.Git.Interfaces;
-using Credfeto.Aur.Mirror.Git.Services.LoggingExtensions;
 using Credfeto.Aur.Mirror.Models.Cache;
 using Credfeto.Date.Interfaces;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using NonBlocking;
 
 namespace Credfeto.Aur.Mirror.Git.Services;
 
 public sealed class LocallyInstalled : ILocallyInstalled
 {
-    private readonly ConcurrentDictionary<string, DateTimeOffset> _cloned;
+    private readonly IBackgroundMetadataUpdater _backgroundMetadataUpdater;
     private readonly ICurrentTimeSource _dateTimeSource;
-    private readonly ILogger<LocallyInstalled> _logger;
-    private readonly ServerConfig _serverConfig;
+    private readonly ILocalAurMetadata _localAurMetadata;
 
-    public LocallyInstalled(
-        IOptions<ServerConfig> config,
-        ICurrentTimeSource dateTimeSource,
-        ILogger<LocallyInstalled> logger
-    )
+    public LocallyInstalled(ICurrentTimeSource dateTimeSource,
+                            IBackgroundMetadataUpdater backgroundMetadataUpdater,
+                            ILocalAurMetadata localAurMetadata)
     {
         this._dateTimeSource = dateTimeSource;
-        this._logger = logger;
-        this._serverConfig = config.Value;
-
-        this._cloned = new(StringComparer.OrdinalIgnoreCase);
+        this._backgroundMetadataUpdater = backgroundMetadataUpdater;
+        this._localAurMetadata = localAurMetadata;
     }
 
-    public async ValueTask MarkAsClonedAsync(string repo, CancellationToken cancellationToken)
+    public ValueTask MarkAsClonedAsync(string packageName, CancellationToken cancellationToken)
     {
         DateTimeOffset whenCloned = this._dateTimeSource.UtcNow();
 
-        bool exists = this._cloned.TryRemove(key: repo, value: out _);
-
-        if (this._cloned.TryAdd(key: repo, value: whenCloned))
-        {
-            if (exists)
-            {
-                this._logger.UpdatingCloneCache(repo: repo, timestamp: whenCloned);
-            }
-            else
-            {
-                this._logger.AddingToCloneCache(repo: repo, timestamp: whenCloned);
-            }
-        }
-
-        string fileName = Path.Combine(path1: this._serverConfig.Storage.Repos, $"{repo}.cloned");
-
-        await File.WriteAllTextAsync(
-            path: fileName,
-            contents: "{}",
-            encoding: Encoding.UTF8,
-            cancellationToken: cancellationToken
-        );
+        return this._backgroundMetadataUpdater.RequestUpdateAsync(packageName: packageName, update: p => p.LastCloned = whenCloned, cancellationToken: cancellationToken);
     }
 
-    public ValueTask<IReadOnlyList<RepoCloneInfo>> GetRecentlyClonedAsync(CancellationToken cancellationToken)
+    public async ValueTask<IReadOnlyList<RepoCloneInfo>> GetRecentlyClonedAsync(CancellationToken cancellationToken)
     {
-        IEnumerable<string> files = Directory.EnumerateFiles(
-            path: this._serverConfig.Storage.Repos,
-            searchPattern: "*.cloned"
-        );
+        IReadOnlyList<Package> packages = await this._localAurMetadata.SearchAsync(predicate: x => x.LastCloned is not null, cancellationToken: cancellationToken);
 
-        IReadOnlyList<RepoCloneInfo> cloneInfo =
-        [
-            .. files
-                .Select(file =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    string repo = Path.GetFileNameWithoutExtension(file);
-
-                    return this.BuildRepoEntry(repo: repo, fileName: file);
-                })
-                .OrderBy(x => x.LastCloned),
-        ];
-
-        return ValueTask.FromResult(cloneInfo);
+        return [.. packages.Select(BuildRepoEntry)];
     }
 
-    private RepoCloneInfo BuildRepoEntry(string repo, string fileName)
+    private static RepoCloneInfo BuildRepoEntry(Package package)
     {
-        if (!this._cloned.TryGetValue(key: repo, out DateTimeOffset lastCloned))
-        {
-            lastCloned = File.GetLastWriteTimeUtc(fileName).AsDateTimeOffset();
-
-            if (this._cloned.TryAdd(key: repo, value: lastCloned))
-            {
-                this._logger.AddingToCloneCache(repo: repo, timestamp: lastCloned);
-            }
-        }
-
-        return new(repo: repo, lastCloned: lastCloned);
+        // ! Last cloned should already be non null at this point
+        return new(repo: package.PackageName, lastCloned: package.LastCloned!.Value);
     }
 }

@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Threading;
+using Credfeto.Aur.Mirror.Cache;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git;
 using Credfeto.Aur.Mirror.Rpc;
@@ -58,18 +59,18 @@ internal static class ServerStartup
     {
         string configPath = ApplicationConfigLocator.ConfigurationFilesPath;
 
-        return WebApplication
-            .CreateSlimBuilder(args)
-            .ConfigureSettings(configPath: configPath)
-            .ConfigureServices()
-            .ConfigureAppHost()
-            .ConfigureWebHost(configPath: configPath)
-            .Build();
+        return WebApplication.CreateSlimBuilder(args)
+                             .ConfigureSettings(configPath: configPath)
+                             .ConfigureServices()
+                             .ConfigureAppHost()
+                             .ConfigureWebHost(configPath: configPath)
+                             .Build();
     }
 
     private static WebApplicationBuilder ConfigureAppHost(this WebApplicationBuilder builder)
     {
-        builder.Host.UseWindowsService().UseSystemd();
+        builder.Host.UseWindowsService()
+               .UseSystemd();
 
         return builder;
     }
@@ -78,13 +79,13 @@ internal static class ServerStartup
     {
         IConfigurationSection section = builder.Configuration.GetSection("Proxy");
 
-        builder
-            .Services.Configure<ServerConfig>(section)
-            .AddDate()
-            .AddRunOnStartupServices()
-            .AddAurRpcApi()
-            .AddGitRepos()
-            .ConfigureHttpJsonOptions(AddHttpJsonOptions);
+        builder.Services.Configure<ServerConfig>(section)
+               .AddDate()
+               .AddRunOnStartupServices()
+               .AddAurRpcApi()
+               .AddGitRepos()
+               .AddMetadataCache()
+               .ConfigureHttpJsonOptions(AddHttpJsonOptions);
 
         return builder;
     }
@@ -97,62 +98,51 @@ internal static class ServerStartup
     private static WebApplicationBuilder ConfigureSettings(this WebApplicationBuilder builder, string configPath)
     {
         builder.Configuration.Sources.Clear();
-        builder
-            .Configuration.SetBasePath(configPath)
-            .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: false)
-            .AddJsonFile(path: "appsettings-local.json", optional: true, reloadOnChange: false)
-            .AddEnvironmentVariables();
+        builder.Configuration.SetBasePath(configPath)
+               .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: false)
+               .AddJsonFile(path: "appsettings-local.json", optional: true, reloadOnChange: false)
+               .AddEnvironmentVariables();
 
         return builder;
     }
 
     private static WebApplicationBuilder ConfigureWebHost(this WebApplicationBuilder builder, string configPath)
     {
-        builder
-            .WebHost.UseKestrel(options: options =>
-                SetKestrelOptions(
-                    options: options,
-                    httpPort: HTTP_PORT,
-                    httpsPort: HTTPS_PORT,
-                    h2Port: H2_PORT,
-                    configurationFiledPath: configPath
-                )
-            )
-            .UseSetting(key: WebHostDefaults.SuppressStatusMessagesKey, value: "True")
-            .ConfigureLogging((_, logger) => ConfigureLogging(logger));
+        builder.WebHost.UseKestrel(options: options => SetKestrelOptions(options: options, httpPort: HTTP_PORT, httpsPort: HTTPS_PORT, h2Port: H2_PORT, configurationFiledPath: configPath))
+               .UseSetting(key: WebHostDefaults.SuppressStatusMessagesKey, value: "True")
+               .ConfigureLogging((_, logger) => ConfigureLogging(logger));
 
         return builder;
     }
 
-    [SuppressMessage(
-        category: "Microsoft.Reliability",
-        checkId: "CA2000:DisposeObjectsBeforeLosingScope",
-        Justification = "Lives for program lifetime"
-    )]
+    [SuppressMessage(category: "Microsoft.Reliability", checkId: "CA2000:DisposeObjectsBeforeLosingScope", Justification = "Lives for program lifetime")]
+
     private static void ConfigureLogging(ILoggingBuilder logger)
     {
-        logger.ClearProviders().AddSerilog(CreateLogger(), dispose: true);
+        logger.ClearProviders()
+              .AddSerilog(CreateLogger(), dispose: true);
     }
 
     private static Logger CreateLogger()
     {
-        return new LoggerConfiguration()
-            .Enrich.WithDemystifiedStackTraces()
-            .Enrich.FromLogContext()
-            .Enrich.WithMachineName()
-            .Enrich.WithProcessId()
-            .Enrich.WithThreadId()
-            .Enrich.WithProperty(name: "ServerVersion", value: VersionInformation.Version)
-            .Enrich.WithProperty(name: "ProcessName", value: VersionInformation.Product)
-            .WriteToDebuggerAwareOutput()
-            .CreateLogger();
+        return new LoggerConfiguration().Enrich.WithDemystifiedStackTraces()
+                                        .Enrich.FromLogContext()
+                                        .Enrich.WithMachineName()
+                                        .Enrich.WithProcessId()
+                                        .Enrich.WithThreadId()
+                                        .Enrich.WithProperty(name: "ServerVersion", value: VersionInformation.Version)
+                                        .Enrich.WithProperty(name: "ProcessName", value: VersionInformation.Product)
+                                        .WriteToDebuggerAwareOutput()
+                                        .CreateLogger();
     }
 
     private static LoggerConfiguration WriteToDebuggerAwareOutput(this LoggerConfiguration configuration)
     {
         LoggerSinkConfiguration writeTo = configuration.WriteTo;
 
-        return Debugger.IsAttached ? writeTo.Debug() : writeTo.Console();
+        return Debugger.IsAttached
+            ? writeTo.Debug()
+            : writeTo.Console();
     }
 
     private static void SetH1ListenOptions(ListenOptions listenOptions)
@@ -171,13 +161,7 @@ internal static class ServerStartup
         listenOptions.UseHttps(fileName: certFile);
     }
 
-    private static void SetKestrelOptions(
-        KestrelServerOptions options,
-        int httpPort,
-        int httpsPort,
-        int h2Port,
-        string configurationFiledPath
-    )
+    private static void SetKestrelOptions(KestrelServerOptions options, int httpPort, int httpsPort, int h2Port, string configurationFiledPath)
     {
         options.DisableStringReuse = false;
         options.AllowSynchronousIO = false;
@@ -191,11 +175,7 @@ internal static class ServerStartup
         if (httpsPort != 0 && File.Exists(certFile))
         {
             Console.WriteLine($"Listening on HTTPS port: {httpsPort}");
-            options.Listen(
-                address: IPAddress.Any,
-                port: httpsPort,
-                configure: o => SetHttpsListenOptions(listenOptions: o, certFile: certFile)
-            );
+            options.Listen(address: IPAddress.Any, port: httpsPort, configure: o => SetHttpsListenOptions(listenOptions: o, certFile: certFile));
         }
 
         if (h2Port != 0)

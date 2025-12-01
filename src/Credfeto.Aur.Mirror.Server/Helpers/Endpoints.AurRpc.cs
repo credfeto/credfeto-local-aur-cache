@@ -122,11 +122,14 @@ internal static partial class Endpoints
         return Results.Ok(result);
     }
 
-    
-    private static async ValueTask<IResult> ExecuteLegacyRpcQueryAsync(HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken)
-    {
-        IQueryCollection query = httpContext.Request.Query;
 
+    private static ValueTask<IResult> ExecuteLegacyRpcQueryAsync(HttpContext httpContext, IAurRpc aurRpc, in CancellationToken cancellationToken)
+    {
+        return ExecuteLegacyRpcQueryCommonAsync(httpContext: httpContext, aurRpc: aurRpc, query: ExtractQuery(httpContext), cancellationToken: cancellationToken);
+    }
+
+    private static async ValueTask<IResult> ExecuteLegacyRpcQueryCommonAsync(HttpContext httpContext, IAurRpc aurRpc, IDictionary<string, StringValues> query, CancellationToken cancellationToken)
+    {
         if (!query.TryGetValue(key: "type", out StringValues queryType))
         {
             return Results.Ok(RpcResults.SearchNotFound);
@@ -165,49 +168,27 @@ internal static partial class Endpoints
         return Results.Ok(RpcResults.InfoNotFound);
     }
 
-    [SuppressMessage("Philips.CodeAnalysis", "PH2071: Duplicate Code", Justification = "Needs refactoring")]
-    private static async ValueTask<IResult> ExecuteLegacyRpcPostAsync(HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken)
+    private static IDictionary<string, StringValues> ExtractQuery(HttpContext httpContext)
     {
-        IFormCollection form = httpContext.Request.Form;
+        return httpContext.Request.Query.Keys
+                   .Select(key => ( Key: key, Value: httpContext.Request.Query[key]))
+                   .ToDictionary(k => k.Key, v => v.Value, StringComparer.OrdinalIgnoreCase);
 
-        if (!form.TryGetValue(key: "type", out StringValues queryType))
-        {
-            return Results.Ok(RpcResults.SearchNotFound);
-        }
-
-        if (IsSearchQuery(queryType))
-        {
-            string by = "name-desc";
-
-            if (form.TryGetValue(key: "by", out StringValues byValue))
-            {
-                by = byValue.ToString();
-            }
-
-            if (form.TryGetValue(key: "arg", out StringValues keyword))
-            {
-                return await SearchUserAgentAsync(keyword.ToString(), by: by, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
-            }
-
-            return Results.Ok(RpcResults.SearchNotFound);
-        }
-
-        if (IsInfoQuery(queryType))
-        {
-            if (form.TryGetValue(key: "arg", out StringValues package))
-            {
-                return await PackageInfoSingleAsync(package.ToString(), aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
-            }
-
-            if (form.TryGetValue(key: "arg[]", out StringValues packages))
-            {
-                return await PackageInfoMultiAsync(packages.ToString(), aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
-            }
-        }
-
-        return Results.Ok(RpcResults.InfoNotFound);
 
     }
+
+    private static IDictionary<string, StringValues> ExtractForm(HttpContext httpContext)
+    {
+        return httpContext.Request.Form.Keys
+                          .Select(key => ( Key: key, Value: httpContext.Request.Query[key]))
+                          .ToDictionary(k => k.Key, v => v.Value, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static ValueTask<IResult> ExecuteLegacyRpcPostAsync(HttpContext httpContext, IAurRpc aurRpc, in CancellationToken cancellationToken)
+    {
+        return ExecuteLegacyRpcQueryCommonAsync(httpContext: httpContext, aurRpc: aurRpc, query: ExtractForm(httpContext), cancellationToken: cancellationToken);
+    }
+
     static bool IsSearchQuery(in StringValues queryType)
     {
         return IsMatch(queryType: queryType, match: "search");

@@ -1,12 +1,13 @@
 using Credfeto.Aur.Mirror.Cache.Interfaces;
-using Credfeto.Aur.Mirror.Git.Interfaces;
+using Credfeto.Aur.Mirror.Cache.Startup;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Date.Interfaces;
+using Credfeto.Services.Startup.Interfaces;
 using FunFair.Test.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Credfeto.Aur.Mirror.Git.Tests;
+namespace Credfeto.Aur.Mirror.Cache.Tests;
 
 public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
 {
@@ -18,26 +19,19 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     private static IServiceCollection Configure(IServiceCollection services)
     {
         return services.AddMockedService<ICurrentTimeSource>()
-                       .AddMockedService<IBackgroundMetadataUpdater>()
-                       .AddMockedService<ILocalAurMetadata>()
-                       .AddGitRepos();
+                       .AddMockedService<IUpdateLock>()
+                       .AddMetadataCache();
     }
 
     [Fact]
-    public void LocallyInstalledMustBeRegistered()
+    public void LocalAurMetadataMustBeRegistered()
     {
-        this.RequireService<ILocallyInstalled>();
+        this.RequireService<ILocalAurMetadata>();
     }
 
     [Fact]
-    public void GitServerMustBeRegistered()
+    public void LocalCachedMetadataMustBeRegistered()
     {
-        this.RequireService<IGitServer>();
-    }
-
-    [Fact]
-    public void UpdateLockMustBeRegistered()
-    {
-        this.RequireService<IUpdateLock>();
+        this.RequireServiceInCollectionFor<IRunOnStartup, LoadCachedMetadata>();
     }
 }
