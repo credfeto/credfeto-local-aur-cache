@@ -43,7 +43,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
 
         this._subscription = this.SubscribeToPackageSaveQueue();
 
-        // TASK: Store local config in a DB that's quick to search rather than filesystem
+        // TASK: Store local config in a DB that's quick to search rather than filesystem or memory
     }
 
     public void Dispose()
