@@ -90,11 +90,16 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
     {
         Package toSave = this.ShouldIssueUpdate(package: package, out bool issueUpdate, out bool changed);
 
-        await this.UpdateAsync(toSave, _ => { }, cancellationToken);
+        await this.UpdateAsync(toSave, onUpdate:OnUpdate, cancellationToken);
 
         if (issueUpdate)
         {
             await onUpdate(arg1: package, arg2: changed);
+        }
+
+        static void OnUpdate(Package _)
+        {
+            // nothing to do here
         }
     }
 
