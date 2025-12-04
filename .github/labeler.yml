@@ -10,6 +10,12 @@
  - any: [ 'CHANGELOG.md' ]
 "Config Change":
  - any: [ 'src/**/*.json', '!src/global.json' ]
+"credfeto-aur-mirror-cache":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Cache/**/*' ]
+"credfeto-aur-mirror-cache-interfaces":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Cache.Interfaces/**/*' ]
+"credfeto-aur-mirror-cache-tests":
+ - any: [ 'src/$Credfeto.Aur.Mirror.Cache.Tests/**/*' ]
 "credfeto-aur-mirror-config":
  - any: [ 'src/$Credfeto.Aur.Mirror.Config/**/*' ]
 "credfeto-aur-mirror-git":
