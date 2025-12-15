@@ -16,9 +16,11 @@ public sealed class LocallyInstalled : ILocallyInstalled
     private readonly ICurrentTimeSource _dateTimeSource;
     private readonly ILocalAurMetadata _localAurMetadata;
 
-    public LocallyInstalled(ICurrentTimeSource dateTimeSource,
-                            IBackgroundMetadataUpdater backgroundMetadataUpdater,
-                            ILocalAurMetadata localAurMetadata)
+    public LocallyInstalled(
+        ICurrentTimeSource dateTimeSource,
+        IBackgroundMetadataUpdater backgroundMetadataUpdater,
+        ILocalAurMetadata localAurMetadata
+    )
     {
         this._dateTimeSource = dateTimeSource;
         this._backgroundMetadataUpdater = backgroundMetadataUpdater;
@@ -29,12 +31,19 @@ public sealed class LocallyInstalled : ILocallyInstalled
     {
         DateTimeOffset whenCloned = this._dateTimeSource.UtcNow();
 
-        return this._backgroundMetadataUpdater.RequestUpdateAsync(packageName: packageName, update: p => p.LastCloned = whenCloned, cancellationToken: cancellationToken);
+        return this._backgroundMetadataUpdater.RequestUpdateAsync(
+            packageName: packageName,
+            update: p => p.LastCloned = whenCloned,
+            cancellationToken: cancellationToken
+        );
     }
 
     public async ValueTask<IReadOnlyList<RepoCloneInfo>> GetRecentlyClonedAsync(CancellationToken cancellationToken)
     {
-        IReadOnlyList<Package> packages = await this._localAurMetadata.SearchAsync(predicate: x => x.LastCloned is not null, cancellationToken: cancellationToken);
+        IReadOnlyList<Package> packages = await this._localAurMetadata.SearchAsync(
+            predicate: x => x.LastCloned is not null,
+            cancellationToken: cancellationToken
+        );
 
         return [.. packages.Select(BuildRepoEntry)];
     }
