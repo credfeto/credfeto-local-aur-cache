@@ -18,7 +18,11 @@ public sealed class ProcessBackgroundUpdates : IRunOnStartup, IDisposable
     private readonly ILocalAurMetadata _localAurMetadata;
     private IDisposable? _subscription;
 
-    public ProcessBackgroundUpdates(IBackgroundMetadataUpdater backgroundMetadataUpdater, IAurRpc aurRpc, ILocalAurMetadata localAurMetadata)
+    public ProcessBackgroundUpdates(
+        IBackgroundMetadataUpdater backgroundMetadataUpdater,
+        IAurRpc aurRpc,
+        ILocalAurMetadata localAurMetadata
+    )
     {
         this._backgroundMetadataUpdater = backgroundMetadataUpdater;
         this._aurRpc = aurRpc;
@@ -32,12 +36,16 @@ public sealed class ProcessBackgroundUpdates : IRunOnStartup, IDisposable
 
     public ValueTask StartAsync(CancellationToken cancellationToken)
     {
-        this._subscription = this._backgroundMetadataUpdater.GetAsync(cancellationToken)
-                                 .ToObservable()
-                                 .Select(request => Observable.FromAsync(ct => this.RequestCacheUpdateAsync(request: request, cancellationToken: ct)
-                                                                                   .AsTask()))
-                                 .Concat()
-                                 .Subscribe();
+        this._subscription = this
+            ._backgroundMetadataUpdater.GetAsync(cancellationToken)
+            .ToObservable()
+            .Select(request =>
+                Observable.FromAsync(ct =>
+                    this.RequestCacheUpdateAsync(request: request, cancellationToken: ct).AsTask()
+                )
+            )
+            .Concat()
+            .Subscribe();
 
         return ValueTask.CompletedTask;
     }
@@ -45,7 +53,11 @@ public sealed class ProcessBackgroundUpdates : IRunOnStartup, IDisposable
     private async ValueTask RequestCacheUpdateAsync(PackageRequest request, CancellationToken cancellationToken)
     {
         IReadOnlyList<string> packages = [request.PackageName];
-        RpcResponse search = await this._aurRpc.InfoAsync(packages: packages, userAgent: null, cancellationToken: cancellationToken);
+        RpcResponse search = await this._aurRpc.InfoAsync(
+            packages: packages,
+            userAgent: null,
+            cancellationToken: cancellationToken
+        );
 
         foreach (SearchResult result in search.Results)
         {
@@ -53,7 +65,11 @@ public sealed class ProcessBackgroundUpdates : IRunOnStartup, IDisposable
 
             if (cached is not null)
             {
-                await this._localAurMetadata.UpdateAsync(package: cached, onUpdate: request.Update, cancellationToken: cancellationToken);
+                await this._localAurMetadata.UpdateAsync(
+                    package: cached,
+                    onUpdate: request.Update,
+                    cancellationToken: cancellationToken
+                );
             }
         }
     }
