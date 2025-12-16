@@ -33,18 +33,26 @@ public sealed class LocalAurRpc : ILocalAurRpc
         // TASK: Look locally for everything and ONLY look in RPC if a significant amount of time has occurred since the last query for that same data
     }
 
-    public ValueTask<IReadOnlyList<Package>> SearchAsync(string keyword, string by, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    public ValueTask<IReadOnlyList<Package>> SearchAsync(
+        string keyword,
+        string by,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    )
     {
-        return this._localAurMetadata.SearchAsync(predicate: item => IsSearchMatch(existing: item.SearchResult, keyword: keyword, by: by), cancellationToken: cancellationToken);
+        return this._localAurMetadata.SearchAsync(
+            predicate: item => IsSearchMatch(existing: item.SearchResult, keyword: keyword, by: by),
+            cancellationToken: cancellationToken
+        );
     }
 
-    public ValueTask<IReadOnlyList<Package>> InfoAsync(IReadOnlyList<string> packages, ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken)
+    public ValueTask<IReadOnlyList<Package>> InfoAsync(
+        IReadOnlyList<string> packages,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    )
     {
-        IReadOnlyList<Package> results =
-        [
-            .. packages.Select(this._localAurMetadata.Get)
-                       .RemoveNulls()
-        ];
+        IReadOnlyList<Package> results = [.. packages.Select(this._localAurMetadata.Get).RemoveNulls()];
 
         return ValueTask.FromResult(results);
     }
@@ -58,17 +66,23 @@ public sealed class LocalAurRpc : ILocalAurRpc
     {
         foreach (SearchResult package in items)
         {
-            await this._localAurMetadata.UpdateAsync(package: package, onUpdate: this.OnRepoChangedAsync, cancellationToken: CancellationToken.None);
+            await this._localAurMetadata.UpdateAsync(
+                package: package,
+                onUpdate: this.OnRepoChangedAsync,
+                cancellationToken: CancellationToken.None
+            );
         }
     }
 
     private ValueTask OnRepoChangedAsync(SearchResult package, bool changed)
     {
-
-
         this._logger.CheckingPackage(packageId: package.Id, packageName: package.Name);
 
-        return this._gitServer.EnsureRepositoryHasBeenClonedAsync(repoName: package.Name, changed: changed, cancellationToken: DoNotCancelEarly);
+        return this._gitServer.EnsureRepositoryHasBeenClonedAsync(
+            repoName: package.Name,
+            changed: changed,
+            cancellationToken: DoNotCancelEarly
+        );
     }
 
     private static bool IsSearchMatch(SearchResult existing, string keyword, string by)
@@ -76,21 +90,29 @@ public sealed class LocalAurRpc : ILocalAurRpc
         return by switch
         {
             "name" => // (search by package name only)
-                existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
+            existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
             "name-desc" => // (search by package name and description)
-                existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase) ||
-                existing.Description.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
+            existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
+                || existing.Description.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
             "maintainer" => // (search by package maintainer)
-                existing.Maintainer.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
+            existing.Maintainer.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
             "depends" => // (search for packages that depend on keywords)
-                existing.Depends?.Any(depend => depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)) == true,
+            existing.Depends?.Any(depend =>
+                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
+            ) == true,
             "makedepends" => // (search for packages that makedepend on keywords)
-                existing.MakeDepends?.Any(depend => depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)) == true,
+            existing.MakeDepends?.Any(depend =>
+                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
+            ) == true,
             "optdepends" => // (search for packages that optdepend on keywords)
-                existing.OptDepends?.Any(depend => depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)) == true,
+            existing.OptDepends?.Any(depend =>
+                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
+            ) == true,
             "checkdepends" => // (search for packages that checkdepend on keywords)
-                existing.CheckDepends?.Any(depend => depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)) == true,
-            _ => false
+            existing.CheckDepends?.Any(depend =>
+                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
+            ) == true,
+            _ => false,
         };
     }
 }
