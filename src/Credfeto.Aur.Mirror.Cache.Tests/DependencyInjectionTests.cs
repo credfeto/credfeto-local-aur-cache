@@ -12,15 +12,11 @@ namespace Credfeto.Aur.Mirror.Cache.Tests;
 public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
 {
     public DependencyInjectionTests(ITestOutputHelper output)
-        : base(output: output, dependencyInjectionRegistration: Configure)
-    {
-    }
+        : base(output: output, dependencyInjectionRegistration: Configure) { }
 
     private static IServiceCollection Configure(IServiceCollection services)
     {
-        return services.AddMockedService<ICurrentTimeSource>()
-                       .AddMockedService<IUpdateLock>()
-                       .AddMetadataCache();
+        return services.AddMockedService<ICurrentTimeSource>().AddMockedService<IUpdateLock>().AddMetadataCache();
     }
 
     [Fact]
