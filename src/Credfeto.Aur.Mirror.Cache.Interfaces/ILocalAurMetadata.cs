@@ -14,7 +14,11 @@ public interface ILocalAurMetadata
 
     Package? Get(string packageName);
 
-    ValueTask UpdateAsync(SearchResult package, Func<SearchResult, bool, ValueTask> onUpdate, CancellationToken cancellationToken);
+    ValueTask UpdateAsync(
+        SearchResult package,
+        Func<SearchResult, bool, ValueTask> onUpdate,
+        CancellationToken cancellationToken
+    );
 
     ValueTask UpdateAsync(Package package, Action<Package> onUpdate, CancellationToken cancellationToken);
 }
