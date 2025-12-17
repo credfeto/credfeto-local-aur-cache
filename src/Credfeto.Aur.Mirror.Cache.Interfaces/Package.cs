@@ -5,11 +5,19 @@ using Credfeto.Aur.Mirror.Models.AurRpc;
 
 namespace Credfeto.Aur.Mirror.Cache.Interfaces;
 
-[DebuggerDisplay("{PackageName}: Modified {LastModified} Requested {LastRequestedUpstream} Accessed {LastAccessed} Saved {LastSaved} Cloned: {LastCloned}")]
+[DebuggerDisplay(
+    "{PackageName}: Modified {LastModified} Requested {LastRequestedUpstream} Accessed {LastAccessed} Saved {LastSaved} Cloned: {LastCloned}"
+)]
 public sealed class Package
 {
     [JsonConstructor]
-    public Package(in DateTimeOffset lastSaved, in DateTimeOffset lastAccessed, in DateTimeOffset lastRequestedUpstream, SearchResult searchResult, DateTimeOffset? lastCloned)
+    public Package(
+        in DateTimeOffset lastSaved,
+        in DateTimeOffset lastAccessed,
+        in DateTimeOffset lastRequestedUpstream,
+        SearchResult searchResult,
+        DateTimeOffset? lastCloned
+    )
     {
         this.LastSaved = lastSaved;
         this.LastAccessed = lastAccessed;
@@ -30,7 +38,7 @@ public sealed class Package
 
     public SearchResult SearchResult { get; private set; }
 
-    public DateTimeOffset? LastCloned { get; set;  }
+    public DateTimeOffset? LastCloned { get; set; }
 
     public void Update(SearchResult searchResult, in DateTimeOffset lastAccessed)
     {
