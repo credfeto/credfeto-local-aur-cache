@@ -12,17 +12,16 @@ namespace Credfeto.Aur.Mirror.Rpc.Tests;
 public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
 {
     public DependencyInjectionTests(ITestOutputHelper output)
-        : base(output: output, dependencyInjectionRegistration: Configure)
-    {
-    }
+        : base(output: output, dependencyInjectionRegistration: Configure) { }
 
     private static IServiceCollection Configure(IServiceCollection services)
     {
-        return services.AddMockedService<ICurrentTimeSource>()
-                       .AddMockedService<IGitServer>()
-                       .AddMockedService<IUpdateLock>()
-                       .AddMockedService<ILocalAurMetadata>()
-                       .AddAurRpcApi();
+        return services
+            .AddMockedService<ICurrentTimeSource>()
+            .AddMockedService<IGitServer>()
+            .AddMockedService<IUpdateLock>()
+            .AddMockedService<ILocalAurMetadata>()
+            .AddAurRpcApi();
     }
 
     [Fact]
