@@ -10,12 +10,13 @@ public static class RpcSetup
 {
     public static IServiceCollection AddAurRpcApi(this IServiceCollection services)
     {
-        return services.AddRpcClient()
-                       .AddReposClient()
-                       .AddSingleton<IAurRpc, AurRpc>()
-                       .AddSingleton<IAurRepos, AurRepos>()
-                       .AddSingleton<ILocalAurRpc, LocalAurRpc>()
-                       .AddSingleton<IRemoteAurRpc, RemoteAurRpc>()
-                       .AddRunOnStartupTask<ProcessBackgroundUpdates>();
+        return services
+            .AddRpcClient()
+            .AddReposClient()
+            .AddSingleton<IAurRpc, AurRpc>()
+            .AddSingleton<IAurRepos, AurRepos>()
+            .AddSingleton<ILocalAurRpc, LocalAurRpc>()
+            .AddSingleton<IRemoteAurRpc, RemoteAurRpc>()
+            .AddRunOnStartupTask<ProcessBackgroundUpdates>();
     }
 }
