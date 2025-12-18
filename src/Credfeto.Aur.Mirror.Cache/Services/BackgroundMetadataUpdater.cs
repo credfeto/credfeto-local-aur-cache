@@ -23,17 +23,28 @@ public sealed class BackgroundMetadataUpdater : IBackgroundMetadataUpdater
         return this._queue.Reader.ReadAllAsync(cancellationToken);
     }
 
-    public async ValueTask RequestUpdateAsync(string packageName, Action<Package> update, CancellationToken cancellationToken)
+    public async ValueTask RequestUpdateAsync(
+        string packageName,
+        Action<Package> update,
+        CancellationToken cancellationToken
+    )
     {
         Package? existing = this._localAurMetadata.Get(packageName);
 
         if (existing is not null)
         {
-            await this._localAurMetadata.UpdateAsync(package: existing, onUpdate: update, cancellationToken: cancellationToken);
+            await this._localAurMetadata.UpdateAsync(
+                package: existing,
+                onUpdate: update,
+                cancellationToken: cancellationToken
+            );
 
             return;
         }
 
-        await this._queue.Writer.WriteAsync(new(PackageName: packageName, Update: update), cancellationToken: cancellationToken);
+        await this._queue.Writer.WriteAsync(
+            new(PackageName: packageName, Update: update),
+            cancellationToken: cancellationToken
+        );
     }
 }
