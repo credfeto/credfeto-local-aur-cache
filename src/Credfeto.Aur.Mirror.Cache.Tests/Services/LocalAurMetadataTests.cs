@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -23,18 +23,20 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
     private readonly LocalAurMetadata _localAurMetadata;
     private readonly SemaphoreSlim _semaphore;
 
-    [SuppressMessage(category: "FunFair.CodeAnalsys", checkId: "FFS0004: Used mocked dates", Justification = "Unit Test")]
+    [SuppressMessage(
+        category: "FunFair.CodeAnalsys",
+        checkId: "FFS0004: Used mocked dates",
+        Justification = "Unit Test"
+    )]
     public LocalAurMetadataTests(ITestOutputHelper output)
         : base(output)
     {
         this._semaphore = new(1);
         ICurrentTimeSource currentTimeSource = GetSubstitute<ICurrentTimeSource>();
-        _ = currentTimeSource.UtcNow()
-                             .Returns(DateTimeOffset.Now);
+        _ = currentTimeSource.UtcNow().Returns(DateTimeOffset.Now);
 
         IUpdateLock updateLock = GetSubstitute<IUpdateLock>();
-        _ = updateLock.GetLockAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-                      .Returns(this._semaphore);
+        _ = updateLock.GetLockAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(this._semaphore);
 
         ILogger<LocalAurMetadata> logger = this.GetTypedLogger<LocalAurMetadata>();
 
@@ -42,12 +44,17 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
 
         ServerConfig serverConfig = new();
 
-        serverConfig.Storage.Metadata = this.CreateFolderInTempFolder( "Metadata");
+        serverConfig.Storage.Metadata = this.CreateFolderInTempFolder("Metadata");
         serverConfig.Storage.Repos = this.CreateFolderInTempFolder("Repos");
 
         _ = config.Value.Returns(serverConfig);
 
-        this._localAurMetadata = new(config: config, updateLock: updateLock, currentTimeSource: currentTimeSource, logger: logger);
+        this._localAurMetadata = new(
+            config: config,
+            updateLock: updateLock,
+            currentTimeSource: currentTimeSource,
+            logger: logger
+        );
     }
 
     [Fact]
@@ -60,7 +67,11 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
         Package? foundBeforeAdding = this._localAurMetadata.Get(newSearchResult.Name);
         Assert.Null(foundBeforeAdding);
 
-        await this._localAurMetadata.UpdateAsync(package: newSearchResult, onUpdate: updateContext.UpdateAsync, this.CancellationToken());
+        await this._localAurMetadata.UpdateAsync(
+            package: newSearchResult,
+            onUpdate: updateContext.UpdateAsync,
+            this.CancellationToken()
+        );
 
         ShouldBeSet(updateContext: updateContext, newSearchResult: newSearchResult, expectedChanged: false);
 
@@ -75,13 +86,21 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
 
         SearchResult newSearchResult = MockReferenceData.SearchResult;
 
-        await this._localAurMetadata.UpdateAsync(package: newSearchResult, onUpdate: updateContext.UpdateAsync, this.CancellationToken());
+        await this._localAurMetadata.UpdateAsync(
+            package: newSearchResult,
+            onUpdate: updateContext.UpdateAsync,
+            this.CancellationToken()
+        );
 
         ShouldBeSet(updateContext: updateContext, newSearchResult: newSearchResult, expectedChanged: false);
 
         updateContext.Clear();
 
-        await this._localAurMetadata.UpdateAsync(package: newSearchResult, onUpdate: updateContext.UpdateAsync, this.CancellationToken());
+        await this._localAurMetadata.UpdateAsync(
+            package: newSearchResult,
+            onUpdate: updateContext.UpdateAsync,
+            this.CancellationToken()
+        );
 
         ShouldNotBeSet(updateContext);
     }
@@ -93,14 +112,22 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
 
         SearchResult newSearchResult = MockReferenceData.SearchResult;
 
-        await this._localAurMetadata.UpdateAsync(package: newSearchResult, onUpdate: updateContext.UpdateAsync, this.CancellationToken());
+        await this._localAurMetadata.UpdateAsync(
+            package: newSearchResult,
+            onUpdate: updateContext.UpdateAsync,
+            this.CancellationToken()
+        );
 
         ShouldBeSet(updateContext: updateContext, newSearchResult: newSearchResult, expectedChanged: false);
 
         updateContext.Clear();
 
         SearchResult newSearchResult2 = MockReferenceData.SearchResult.Next();
-        await this._localAurMetadata.UpdateAsync(package: newSearchResult2, onUpdate: updateContext.UpdateAsync, this.CancellationToken());
+        await this._localAurMetadata.UpdateAsync(
+            package: newSearchResult2,
+            onUpdate: updateContext.UpdateAsync,
+            this.CancellationToken()
+        );
 
         ShouldBeSet(updateContext: updateContext, newSearchResult: newSearchResult, expectedChanged: true);
     }
@@ -185,5 +212,4 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
             throw;
         }
     }
-
 }
