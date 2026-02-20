@@ -57,7 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Credfeto.Enumeration.Source.Generation.Attributes" Version="1.2.135.1701" />
-    <PackageReference Include="Credfeto.Extensions.Linq" Version="1.0.139.1284" />
+    <PackageReference Include="Credfeto.Extensions.Linq" Version="1.0.143.1450" />
     <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.135.1309" />
     <PackageReference Include="System.Interactive.Async" Version="6.0.3" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
