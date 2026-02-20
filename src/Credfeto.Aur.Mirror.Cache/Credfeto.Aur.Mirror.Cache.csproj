@@ -54,7 +54,7 @@
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Cache.Interfaces\Credfeto.Aur.Mirror.Cache.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.135.1309" />
+    <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.139.1474" />
     <PackageReference Include="NonBlocking" Version="2.1.2" />
     <PackageReference Include="System.Interactive.Async" Version="6.0.3" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
