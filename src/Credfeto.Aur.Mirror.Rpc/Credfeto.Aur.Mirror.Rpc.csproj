@@ -56,7 +56,7 @@
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Rpc.Interfaces\Credfeto.Aur.Mirror.Rpc.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Credfeto.Enumeration.Source.Generation.Attributes" Version="1.2.137.1722" />
+    <PackageReference Include="Credfeto.Enumeration.Source.Generation.Attributes" Version="1.2.140.1751" />
     <PackageReference Include="Credfeto.Extensions.Linq" Version="1.0.144.1467" />
     <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.139.1474" />
     <PackageReference Include="System.Interactive.Async" Version="7.0.0" />
@@ -65,7 +65,7 @@
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="codecracker.CSharp" Version="1.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="Credfeto.Enumeration.Source.Generation" Version="1.2.137.1722" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Credfeto.Enumeration.Source.Generation" Version="1.2.140.1751" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Credfeto.Version.Information.Generator" Version="1.0.120.1088" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="CSharpIsNullAnalyzer" Version="0.1.593" PrivateAssets="all" ExcludeAssets="runtime" />
     <PackageReference Include="FunFair.CodeAnalysis" Version="7.1.33.1711" PrivateAssets="All" ExcludeAssets="runtime" />
