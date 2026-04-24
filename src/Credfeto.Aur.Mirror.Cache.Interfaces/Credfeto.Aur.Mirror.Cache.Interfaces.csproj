@@ -55,7 +55,7 @@
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Interfaces\Credfeto.Aur.Mirror.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Credfeto.Date.Interfaces" Version="1.1.146.1588" />
+    <PackageReference Include="Credfeto.Date.Interfaces" Version="1.1.150.1668" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.9" />
   </ItemGroup>
   <ItemGroup>
