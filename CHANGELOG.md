@@ -24,6 +24,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Serilog.Extensions.Logging to 10.0.0
 - Dependencies - Updated Serilog.Sinks.Console to 6.1.1
 - Dependencies - Updated Serilog to 4.3.1
+- Dependencies - Updated System.Interactive.Async to 7.0.1
 ### Removed
 ### Deployment Changes
 

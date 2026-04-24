@@ -56,7 +56,7 @@
   <ItemGroup>
     <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.143.1554" />
     <PackageReference Include="NonBlocking" Version="2.1.2" />
-    <PackageReference Include="System.Interactive.Async" Version="7.0.0" />
+    <PackageReference Include="System.Interactive.Async" Version="7.0.1" />
     <PackageReference Include="System.Reactive" Version="6.1.0" />
   </ItemGroup>
   <ItemGroup>
