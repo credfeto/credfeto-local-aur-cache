@@ -22,6 +22,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Credfeto.Services.Startup to 1.1.143.1554
 - Dependencies - Updated Microsoft.Extensions to 10.0.6
 - Dependencies - Updated Serilog.Extensions.Logging to 10.0.0
+- Dependencies - Updated Serilog.Sinks.Console to 6.1.1
 ### Removed
 ### Deployment Changes
 
