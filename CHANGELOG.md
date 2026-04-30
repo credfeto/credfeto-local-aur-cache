@@ -15,7 +15,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Credfeto.Date to 1.1.150.1668
 - Dependencies - Updated Credfeto.Docker.HealthCheck.Http.Client to 0.0.63.716
 - Dependencies - Updated Credfeto.Extensions.Linq to 1.0.147.1528
-- Dependencies - Updated Microsoft.Extensions to 10.0.6
 - Dependencies - Updated Serilog.Extensions.Logging to 10.0.0
 - Dependencies - Updated Serilog.Sinks.Console to 6.1.1
 - Dependencies - Updated Serilog to 4.3.1
@@ -25,6 +24,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated FunFair.CodeAnalysis to 7.1.39.1841
 - Dependencies - Updated SonarAnalyzer.CSharp to 10.24.0.138807
 - Dependencies - Updated Credfeto.Services.Startup to 1.1.144.1565
+- Dependencies - Updated Microsoft.Extensions to 10.0.7
 ### Removed
 ### Deployment Changes
 
