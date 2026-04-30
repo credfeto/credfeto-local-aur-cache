@@ -10,7 +10,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Fixed
 ### Changed
 - Dependencies - Updated Figgle to 0.6.6
-- Dependencies - Updated FunFair.CodeAnalysis to 7.1.36.1750
 - Dependencies - Updated Philips.CodeAnalysis.DuplicateCodeAnalyzer to 2.0.0
 - Dependencies - Updated Philips.CodeAnalysis.MaintainabilityAnalyzers to 2.0.0
 - Dependencies - Updated SonarAnalyzer.CSharp to 10.23.0.137933
@@ -25,6 +24,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated System.Interactive.Async to 7.0.1
 - Dependencies - Updated Credfeto.Enumeration to 1.2.141.1822
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.123.1157
+- Dependencies - Updated FunFair.CodeAnalysis to 7.1.39.1841
 ### Removed
 ### Deployment Changes
 
