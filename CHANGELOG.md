@@ -12,7 +12,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Figgle to 0.6.6
 - Dependencies - Updated Philips.CodeAnalysis.DuplicateCodeAnalyzer to 2.0.0
 - Dependencies - Updated Philips.CodeAnalysis.MaintainabilityAnalyzers to 2.0.0
-- Dependencies - Updated Credfeto.Extensions.Linq to 1.0.147.1528
 - Dependencies - Updated Serilog.Extensions.Logging to 10.0.0
 - Dependencies - Updated Serilog.Sinks.Console to 6.1.1
 - Dependencies - Updated Serilog to 4.3.1
@@ -25,6 +24,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated SonarAnalyzer.CSharp to 10.25.0.139117
 - Dependencies - Updated Credfeto.Date to 1.1.151.1695
 - Dependencies - Updated Credfeto.Docker.HealthCheck.Http.Client to 0.0.64.749
+- Dependencies - Updated Credfeto.Extensions.Linq to 1.0.148.1565
 ### Removed
 ### Deployment Changes
 
