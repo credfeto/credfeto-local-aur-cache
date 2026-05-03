@@ -20,11 +20,11 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Serilog to 4.3.1
 - Dependencies - Updated System.Interactive.Async to 7.0.1
 - Dependencies - Updated Credfeto.Enumeration to 1.2.141.1822
-- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.123.1157
 - Dependencies - Updated FunFair.CodeAnalysis to 7.1.39.1841
 - Dependencies - Updated SonarAnalyzer.CSharp to 10.24.0.138807
 - Dependencies - Updated Credfeto.Services.Startup to 1.1.144.1565
 - Dependencies - Updated Microsoft.Extensions to 10.0.7
+- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.124.1183
 ### Removed
 ### Deployment Changes
 
