@@ -25,6 +25,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Credfeto.Docker.HealthCheck.Http.Client to 0.0.64.749
 - Dependencies - Updated Credfeto.Extensions.Linq to 1.0.148.1565
 - Dependencies - Updated Credfeto.Services.Startup to 1.1.145.1592
+- Dependencies - Updated FunFair.Test.Common to 6.2.22.2198
 ### Removed
 ### Deployment Changes
 
