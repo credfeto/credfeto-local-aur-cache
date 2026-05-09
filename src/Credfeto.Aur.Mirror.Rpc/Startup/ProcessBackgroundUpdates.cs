@@ -50,7 +50,10 @@ public sealed class ProcessBackgroundUpdates : IRunOnStartup, IDisposable
         return ValueTask.CompletedTask;
     }
 
-    private async ValueTask RequestCacheUpdateAsync(PackageRequest request, CancellationToken cancellationToken)
+    private async ValueTask RequestCacheUpdateAsync(
+        PackageRequest request,
+        CancellationToken cancellationToken
+    )
     {
         IReadOnlyList<string> packages = [request.PackageName];
         RpcResponse search = await this._aurRpc.InfoAsync(

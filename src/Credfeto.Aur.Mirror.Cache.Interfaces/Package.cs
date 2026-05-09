@@ -30,7 +30,8 @@ public sealed class Package
 
     public DateTimeOffset LastSaved { get; set; }
 
-    public DateTimeOffset LastModified => DateTimeOffset.FromUnixTimeSeconds(this.SearchResult.LastModified);
+    public DateTimeOffset LastModified =>
+        DateTimeOffset.FromUnixTimeSeconds(this.SearchResult.LastModified);
 
     public DateTimeOffset LastAccessed { get; set; }
 

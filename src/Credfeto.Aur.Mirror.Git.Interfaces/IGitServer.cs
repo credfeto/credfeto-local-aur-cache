@@ -13,7 +13,15 @@ public interface IGitServer
         CancellationToken cancellationToken
     );
 
-    ValueTask EnsureRepositoryHasBeenClonedAsync(string repoName, bool changed, CancellationToken cancellationToken);
+    ValueTask EnsureRepositoryHasBeenClonedAsync(
+        string repoName,
+        bool changed,
+        CancellationToken cancellationToken
+    );
 
-    ValueTask<GitCommandResponse> GetFileAsync(string repoName, string path, CancellationToken cancellationToken);
+    ValueTask<GitCommandResponse> GetFileAsync(
+        string repoName,
+        string path,
+        CancellationToken cancellationToken
+    );
 }

@@ -9,5 +9,9 @@ public interface IBackgroundMetadataUpdater
 {
     IAsyncEnumerable<PackageRequest> GetAsync(CancellationToken cancellationToken);
 
-    ValueTask RequestUpdateAsync(string packageName, Action<Package> update, CancellationToken cancellationToken);
+    ValueTask RequestUpdateAsync(
+        string packageName,
+        Action<Package> update,
+        CancellationToken cancellationToken
+    );
 }

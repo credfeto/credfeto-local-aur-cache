@@ -16,7 +16,10 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
 
     private static IServiceCollection Configure(IServiceCollection services)
     {
-        return services.AddMockedService<ICurrentTimeSource>().AddMockedService<IUpdateLock>().AddMetadataCache();
+        return services
+            .AddMockedService<ICurrentTimeSource>()
+            .AddMockedService<IUpdateLock>()
+            .AddMetadataCache();
     }
 
     [Fact]

@@ -38,7 +38,9 @@ public sealed class LocallyInstalled : ILocallyInstalled
         );
     }
 
-    public async ValueTask<IReadOnlyList<RepoCloneInfo>> GetRecentlyClonedAsync(CancellationToken cancellationToken)
+    public async ValueTask<IReadOnlyList<RepoCloneInfo>> GetRecentlyClonedAsync(
+        CancellationToken cancellationToken
+    )
     {
         IReadOnlyList<Package> packages = await this._localAurMetadata.SearchAsync(
             predicate: x => x.LastCloned is not null,

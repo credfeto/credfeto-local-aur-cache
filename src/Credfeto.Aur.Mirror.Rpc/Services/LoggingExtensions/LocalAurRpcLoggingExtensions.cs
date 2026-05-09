@@ -5,7 +5,11 @@ namespace Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 
 internal static partial class LocalAurRpcLoggingExtensions
 {
-    [LoggerMessage(LogLevel.Error, EventId = 1, Message = "Failed to save metadata: {filename}: {message}")]
+    [LoggerMessage(
+        LogLevel.Error,
+        EventId = 1,
+        Message = "Failed to save metadata: {filename}: {message}"
+    )]
     public static partial void SaveMetadataFailed(
         this ILogger<LocalAurRpc> logger,
         string filename,
@@ -13,7 +17,11 @@ internal static partial class LocalAurRpcLoggingExtensions
         Exception exception
     );
 
-    [LoggerMessage(LogLevel.Error, EventId = 2, Message = "Failed to read saved metadata: {filename}: {message}")]
+    [LoggerMessage(
+        LogLevel.Error,
+        EventId = 2,
+        Message = "Failed to read saved metadata: {filename}: {message}"
+    )]
     public static partial void FailedToReadSavedMetadata(
         this ILogger<LocalAurRpc> logger,
         string filename,
@@ -33,8 +41,16 @@ internal static partial class LocalAurRpcLoggingExtensions
         Exception exception
     );
 
-    [LoggerMessage(LogLevel.Information, EventId = 4, Message = "Checking Package {packageId}) ({packageName})")]
-    public static partial void CheckingPackage(this ILogger<LocalAurRpc> logger, int packageId, string packageName);
+    [LoggerMessage(
+        LogLevel.Information,
+        EventId = 4,
+        Message = "Checking Package {packageId}) ({packageName})"
+    )]
+    public static partial void CheckingPackage(
+        this ILogger<LocalAurRpc> logger,
+        int packageId,
+        string packageName
+    );
 
     [LoggerMessage(
         LogLevel.Information,
@@ -60,7 +76,11 @@ internal static partial class LocalAurRpcLoggingExtensions
         string metadataFileName
     );
 
-    [LoggerMessage(LogLevel.Information, EventId = 7, Message = "Search Found: {package} using {keyword} by {by}")]
+    [LoggerMessage(
+        LogLevel.Information,
+        EventId = 7,
+        Message = "Search Found: {package} using {keyword} by {by}"
+    )]
     public static partial void OfflineSearchFound(
         this ILogger<LocalAurRpc> logger,
         string package,

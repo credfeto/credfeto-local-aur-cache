@@ -37,7 +37,9 @@ internal static class ServerStartup
 
         if (minWorker < minThreads && minIoc < minThreads)
         {
-            Console.WriteLine($"Setting min worker threads {minThreads}, Min IOC threads {minThreads}");
+            Console.WriteLine(
+                $"Setting min worker threads {minThreads}, Min IOC threads {minThreads}"
+            );
             ThreadPool.SetMinThreads(workerThreads: minThreads, completionPortThreads: minThreads);
         }
         else if (minWorker < minThreads)
@@ -47,7 +49,9 @@ internal static class ServerStartup
         }
         else if (minIoc < minThreads)
         {
-            Console.WriteLine($"Setting min worker threads {minWorker}, Min IOC threads {minThreads}");
+            Console.WriteLine(
+                $"Setting min worker threads {minWorker}, Min IOC threads {minThreads}"
+            );
             ThreadPool.SetMinThreads(workerThreads: minWorker, completionPortThreads: minThreads);
         }
 
@@ -93,10 +97,16 @@ internal static class ServerStartup
 
     private static void AddHttpJsonOptions(JsonOptions options)
     {
-        options.SerializerOptions.TypeInfoResolverChain.Insert(index: 0, item: AppJsonContext.Default);
+        options.SerializerOptions.TypeInfoResolverChain.Insert(
+            index: 0,
+            item: AppJsonContext.Default
+        );
     }
 
-    private static WebApplicationBuilder ConfigureSettings(this WebApplicationBuilder builder, string configPath)
+    private static WebApplicationBuilder ConfigureSettings(
+        this WebApplicationBuilder builder,
+        string configPath
+    )
     {
         builder.Configuration.Sources.Clear();
         builder
@@ -108,7 +118,10 @@ internal static class ServerStartup
         return builder;
     }
 
-    private static WebApplicationBuilder ConfigureWebHost(this WebApplicationBuilder builder, string configPath)
+    private static WebApplicationBuilder ConfigureWebHost(
+        this WebApplicationBuilder builder,
+        string configPath
+    )
     {
         builder
             .WebHost.UseKestrel(options: options =>
@@ -150,7 +163,9 @@ internal static class ServerStartup
             .CreateLogger();
     }
 
-    private static LoggerConfiguration WriteToDebuggerAwareOutput(this LoggerConfiguration configuration)
+    private static LoggerConfiguration WriteToDebuggerAwareOutput(
+        this LoggerConfiguration configuration
+    )
     {
         LoggerSinkConfiguration writeTo = configuration.WriteTo;
 

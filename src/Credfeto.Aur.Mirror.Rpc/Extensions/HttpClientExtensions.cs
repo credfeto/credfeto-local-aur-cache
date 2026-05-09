@@ -13,7 +13,10 @@ internal static class HttpClientExtensions
         return client;
     }
 
-    public static HttpClient WithUserAgent(this HttpClient client, ProductInfoHeaderValue? userAgent)
+    public static HttpClient WithUserAgent(
+        this HttpClient client,
+        ProductInfoHeaderValue? userAgent
+    )
     {
         if (userAgent is not null)
         {

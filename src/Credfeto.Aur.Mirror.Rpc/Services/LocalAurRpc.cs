@@ -21,7 +21,11 @@ public sealed class LocalAurRpc : ILocalAurRpc
     private readonly ILocalAurMetadata _localAurMetadata;
     private readonly ILogger<LocalAurRpc> _logger;
 
-    public LocalAurRpc(IGitServer gitServer, ILocalAurMetadata localAurMetadata, ILogger<LocalAurRpc> logger)
+    public LocalAurRpc(
+        IGitServer gitServer,
+        ILocalAurMetadata localAurMetadata,
+        ILogger<LocalAurRpc> logger
+    )
     {
         this._gitServer = gitServer;
         this._localAurMetadata = localAurMetadata;
@@ -52,7 +56,10 @@ public sealed class LocalAurRpc : ILocalAurRpc
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<Package> results = [.. packages.Select(this._localAurMetadata.Get).RemoveNulls()];
+        IReadOnlyList<Package> results =
+        [
+            .. packages.Select(this._localAurMetadata.Get).RemoveNulls(),
+        ];
 
         return ValueTask.FromResult(results);
     }
@@ -90,12 +97,24 @@ public sealed class LocalAurRpc : ILocalAurRpc
         return by switch
         {
             "name" => // (search by package name only)
-            existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
+            existing.Name.Contains(
+                value: keyword,
+                comparisonType: StringComparison.OrdinalIgnoreCase
+            ),
             "name-desc" => // (search by package name and description)
-            existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-                || existing.Description.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
+            existing.Name.Contains(
+                value: keyword,
+                comparisonType: StringComparison.OrdinalIgnoreCase
+            )
+                || existing.Description.Contains(
+                    value: keyword,
+                    comparisonType: StringComparison.OrdinalIgnoreCase
+                ),
             "maintainer" => // (search by package maintainer)
-            existing.Maintainer.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
+            existing.Maintainer.Contains(
+                value: keyword,
+                comparisonType: StringComparison.OrdinalIgnoreCase
+            ),
             "depends" => // (search for packages that depend on keywords)
             existing.Depends?.Any(depend =>
                 depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)

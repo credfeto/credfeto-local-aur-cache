@@ -117,7 +117,9 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
                 this._logger.SuccessFromUpstream(uri: requestUri, statusCode: result.StatusCode);
 
                 await using (
-                    Stream stream = await result.Content.ReadAsStreamAsync(cancellationToken: cancellationToken)
+                    Stream stream = await result.Content.ReadAsStreamAsync(
+                        cancellationToken: cancellationToken
+                    )
                 )
                 {
                     return await JsonSerializer.DeserializeAsync<RpcResponse>(
@@ -168,13 +170,19 @@ public sealed class RemoteAurRpc : IRemoteAurRpc
             return MakeUri(baseUri: baseUri, $"/v5/info/{packages[0]}");
         }
 
-        return MakeUri(baseUri: baseUri, "/v5/info?" + string.Join(separator: '&', packages.Select(p => $"arg[]={p}")));
+        return MakeUri(
+            baseUri: baseUri,
+            "/v5/info?" + string.Join(separator: '&', packages.Select(p => $"arg[]={p}"))
+        );
     }
 
     private HttpClient GetClient(ProductInfoHeaderValue? userAgent, out Uri baseUri)
     {
         baseUri = new(uriString: this._serverConfig.Upstream.Rpc, uriKind: UriKind.Absolute);
 
-        return this._httpClientFactory.CreateClient(nameof(AurRpc)).WithBaseAddress(baseUri).WithUserAgent(userAgent);
+        return this
+            ._httpClientFactory.CreateClient(nameof(AurRpc))
+            .WithBaseAddress(baseUri)
+            .WithUserAgent(userAgent);
     }
 }

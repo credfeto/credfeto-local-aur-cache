@@ -15,7 +15,10 @@ public sealed class UpdateLock : IUpdateLock
         this._locks = new(StringComparer.Ordinal);
     }
 
-    public async ValueTask<SemaphoreSlim> GetLockAsync(string fileName, CancellationToken cancellationToken)
+    public async ValueTask<SemaphoreSlim> GetLockAsync(
+        string fileName,
+        CancellationToken cancellationToken
+    )
     {
         if (this._locks.TryGetValue(key: fileName, out SemaphoreSlim? semaphore))
         {

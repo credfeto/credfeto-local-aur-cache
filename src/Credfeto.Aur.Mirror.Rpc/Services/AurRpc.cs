@@ -56,7 +56,10 @@ public sealed class AurRpc : IAurRpc
                 cancellationToken: cancellationToken
             );
 
-            await this._localAurRpc.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent);
+            await this._localAurRpc.SyncUpstreamReposAsync(
+                upstream: upstream,
+                userAgent: userAgent
+            );
 
             return upstream;
         }
@@ -116,7 +119,10 @@ public sealed class AurRpc : IAurRpc
                 cancellationToken: cancellationToken
             );
 
-            await this._localAurRpc.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent);
+            await this._localAurRpc.SyncUpstreamReposAsync(
+                upstream: upstream,
+                userAgent: userAgent
+            );
 
             return upstream;
         }
@@ -132,16 +138,24 @@ public sealed class AurRpc : IAurRpc
         }
     }
 
-    private bool NeedsUpstreamQuery(IReadOnlyList<string> requestedPackages, IReadOnlyList<Package> localPackages)
+    private bool NeedsUpstreamQuery(
+        IReadOnlyList<string> requestedPackages,
+        IReadOnlyList<Package> localPackages
+    )
     {
         if (localPackages is [])
         {
             return true;
         }
 
-        ConditionContext context = new(RequestedPackages: requestedPackages, this._currentTimeSource.UtcNow());
+        ConditionContext context = new(
+            RequestedPackages: requestedPackages,
+            this._currentTimeSource.UtcNow()
+        );
 
-        return localPackages.Any(package => this.NeedsUpstreamQuery(package: package, context: context));
+        return localPackages.Any(package =>
+            this.NeedsUpstreamQuery(package: package, context: context)
+        );
     }
 
     private bool NeedsUpstreamQuery(Package package, in ConditionContext context)
@@ -153,7 +167,12 @@ public sealed class AurRpc : IAurRpc
 
     private bool NotCachedLocally(Package package, in ConditionContext context)
     {
-        if (context.RequestedPackages.Contains(value: package.PackageName, comparer: StringComparer.OrdinalIgnoreCase))
+        if (
+            context.RequestedPackages.Contains(
+                value: package.PackageName,
+                comparer: StringComparer.OrdinalIgnoreCase
+            )
+        )
         {
             return false;
         }
@@ -222,5 +241,8 @@ public sealed class AurRpc : IAurRpc
     }
 
     [DebuggerDisplay("{RequestedPackages} {Now}")]
-    private readonly record struct ConditionContext(IReadOnlyList<string> RequestedPackages, DateTimeOffset Now);
+    private readonly record struct ConditionContext(
+        IReadOnlyList<string> RequestedPackages,
+        DateTimeOffset Now
+    );
 }

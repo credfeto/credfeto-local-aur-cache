@@ -9,5 +9,7 @@ public interface ILocallyInstalled
 {
     ValueTask MarkAsClonedAsync(string packageName, CancellationToken cancellationToken);
 
-    ValueTask<IReadOnlyList<RepoCloneInfo>> GetRecentlyClonedAsync(CancellationToken cancellationToken);
+    ValueTask<IReadOnlyList<RepoCloneInfo>> GetRecentlyClonedAsync(
+        CancellationToken cancellationToken
+    );
 }

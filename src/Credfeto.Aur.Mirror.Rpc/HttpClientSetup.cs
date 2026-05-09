@@ -21,14 +21,20 @@ internal static class HttpClientSetup
         return services
             .AddHttpClient(
                 nameof(AurRpc),
-                configureClient: httpClient => InitializeContentClient(httpClient: httpClient, httpTimeout: HttpTimeout)
+                configureClient: httpClient =>
+                    InitializeContentClient(httpClient: httpClient, httpTimeout: HttpTimeout)
             )
             .SetHandlerLifetime(HandlerTimeout)
             .ConfigurePrimaryHttpMessageHandler(configureHandler: _ => new HttpClientHandler
             {
                 AutomaticDecompression = DecompressionMethods.All,
             })
-            .AddPolicyHandler(Policy.BulkheadAsync<HttpResponseMessage>(CONCURRENT_ACTIONS * 2, QUEUED_ACTIONS * 2))
+            .AddPolicyHandler(
+                Policy.BulkheadAsync<HttpResponseMessage>(
+                    CONCURRENT_ACTIONS * 2,
+                    QUEUED_ACTIONS * 2
+                )
+            )
             .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(PollyTimeout))
             .Services;
     }
@@ -38,14 +44,20 @@ internal static class HttpClientSetup
         return services
             .AddHttpClient(
                 nameof(AurRepos),
-                configureClient: httpClient => InitializeContentClient(httpClient: httpClient, httpTimeout: HttpTimeout)
+                configureClient: httpClient =>
+                    InitializeContentClient(httpClient: httpClient, httpTimeout: HttpTimeout)
             )
             .SetHandlerLifetime(HandlerTimeout)
             .ConfigurePrimaryHttpMessageHandler(configureHandler: _ => new HttpClientHandler
             {
                 AutomaticDecompression = DecompressionMethods.All,
             })
-            .AddPolicyHandler(Policy.BulkheadAsync<HttpResponseMessage>(CONCURRENT_ACTIONS * 2, QUEUED_ACTIONS * 2))
+            .AddPolicyHandler(
+                Policy.BulkheadAsync<HttpResponseMessage>(
+                    CONCURRENT_ACTIONS * 2,
+                    QUEUED_ACTIONS * 2
+                )
+            )
             .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(PollyTimeout))
             .Services;
     }
@@ -56,7 +68,12 @@ internal static class HttpClientSetup
         httpClient.DefaultRequestVersion = HttpVersion.Version11;
         httpClient.DefaultRequestHeaders.Accept.Add(new(mediaType: "application/octet-stream"));
         httpClient.DefaultRequestHeaders.UserAgent.Add(
-            new(new ProductHeaderValue(name: VersionInformation.Product, version: VersionInformation.Version))
+            new(
+                new ProductHeaderValue(
+                    name: VersionInformation.Product,
+                    version: VersionInformation.Version
+                )
+            )
         );
         httpClient.Timeout = httpTimeout;
     }

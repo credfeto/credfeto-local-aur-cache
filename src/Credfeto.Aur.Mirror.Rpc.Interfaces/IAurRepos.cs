@@ -6,5 +6,8 @@ namespace Credfeto.Aur.Mirror.Rpc.Interfaces;
 
 public interface IAurRepos
 {
-    ValueTask<byte[]?> GetPackagesAsync(ProductInfoHeaderValue? userAgent, CancellationToken cancellationToken);
+    ValueTask<byte[]?> GetPackagesAsync(
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    );
 }

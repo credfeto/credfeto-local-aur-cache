@@ -9,7 +9,11 @@ internal static partial class AurRpcLoggingExtensions
     [LoggerMessage(LogLevel.Information, EventId = 1, Message = "Searching for: {keyword} by {by}")]
     public static partial void SearchingFor(this ILogger<AurRpc> logger, string keyword, string by);
 
-    [LoggerMessage(LogLevel.Information, EventId = 2, Message = "Retrieving package infos: {packages}")]
+    [LoggerMessage(
+        LogLevel.Information,
+        EventId = 2,
+        Message = "Retrieving package infos: {packages}"
+    )]
     private static partial void PackageInfo(this ILogger<AurRpc> logger, string packages);
 
     public static void PackageInfo(this ILogger<AurRpc> logger, IReadOnlyList<string> packages)
@@ -56,7 +60,11 @@ internal static partial class AurRpcLoggingExtensions
         Exception exception
     );
 
-    [LoggerMessage(LogLevel.Information, EventId = 5, Message = "Package {package} is not cached locally")]
+    [LoggerMessage(
+        LogLevel.Information,
+        EventId = 5,
+        Message = "Package {package} is not cached locally"
+    )]
     public static partial void NotCachedLocally(this ILogger<AurRpc> logger, string package);
 
     [LoggerMessage(
@@ -85,7 +93,11 @@ internal static partial class AurRpcLoggingExtensions
         TimeSpan maxAge
     );
 
-    [LoggerMessage(LogLevel.Information, EventId = 8, Message = "Using local cache for package infos: {packages}")]
+    [LoggerMessage(
+        LogLevel.Information,
+        EventId = 8,
+        Message = "Using local cache for package infos: {packages}"
+    )]
     private static partial void UsingLocalCache(this ILogger<AurRpc> logger, string packages);
 
     public static void UsingLocalCache(this ILogger<AurRpc> logger, IReadOnlyList<string> packages)

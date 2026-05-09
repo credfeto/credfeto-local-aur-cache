@@ -4,7 +4,9 @@ using System.Text;
 
 namespace Credfeto.Aur.Mirror.Models.Git;
 
-[DebuggerDisplay("Repo:{RepositoryName}, Service: {Service} Refs: {AdvertiseRefs} {EndStreamWithNull}")]
+[DebuggerDisplay(
+    "Repo:{RepositoryName}, Service: {Service} Refs: {AdvertiseRefs} {EndStreamWithNull}"
+)]
 public readonly record struct GitCommandOptions(
     string RepositoryName,
     string Service,
@@ -13,7 +15,9 @@ public readonly record struct GitCommandOptions(
 )
 {
     public string ContentType =>
-        this.AdvertiseRefs ? $"application/x-{this.Service}-advertisement" : $"application/x-{this.Service}";
+        this.AdvertiseRefs
+            ? $"application/x-{this.Service}-advertisement"
+            : $"application/x-{this.Service}";
 
     public string BuildCommand(string repositoryBasePath)
     {

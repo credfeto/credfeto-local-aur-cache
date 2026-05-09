@@ -23,7 +23,10 @@ public static class Program
     public static async Task<int> Main(string[] args)
     {
         return HealthCheckClient.IsHealthCheck(args: args, out string? checkUrl)
-            ? await HealthCheckClient.ExecuteAsync(targetUrl: checkUrl, cancellationToken: CancellationToken.None)
+            ? await HealthCheckClient.ExecuteAsync(
+                targetUrl: checkUrl,
+                cancellationToken: CancellationToken.None
+            )
             : await RunServerAsync(args);
     }
 
@@ -85,8 +88,10 @@ public static class Program
                 ""version"":5
             }";
         RpcResponse rpcResponse =
-            JsonSerializer.Deserialize<RpcResponse>(json: s, jsonTypeInfo: AppJsonContext.Default.RpcResponse)
-            ?? throw new JsonException("Could not deserialize response");
+            JsonSerializer.Deserialize<RpcResponse>(
+                json: s,
+                jsonTypeInfo: AppJsonContext.Default.RpcResponse
+            ) ?? throw new JsonException("Could not deserialize response");
 
         Console.WriteLine(rpcResponse.Count);
     }

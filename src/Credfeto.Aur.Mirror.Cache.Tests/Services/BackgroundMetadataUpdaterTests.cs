@@ -34,13 +34,19 @@ public sealed class BackgroundMetadataUpdaterTests : TestBase
 
         const string packageName = "example-package";
 
-        await this._updater.RequestUpdateAsync(packageName: packageName, update: Update, this.CancellationToken());
+        await this._updater.RequestUpdateAsync(
+            packageName: packageName,
+            update: Update,
+            this.CancellationToken()
+        );
 
         _ = this._localAurMetadata.Received(1).Get("example-package");
         await this
             ._localAurMetadata.Received(1)
             .UpdateAsync(
-                Arg.Is<Package>(p => StringComparer.Ordinal.Equals(x: p.PackageName, y: "example-package")),
+                Arg.Is<Package>(p =>
+                    StringComparer.Ordinal.Equals(x: p.PackageName, y: "example-package")
+                ),
                 Arg.Any<Action<Package>>(),
                 Arg.Any<CancellationToken>()
             );
@@ -60,11 +66,19 @@ public sealed class BackgroundMetadataUpdaterTests : TestBase
 
         const string packageName = "invalid-package";
 
-        await this._updater.RequestUpdateAsync(packageName: packageName, update: Update, this.CancellationToken());
+        await this._updater.RequestUpdateAsync(
+            packageName: packageName,
+            update: Update,
+            this.CancellationToken()
+        );
 
         await this
             ._localAurMetadata.DidNotReceive()
-            .UpdateAsync(Arg.Any<Package>(), Arg.Any<Action<Package>>(), Arg.Any<CancellationToken>());
+            .UpdateAsync(
+                Arg.Any<Package>(),
+                Arg.Any<Action<Package>>(),
+                Arg.Any<CancellationToken>()
+            );
         _ = this._localAurMetadata.Received(1).Get("invalid-package");
 
         return;

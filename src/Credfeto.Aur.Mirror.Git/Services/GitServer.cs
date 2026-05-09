@@ -28,8 +28,12 @@ public sealed class GitServer : IGitServer
     private readonly ServerConfig _serverConfig;
     private readonly IUpdateLock _updateLock;
 
-    public GitServer(IOptions<ServerConfig> config, IUpdateLock updateLock, ILocallyInstalled locallyInstalled,
-                     ILogger<GitServer> logger)
+    public GitServer(
+        IOptions<ServerConfig> config,
+        IUpdateLock updateLock,
+        ILocallyInstalled locallyInstalled,
+        ILogger<GitServer> logger
+    )
     {
         this._serverConfig = config.Value;
         this._updateLock = updateLock;
@@ -37,76 +41,149 @@ public sealed class GitServer : IGitServer
         this._logger = logger;
     }
 
-    public async ValueTask<GitCommandResponse> ExecuteResultAsync(GitCommandOptions options, Stream source, CancellationToken cancellationToken)
+    public async ValueTask<GitCommandResponse> ExecuteResultAsync(
+        GitCommandOptions options,
+        Stream source,
+        CancellationToken cancellationToken
+    )
     {
         string repoBasePath = this.GetRepoBasePath(options.RepositoryName);
 
         if (!this.RepoExists(repoBasePath))
         {
-            await this.EnsureRepositoryHasBeenClonedAsync(options.RepositoryName, false, cancellationToken: cancellationToken);
-
+            await this.EnsureRepositoryHasBeenClonedAsync(
+                options.RepositoryName,
+                false,
+                cancellationToken: cancellationToken
+            );
         }
 
         string arguments = options.BuildCommand(repoBasePath);
         this._logger.ExecutingCommand(arguments);
 
-        using (Process? process = Process.Start(new ProcessStartInfo(fileName: this._serverConfig.Git.Executable, arguments: arguments)
-                                                {
-                                                    UseShellExecute = false,
-                                                    CreateNoWindow = true,
-                                                    RedirectStandardInput = true,
-                                                    RedirectStandardOutput = true,
-                                                    RedirectStandardError = true,
-                                                    WorkingDirectory = repoBasePath
-                                                }))
+        return await this.RunGitProcessAsync(
+            arguments: arguments,
+            repoBasePath: repoBasePath,
+            options: options,
+            source: source,
+            cancellationToken: cancellationToken
+        );
+    }
+
+    private async ValueTask<GitCommandResponse> RunGitProcessAsync(
+        string arguments,
+        string repoBasePath,
+        GitCommandOptions options,
+        Stream source,
+        CancellationToken cancellationToken
+    )
+    {
+        using (
+            Process? process = Process.Start(
+                new ProcessStartInfo(
+                    fileName: this._serverConfig.Git.Executable,
+                    arguments: arguments
+                )
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WorkingDirectory = repoBasePath,
+                }
+            )
+        )
         {
             if (process is null)
             {
-                this._logger.FailedToStartGit(exe: this._serverConfig.Git.Executable, arguments: arguments);
+                this._logger.FailedToStartGit(
+                    exe: this._serverConfig.Git.Executable,
+                    arguments: arguments
+                );
 
                 throw new DataException("Git could not be started.");
             }
 
-            await source.CopyToAsync(destination: process.StandardInput.BaseStream, cancellationToken: cancellationToken);
+            await source.CopyToAsync(
+                destination: process.StandardInput.BaseStream,
+                cancellationToken: cancellationToken
+            );
 
             if (options.EndStreamWithNull)
             {
-                await process.StandardInput.WriteAsync(new StringBuilder('\0'), cancellationToken: cancellationToken);
+                await process.StandardInput.WriteAsync(
+                    new StringBuilder('\0'),
+                    cancellationToken: cancellationToken
+                );
             }
 
             await process.StandardInput.DisposeAsync();
 
-            await using (RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream())
-            {
-                if (options.AdvertiseRefs)
-                {
-                    await using (StreamWriter writer = new(stream: memoryStream, leaveOpen: true))
-                    {
-                        string service = $"# service={options.Service}\n";
-                        await writer.WriteAsync(new StringBuilder($"{service.Length + 4:x4}{service}0000"), cancellationToken: cancellationToken);
-                        await writer.FlushAsync(cancellationToken);
-                    }
-                }
-
-                await process.StandardOutput.BaseStream.CopyToAsync(destination: memoryStream, cancellationToken: cancellationToken);
-
-                await process.WaitForExitAsync(cancellationToken);
-
-                await this._locallyInstalled.MarkAsClonedAsync(packageName: options.RepositoryName, cancellationToken: cancellationToken);
-
-                return new(memoryStream.ToArray(), ContentType: options.ContentType);
-            }
+            return await this.BuildResponseAsync(
+                process: process,
+                options: options,
+                cancellationToken: cancellationToken
+            );
         }
     }
 
-    public async ValueTask EnsureRepositoryHasBeenClonedAsync(string repoName, bool changed, CancellationToken cancellationToken)
+    private async ValueTask<GitCommandResponse> BuildResponseAsync(
+        Process process,
+        GitCommandOptions options,
+        CancellationToken cancellationToken
+    )
+    {
+        await using (RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream())
+        {
+            if (options.AdvertiseRefs)
+            {
+                await using (StreamWriter writer = new(stream: memoryStream, leaveOpen: true))
+                {
+                    string service = $"# service={options.Service}\n";
+                    await writer.WriteAsync(
+                        new StringBuilder($"{service.Length + 4:x4}{service}0000"),
+                        cancellationToken: cancellationToken
+                    );
+                    await writer.FlushAsync(cancellationToken);
+                }
+            }
+
+            await process.StandardOutput.BaseStream.CopyToAsync(
+                destination: memoryStream,
+                cancellationToken: cancellationToken
+            );
+
+            await process.WaitForExitAsync(cancellationToken);
+
+            await this._locallyInstalled.MarkAsClonedAsync(
+                packageName: options.RepositoryName,
+                cancellationToken: cancellationToken
+            );
+
+            return new(memoryStream.ToArray(), ContentType: options.ContentType);
+        }
+    }
+
+    public async ValueTask EnsureRepositoryHasBeenClonedAsync(
+        string repoName,
+        bool changed,
+        CancellationToken cancellationToken
+    )
     {
         string repoBasePath = this.GetRepoBasePath(repoName);
 
         string upstreamRepo = this.GetUpstreamRepoUrl(repoName);
 
-        this._logger.RequestingCloneOrUpdateOfRepo(repo: repoName, upstream: upstreamRepo, path: repoBasePath);
-        SemaphoreSlim wait = await this._updateLock.GetLockAsync(fileName: repoBasePath, cancellationToken: cancellationToken);
+        this._logger.RequestingCloneOrUpdateOfRepo(
+            repo: repoName,
+            upstream: upstreamRepo,
+            path: repoBasePath
+        );
+        SemaphoreSlim wait = await this._updateLock.GetLockAsync(
+            fileName: repoBasePath,
+            cancellationToken: cancellationToken
+        );
 
         try
         {
@@ -116,16 +193,28 @@ public sealed class GitServer : IGitServer
 
                 if (repoFolder is null)
                 {
-                    await this.CloneRepositoryAsync(upstreamRepo: upstreamRepo, repoPath: repoBasePath, cancellationToken: cancellationToken);
+                    await this.CloneRepositoryAsync(
+                        upstreamRepo: upstreamRepo,
+                        repoPath: repoBasePath,
+                        cancellationToken: cancellationToken
+                    );
                 }
                 else if (changed)
                 {
-                    await this.UpdateRepositoryAsync(upstreamRepo: upstreamRepo, repoPath: repoFolder, cancellationToken: cancellationToken);
+                    await this.UpdateRepositoryAsync(
+                        upstreamRepo: upstreamRepo,
+                        repoPath: repoFolder,
+                        cancellationToken: cancellationToken
+                    );
                 }
             }
             else
             {
-                await this.CloneRepositoryAsync(upstreamRepo: upstreamRepo, repoPath: repoBasePath, cancellationToken: cancellationToken);
+                await this.CloneRepositoryAsync(
+                    upstreamRepo: upstreamRepo,
+                    repoPath: repoBasePath,
+                    cancellationToken: cancellationToken
+                );
             }
         }
         finally
@@ -139,12 +228,19 @@ public sealed class GitServer : IGitServer
         return this._serverConfig.Upstream.Repos + "/" + repoName + ".git";
     }
 
-    public async ValueTask<GitCommandResponse> GetFileAsync(string repoName, string path, CancellationToken cancellationToken)
+    public async ValueTask<GitCommandResponse> GetFileAsync(
+        string repoName,
+        string path,
+        CancellationToken cancellationToken
+    )
     {
-
         if (!this.RepoExists(repoName))
         {
-            await this.EnsureRepositoryHasBeenClonedAsync(repoName, false, cancellationToken: cancellationToken);
+            await this.EnsureRepositoryHasBeenClonedAsync(
+                repoName,
+                false,
+                cancellationToken: cancellationToken
+            );
         }
 
         this._logger.ReadingFile(repo: repoName, path: path);
@@ -156,7 +252,10 @@ public sealed class GitServer : IGitServer
         {
             await using (Stream file = File.OpenRead(fileName))
             {
-                await file.CopyToAsync(destination: memoryStream, cancellationToken: cancellationToken);
+                await file.CopyToAsync(
+                    destination: memoryStream,
+                    cancellationToken: cancellationToken
+                );
             }
 
             return new(memoryStream.ToArray(), ContentType: "application/octet-stream");
@@ -196,13 +295,19 @@ public sealed class GitServer : IGitServer
         }
     }
 
-    private async ValueTask CloneRepositoryAsync(string upstreamRepo, string repoPath, CancellationToken cancellationToken)
+    private async ValueTask CloneRepositoryAsync(
+        string upstreamRepo,
+        string repoPath,
+        CancellationToken cancellationToken
+    )
     {
-        (string[] output, int exitCode) = await GitCommandLine.ExecAsync(gitExecutable: this._serverConfig.Git.Executable,
-                                                                         clonePath: upstreamRepo,
-                                                                         workingDirectory: this._serverConfig.Storage.Repos,
-                                                                         $"clone --mirror \"{upstreamRepo}\" \"{repoPath}\"",
-                                                                         cancellationToken: cancellationToken);
+        (string[] output, int exitCode) = await GitCommandLine.ExecAsync(
+            gitExecutable: this._serverConfig.Git.Executable,
+            clonePath: upstreamRepo,
+            workingDirectory: this._serverConfig.Storage.Repos,
+            $"clone --mirror \"{upstreamRepo}\" \"{repoPath}\"",
+            cancellationToken: cancellationToken
+        );
 
         if (exitCode != 0)
         {
@@ -213,13 +318,19 @@ public sealed class GitServer : IGitServer
         }
     }
 
-    private async ValueTask UpdateRepositoryAsync(string upstreamRepo, string repoPath, CancellationToken cancellationToken)
+    private async ValueTask UpdateRepositoryAsync(
+        string upstreamRepo,
+        string repoPath,
+        CancellationToken cancellationToken
+    )
     {
-        (string[] output, int exitCode) = await GitCommandLine.ExecAsync(gitExecutable: this._serverConfig.Git.Executable,
-                                                                         clonePath: upstreamRepo,
-                                                                         workingDirectory: repoPath,
-                                                                         $"-C \"{repoPath}\" fetch",
-                                                                         cancellationToken: cancellationToken);
+        (string[] output, int exitCode) = await GitCommandLine.ExecAsync(
+            gitExecutable: this._serverConfig.Git.Executable,
+            clonePath: upstreamRepo,
+            workingDirectory: repoPath,
+            $"-C \"{repoPath}\" fetch",
+            cancellationToken: cancellationToken
+        );
 
         if (exitCode != 0)
         {

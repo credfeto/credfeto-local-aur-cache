@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Cache.Interfaces;
@@ -36,7 +35,9 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
         _ = currentTimeSource.UtcNow().Returns(DateTimeOffset.Now);
 
         IUpdateLock updateLock = GetSubstitute<IUpdateLock>();
-        _ = updateLock.GetLockAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(this._semaphore);
+        _ = updateLock
+            .GetLockAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(this._semaphore);
 
         ILogger<LocalAurMetadata> logger = this.GetTypedLogger<LocalAurMetadata>();
 
@@ -73,7 +74,11 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
             this.CancellationToken()
         );
 
-        ShouldBeSet(updateContext: updateContext, newSearchResult: newSearchResult, expectedChanged: false);
+        ShouldBeSet(
+            updateContext: updateContext,
+            newSearchResult: newSearchResult,
+            expectedChanged: false
+        );
 
         Package? foundAfterAdding = this._localAurMetadata.Get(newSearchResult.Name);
         Assert.NotNull(foundAfterAdding);
@@ -92,7 +97,11 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
             this.CancellationToken()
         );
 
-        ShouldBeSet(updateContext: updateContext, newSearchResult: newSearchResult, expectedChanged: false);
+        ShouldBeSet(
+            updateContext: updateContext,
+            newSearchResult: newSearchResult,
+            expectedChanged: false
+        );
 
         updateContext.Clear();
 
@@ -118,7 +127,11 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
             this.CancellationToken()
         );
 
-        ShouldBeSet(updateContext: updateContext, newSearchResult: newSearchResult, expectedChanged: false);
+        ShouldBeSet(
+            updateContext: updateContext,
+            newSearchResult: newSearchResult,
+            expectedChanged: false
+        );
 
         updateContext.Clear();
 
@@ -129,7 +142,11 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
             this.CancellationToken()
         );
 
-        ShouldBeSet(updateContext: updateContext, newSearchResult: newSearchResult, expectedChanged: true);
+        ShouldBeSet(
+            updateContext: updateContext,
+            newSearchResult: newSearchResult,
+            expectedChanged: true
+        );
     }
 
     private static void ShouldNotBeSet(UpdateContext updateContext)
@@ -137,7 +154,11 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
         Assert.False(condition: updateContext.Set, userMessage: "Should not be set");
     }
 
-    private static void ShouldBeSet(UpdateContext updateContext, SearchResult newSearchResult, bool expectedChanged)
+    private static void ShouldBeSet(
+        UpdateContext updateContext,
+        SearchResult newSearchResult,
+        bool expectedChanged
+    )
     {
         Assert.True(condition: updateContext.Set, userMessage: "Should not be set");
         bool changed = Assert.NotNull(updateContext.Changed);
@@ -180,36 +201,6 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
             this.Changed = changed;
 
             return ValueTask.CompletedTask;
-        }
-    }
-
-    private string CreateFolderInTempFolder(string name)
-    {
-        string fullPath = Path.Combine(path1: this.TempFolder, path2: name);
-        this.EnsureDirectoryExists(fullPath);
-
-        return fullPath;
-    }
-
-    private void EnsureDirectoryExists(string fullPath)
-    {
-        if (Directory.Exists(fullPath))
-        {
-            this.Output.WriteLine($"Directory {fullPath} already exists");
-
-            return;
-        }
-
-        try
-        {
-            DirectoryInfo di = Directory.CreateDirectory(fullPath);
-            this.Output.WriteLine($"Directory {fullPath} created as {di.FullName} on {di.CreationTimeUtc}");
-        }
-        catch (Exception exception)
-        {
-            this.Output.WriteLine($"Directory {fullPath} could not be created: {exception.Message}");
-
-            throw;
         }
     }
 }

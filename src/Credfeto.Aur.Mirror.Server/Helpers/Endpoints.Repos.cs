@@ -392,8 +392,16 @@ internal static partial class Endpoints
     {
         group.MapGet(
             pattern: "packages.gz",
-            handler: static (IAurRepos aurRepos, HttpContext httpContext, CancellationToken cancellationToken) =>
-                GetPackagesAsync(httpContext: httpContext, aurRepos: aurRepos, cancellationToken: cancellationToken)
+            handler: static (
+                IAurRepos aurRepos,
+                HttpContext httpContext,
+                CancellationToken cancellationToken
+            ) =>
+                GetPackagesAsync(
+                    httpContext: httpContext,
+                    aurRepos: aurRepos,
+                    cancellationToken: cancellationToken
+                )
         );
     }
 
@@ -588,7 +596,10 @@ internal static partial class Endpoints
     {
         ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
-        byte[]? result = await aurRepos.GetPackagesAsync(userAgent: userAgent, cancellationToken: cancellationToken);
+        byte[]? result = await aurRepos.GetPackagesAsync(
+            userAgent: userAgent,
+            cancellationToken: cancellationToken
+        );
 
         if (result is null)
         {
@@ -623,11 +634,17 @@ internal static partial class Endpoints
         return NoCacheResult(httpContext: httpContext, commandResponse: commandResponse);
     }
 
-    private static IResult NoCacheResult(HttpContext httpContext, in GitCommandResponse commandResponse)
+    private static IResult NoCacheResult(
+        HttpContext httpContext,
+        in GitCommandResponse commandResponse
+    )
     {
         httpContext.Response.Headers.Append(key: "Expires", value: "Fri, 01 Jan 1980 00:00:00 GMT");
         httpContext.Response.Headers.Append(key: "Pragma", value: "no-cache");
-        httpContext.Response.Headers.Append(key: "Cache-Control", value: "no-cache, max-age=0, must-revalidate");
+        httpContext.Response.Headers.Append(
+            key: "Cache-Control",
+            value: "no-cache, max-age=0, must-revalidate"
+        );
 
         return Results.Bytes(
             contents: commandResponse.Content,

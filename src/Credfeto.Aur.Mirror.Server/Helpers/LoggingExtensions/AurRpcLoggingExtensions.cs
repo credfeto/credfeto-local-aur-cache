@@ -11,12 +11,25 @@ internal static partial class AurRpcLoggingExtensions
     public static partial void Query(this ILogger<IAurRpc> logger, string query);
 
     [LoggerMessage(LogLevel.Error, EventId = 2, Message = "Failed query: {query}  => {message}")]
-    public static partial void Failed(this ILogger<IAurRpc> logger, string query, string message, Exception exception);
+    public static partial void Failed(
+        this ILogger<IAurRpc> logger,
+        string query,
+        string message,
+        Exception exception
+    );
 
     [LoggerMessage(LogLevel.Information, EventId = 3, Message = "Searching for: {keyword} by {by}")]
-    public static partial void SearchingFor(this ILogger<IAurRpc> logger, string keyword, string by);
+    public static partial void SearchingFor(
+        this ILogger<IAurRpc> logger,
+        string keyword,
+        string by
+    );
 
-    [LoggerMessage(LogLevel.Information, EventId = 4, Message = "Retrieving package infos: {packages}")]
+    [LoggerMessage(
+        LogLevel.Information,
+        EventId = 4,
+        Message = "Retrieving package infos: {packages}"
+    )]
     private static partial void PackageInfo(this ILogger<IAurRpc> logger, string packages);
 
     public static void PackageInfo(this ILogger<IAurRpc> logger, IReadOnlyList<string> packages)
@@ -50,7 +63,11 @@ internal static partial class AurRpcLoggingExtensions
         );
     }
 
-    [LoggerMessage(LogLevel.Information, EventId = 6, Message = "Search Found: {package} using {keyword} by {by}")]
+    [LoggerMessage(
+        LogLevel.Information,
+        EventId = 6,
+        Message = "Search Found: {package} using {keyword} by {by}"
+    )]
     public static partial void OfflineSearchFound(
         this ILogger<IAurRpc> logger,
         string package,

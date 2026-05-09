@@ -19,7 +19,9 @@ namespace Credfeto.Aur.Mirror.Server.Helpers;
 
 internal static partial class Endpoints
 {
-    [RequiresUnreferencedCode("Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)")]
+    [RequiresUnreferencedCode(
+        "Calls Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGet(String, Delegate)"
+    )]
     private static WebApplication ConfigureAurRpcEndpoints(this WebApplication app)
     {
         Console.WriteLine("Configuring Aur RPC Endpoint");
@@ -32,45 +34,129 @@ internal static partial class Endpoints
 
         RouteGroupBuilder group = app.MapGroup("/rpc");
 
-        group.MapGet(pattern: "",
-                     handler: static (HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
-                                  ExecuteLegacyRpcQueryAsync(httpContext: httpContext, aurRpc: aurRpc, cancellationToken: cancellationToken));
+        group.MapGet(
+            pattern: "",
+            handler: static (
+                HttpContext httpContext,
+                IAurRpc aurRpc,
+                CancellationToken cancellationToken
+            ) =>
+                ExecuteLegacyRpcQueryAsync(
+                    httpContext: httpContext,
+                    aurRpc: aurRpc,
+                    cancellationToken: cancellationToken
+                )
+        );
 
-        group.MapPost(pattern: "",
-                     handler: static (HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
-                                  ExecuteLegacyRpcPostAsync(httpContext: httpContext, aurRpc: aurRpc, cancellationToken: cancellationToken));
-
+        group.MapPost(
+            pattern: "",
+            handler: static (
+                HttpContext httpContext,
+                IAurRpc aurRpc,
+                CancellationToken cancellationToken
+            ) =>
+                ExecuteLegacyRpcPostAsync(
+                    httpContext: httpContext,
+                    aurRpc: aurRpc,
+                    cancellationToken: cancellationToken
+                )
+        );
 
         RouteGroupBuilder v5Group = group.MapGroup("v5");
-
-        // https://aur.archlinux.org/rpc/v5/search/fetch?by=name
-        v5Group.MapGet(pattern: "search/{keyword}",
-                       handler: async static (string keyword, [FromQuery] string by, HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
-                                    await SearchUserAgentAsync(keyword: keyword, by: by, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken));
-
-        // Single
-        // https://aur.archlinux.org/rpc/v5/info/afetch-git
-        v5Group.MapGet(pattern: "info/{package}",
-                       handler: async static (string package, HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
-                                {
-                                    return await PackageInfoSingleAsync(package: package, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
-                                });
-
-        // Multiple
-        // 'https://aur.archlinux.org/rpc/v5/info?arg%5B%5D=afetch-git&arg%5B%5D=brave-bin' \
-        v5Group.MapGet(pattern: "info",
-                       handler: static ([FromQuery(Name = "arg[]")] string packages, HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
-                                    PackageInfoMultiAsync(packages: packages, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken));
-
-        v5Group.MapPost(pattern: "info",
-                        handler: static ([FromForm(Name = "arg[]")] string packages, HttpContext httpContext, IAurRpc aurRpc, CancellationToken cancellationToken) =>
-                                     PackageInfoMultiAsync(packages: packages, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken))
-               .DisableAntiforgery();
+        ConfigureV5AurRpcEndpoints(v5Group);
 
         return app;
     }
 
-    private static async ValueTask<IResult> PackageInfoMultiAsync(string packages, IAurRpc aurRpc, HttpContext httpContext, CancellationToken cancellationToken)
+    private static void RegisterV5SearchEndpoint(RouteGroupBuilder v5Group)
+    {
+        // https://aur.archlinux.org/rpc/v5/search/fetch?by=name
+        v5Group.MapGet(
+            pattern: "search/{keyword}",
+            handler: static async (
+                string keyword,
+                [FromQuery] string by,
+                HttpContext httpContext,
+                IAurRpc aurRpc,
+                CancellationToken cancellationToken
+            ) =>
+                await SearchUserAgentAsync(
+                    keyword: keyword,
+                    by: by,
+                    aurRpc: aurRpc,
+                    httpContext: httpContext,
+                    cancellationToken: cancellationToken
+                )
+        );
+    }
+
+    private static void ConfigureV5AurRpcEndpoints(RouteGroupBuilder v5Group)
+    {
+        RegisterV5SearchEndpoint(v5Group);
+
+        // Single
+        // https://aur.archlinux.org/rpc/v5/info/afetch-git
+        v5Group.MapGet(
+            pattern: "info/{package}",
+            handler: static async (
+                string package,
+                HttpContext httpContext,
+                IAurRpc aurRpc,
+                CancellationToken cancellationToken
+            ) =>
+            {
+                return await PackageInfoSingleAsync(
+                    package: package,
+                    aurRpc: aurRpc,
+                    httpContext: httpContext,
+                    cancellationToken: cancellationToken
+                );
+            }
+        );
+
+        // Multiple
+        // 'https://aur.archlinux.org/rpc/v5/info?arg%5B%5D=afetch-git&arg%5B%5D=brave-bin' \
+        v5Group.MapGet(
+            pattern: "info",
+            handler: static (
+                [FromQuery(Name = "arg[]")] string packages,
+                HttpContext httpContext,
+                IAurRpc aurRpc,
+                CancellationToken cancellationToken
+            ) =>
+                PackageInfoMultiAsync(
+                    packages: packages,
+                    aurRpc: aurRpc,
+                    httpContext: httpContext,
+                    cancellationToken: cancellationToken
+                )
+        );
+
+        v5Group
+            .MapPost(
+                pattern: "info",
+                handler: static (
+                    [FromForm(Name = "arg[]")] string packages,
+                    HttpContext httpContext,
+                    IAurRpc aurRpc,
+                    CancellationToken cancellationToken
+                ) =>
+                    PackageInfoMultiAsync(
+                        packages: packages,
+                        aurRpc: aurRpc,
+                        httpContext: httpContext,
+                        cancellationToken: cancellationToken
+                    )
+            )
+            .DisableAntiforgery();
+    }
+
+    private static async ValueTask<IResult> PackageInfoMultiAsync(
+        string packages,
+        IAurRpc aurRpc,
+        HttpContext httpContext,
+        CancellationToken cancellationToken
+    )
     {
         // Multi
         // curl -X 'GET' \
@@ -83,27 +169,45 @@ internal static partial class Endpoints
 
         IReadOnlyList<string> splitPackages =
         [
-            ..packages.Split(',')
-                      .Distinct(StringComparer.OrdinalIgnoreCase)
+            .. packages.Split(',').Distinct(StringComparer.OrdinalIgnoreCase),
         ];
 
         ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
-        RpcResponse result = await aurRpc.InfoAsync(packages: splitPackages, userAgent: userAgent, cancellationToken: cancellationToken);
+        RpcResponse result = await aurRpc.InfoAsync(
+            packages: splitPackages,
+            userAgent: userAgent,
+            cancellationToken: cancellationToken
+        );
 
         return Results.Ok(result);
     }
 
-    private static async Task<IResult> PackageInfoSingleAsync(string package, IAurRpc aurRpc, HttpContext httpContext, CancellationToken cancellationToken)
+    private static async Task<IResult> PackageInfoSingleAsync(
+        string package,
+        IAurRpc aurRpc,
+        HttpContext httpContext,
+        CancellationToken cancellationToken
+    )
     {
         ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
-        RpcResponse result = await aurRpc.InfoAsync([package], userAgent: userAgent, cancellationToken: cancellationToken);
+        RpcResponse result = await aurRpc.InfoAsync(
+            [package],
+            userAgent: userAgent,
+            cancellationToken: cancellationToken
+        );
 
         return Results.Ok(result);
     }
 
-    private static async Task<IResult> SearchUserAgentAsync(string keyword, string by, IAurRpc aurRpc, HttpContext httpContext, CancellationToken cancellationToken)
+    private static async Task<IResult> SearchUserAgentAsync(
+        string keyword,
+        string by,
+        IAurRpc aurRpc,
+        HttpContext httpContext,
+        CancellationToken cancellationToken
+    )
     {
         ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
@@ -117,18 +221,36 @@ internal static partial class Endpoints
 
         // return types: search or error
 
-        RpcResponse result = await aurRpc.SearchAsync(keyword: keyword, by: by, userAgent: userAgent, cancellationToken: cancellationToken);
+        RpcResponse result = await aurRpc.SearchAsync(
+            keyword: keyword,
+            by: by,
+            userAgent: userAgent,
+            cancellationToken: cancellationToken
+        );
 
         return Results.Ok(result);
     }
 
-
-    private static ValueTask<IResult> ExecuteLegacyRpcQueryAsync(HttpContext httpContext, IAurRpc aurRpc, in CancellationToken cancellationToken)
+    private static ValueTask<IResult> ExecuteLegacyRpcQueryAsync(
+        HttpContext httpContext,
+        IAurRpc aurRpc,
+        in CancellationToken cancellationToken
+    )
     {
-        return ExecuteLegacyRpcQueryCommonAsync(httpContext: httpContext, aurRpc: aurRpc, query: ExtractQuery(httpContext), cancellationToken: cancellationToken);
+        return ExecuteLegacyRpcQueryCommonAsync(
+            httpContext: httpContext,
+            aurRpc: aurRpc,
+            query: ExtractQuery(httpContext),
+            cancellationToken: cancellationToken
+        );
     }
 
-    private static async ValueTask<IResult> ExecuteLegacyRpcQueryCommonAsync(HttpContext httpContext, IAurRpc aurRpc, IDictionary<string, StringValues> query, CancellationToken cancellationToken)
+    private static async ValueTask<IResult> ExecuteLegacyRpcQueryCommonAsync(
+        HttpContext httpContext,
+        IAurRpc aurRpc,
+        IDictionary<string, StringValues> query,
+        CancellationToken cancellationToken
+    )
     {
         if (!query.TryGetValue(key: "type", out StringValues queryType))
         {
@@ -146,7 +268,13 @@ internal static partial class Endpoints
 
             if (query.TryGetValue(key: "arg", out StringValues keyword))
             {
-                return await SearchUserAgentAsync(keyword.ToString(), by: by, aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
+                return await SearchUserAgentAsync(
+                    keyword.ToString(),
+                    by: by,
+                    aurRpc: aurRpc,
+                    httpContext: httpContext,
+                    cancellationToken: cancellationToken
+                );
             }
 
             return Results.Ok(RpcResults.SearchNotFound);
@@ -156,12 +284,22 @@ internal static partial class Endpoints
         {
             if (query.TryGetValue(key: "arg", out StringValues package))
             {
-                return await PackageInfoSingleAsync(package.ToString(), aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
+                return await PackageInfoSingleAsync(
+                    package.ToString(),
+                    aurRpc: aurRpc,
+                    httpContext: httpContext,
+                    cancellationToken: cancellationToken
+                );
             }
 
             if (query.TryGetValue(key: "arg[]", out StringValues packages))
             {
-                return await PackageInfoMultiAsync(packages.ToString(), aurRpc: aurRpc, httpContext: httpContext, cancellationToken: cancellationToken);
+                return await PackageInfoMultiAsync(
+                    packages.ToString(),
+                    aurRpc: aurRpc,
+                    httpContext: httpContext,
+                    cancellationToken: cancellationToken
+                );
             }
         }
 
@@ -170,23 +308,30 @@ internal static partial class Endpoints
 
     private static IDictionary<string, StringValues> ExtractQuery(HttpContext httpContext)
     {
-        return httpContext.Request.Query.Keys
-                   .Select(key => ( Key: key, Value: httpContext.Request.Query[key]))
-                   .ToDictionary(k => k.Key, v => v.Value, StringComparer.OrdinalIgnoreCase);
-
-
+        return httpContext
+            .Request.Query.Keys.Select(key => (Key: key, Value: httpContext.Request.Query[key]))
+            .ToDictionary(k => k.Key, v => v.Value, StringComparer.OrdinalIgnoreCase);
     }
 
     private static IDictionary<string, StringValues> ExtractForm(HttpContext httpContext)
     {
-        return httpContext.Request.Form.Keys
-                          .Select(key => ( Key: key, Value: httpContext.Request.Query[key]))
-                          .ToDictionary(k => k.Key, v => v.Value, StringComparer.OrdinalIgnoreCase);
+        return httpContext
+            .Request.Form.Keys.Select(key => (Key: key, Value: httpContext.Request.Query[key]))
+            .ToDictionary(k => k.Key, v => v.Value, StringComparer.OrdinalIgnoreCase);
     }
 
-    private static ValueTask<IResult> ExecuteLegacyRpcPostAsync(HttpContext httpContext, IAurRpc aurRpc, in CancellationToken cancellationToken)
+    private static ValueTask<IResult> ExecuteLegacyRpcPostAsync(
+        HttpContext httpContext,
+        IAurRpc aurRpc,
+        in CancellationToken cancellationToken
+    )
     {
-        return ExecuteLegacyRpcQueryCommonAsync(httpContext: httpContext, aurRpc: aurRpc, query: ExtractForm(httpContext), cancellationToken: cancellationToken);
+        return ExecuteLegacyRpcQueryCommonAsync(
+            httpContext: httpContext,
+            aurRpc: aurRpc,
+            query: ExtractForm(httpContext),
+            cancellationToken: cancellationToken
+        );
     }
 
     static bool IsSearchQuery(in StringValues queryType)
@@ -196,12 +341,12 @@ internal static partial class Endpoints
 
     static bool IsInfoQuery(in StringValues queryType)
     {
-        return IsMatch(queryType: queryType, match: "info") || IsMatch(queryType: queryType, match: "multiinfo");
+        return IsMatch(queryType: queryType, match: "info")
+            || IsMatch(queryType: queryType, match: "multiinfo");
     }
 
     static bool IsMatch(in StringValues queryType, string match)
     {
         return queryType == match;
     }
-
 }

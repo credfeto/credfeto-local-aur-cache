@@ -40,7 +40,10 @@ public sealed class AurRepos : IAurRepos
         CancellationToken cancellationToken
     )
     {
-        string filename = Path.Combine(path1: this._serverConfig.Storage.Repos, path2: "packages.gz");
+        string filename = Path.Combine(
+            path1: this._serverConfig.Storage.Repos,
+            path2: "packages.gz"
+        );
 
         try
         {
@@ -56,7 +59,11 @@ public sealed class AurRepos : IAurRepos
 
             try
             {
-                await File.WriteAllBytesAsync(path: filename, bytes: fileContent, cancellationToken: DoNotCancelEarly);
+                await File.WriteAllBytesAsync(
+                    path: filename,
+                    bytes: fileContent,
+                    cancellationToken: DoNotCancelEarly
+                );
 
                 return fileContent;
             }
@@ -72,7 +79,10 @@ public sealed class AurRepos : IAurRepos
 
             if (File.Exists(filename))
             {
-                return await File.ReadAllBytesAsync(path: filename, cancellationToken: cancellationToken);
+                return await File.ReadAllBytesAsync(
+                    path: filename,
+                    cancellationToken: cancellationToken
+                );
             }
 
             return null;
@@ -90,7 +100,10 @@ public sealed class AurRepos : IAurRepos
 
         using (
             HttpResponseMessage result = (
-                await httpClient.GetAsync(requestUri: requestUri, cancellationToken: cancellationToken)
+                await httpClient.GetAsync(
+                    requestUri: requestUri,
+                    cancellationToken: cancellationToken
+                )
             ).EnsureSuccessStatusCode()
         )
         {
@@ -121,6 +134,9 @@ public sealed class AurRepos : IAurRepos
     {
         baseUri = new(uriString: this._serverConfig.Upstream.Repos, uriKind: UriKind.Absolute);
 
-        return this._httpClientFactory.CreateClient(nameof(AurRpc)).WithBaseAddress(baseUri).WithUserAgent(userAgent);
+        return this
+            ._httpClientFactory.CreateClient(nameof(AurRpc))
+            .WithBaseAddress(baseUri)
+            .WithUserAgent(userAgent);
     }
 }
