@@ -55,7 +55,7 @@
     <ProjectReference Include="..\Credfeto.Aur.Mirror.Cache\Credfeto.Aur.Mirror.Cache.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FunFair.Test.Common" Version="6.2.4.1830" />
+    <PackageReference Include="FunFair.Test.Common" Version="6.2.23.2204" />
     <PackageReference Include="NSubstitute" Version="5.3.0" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />
   </ItemGroup>
@@ -66,6 +66,7 @@
     <PackageReference Include="Credfeto.Version.Information.Generator" Version="1.0.124.1183" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="CSharpIsNullAnalyzer" Version="0.1.593" PrivateAssets="all" ExcludeAssets="runtime" />
     <PackageReference Include="FunFair.CodeAnalysis" Version="7.1.42.1940" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="FunFair.Test.Source.Generator" Version="6.2.23.2204" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Meziantou.Analyzer" Version="3.0.15" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Sbom.Targets" Version="4.1.5" PrivateAssets="All" ExcludeAssets="runtime" Condition="$(EnableSbom)=='True'" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" PrivateAssets="All" ExcludeAssets="runtime" />

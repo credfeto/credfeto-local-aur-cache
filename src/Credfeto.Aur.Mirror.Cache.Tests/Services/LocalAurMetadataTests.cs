@@ -1,7 +1,6 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Cache.Interfaces;
@@ -180,36 +179,6 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
             this.Changed = changed;
 
             return ValueTask.CompletedTask;
-        }
-    }
-
-    private string CreateFolderInTempFolder(string name)
-    {
-        string fullPath = Path.Combine(path1: this.TempFolder, path2: name);
-        this.EnsureDirectoryExists(fullPath);
-
-        return fullPath;
-    }
-
-    private void EnsureDirectoryExists(string fullPath)
-    {
-        if (Directory.Exists(fullPath))
-        {
-            this.Output.WriteLine($"Directory {fullPath} already exists");
-
-            return;
-        }
-
-        try
-        {
-            DirectoryInfo di = Directory.CreateDirectory(fullPath);
-            this.Output.WriteLine($"Directory {fullPath} created as {di.FullName} on {di.CreationTimeUtc}");
-        }
-        catch (Exception exception)
-        {
-            this.Output.WriteLine($"Directory {fullPath} could not be created: {exception.Message}");
-
-            throw;
         }
     }
 }
