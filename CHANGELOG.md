@@ -8,6 +8,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+- Unhandled exception middleware returning HTTP 429 with Retry-After: 30 so clients back off during transient upstream failures
 ### Fixed
 ### Changed
 - Dependencies - Updated Figgle to 0.6.6
