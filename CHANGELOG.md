@@ -6,7 +6,9 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 -->
 
 ## [Unreleased]
+### Security
 ### Added
+- Unhandled exception middleware returning HTTP 429 with Retry-After: 30 so clients back off during transient upstream failures
 ### Fixed
 ### Changed
 - Dependencies - Updated Figgle to 0.6.6
@@ -27,7 +29,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated FunFair.CodeAnalysis to 7.1.42.1940
 ### Removed
 ### Deployment Changes
-
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
 -->
