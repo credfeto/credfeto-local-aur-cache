@@ -11,6 +11,7 @@ namespace Credfeto.Aur.Mirror.Server.Middleware;
 public sealed class UnhandledExceptionMiddleware
 {
     private const int RetryAfterSeconds = 30;
+    private static readonly ErrorDto ErrorResponse = new("Service temporarily unavailable. Please retry later.");
     private readonly ILogger _logger;
     private readonly RequestDelegate _next;
 
@@ -44,11 +45,19 @@ public sealed class UnhandledExceptionMiddleware
             context.Response.ContentType = "application/json";
 
             byte[] body = JsonSerializer.SerializeToUtf8Bytes(
-                value: new ErrorDto("Service temporarily unavailable. Please retry later."),
+                value: ErrorResponse,
                 jsonTypeInfo: AppJsonContext.Default.ErrorDto
             );
 
-            await context.Response.Body.WriteAsync(buffer: body, cancellationToken: context.RequestAborted);
+            try
+            {
+                await context.Response.Body.WriteAsync(buffer: body, cancellationToken: context.RequestAborted);
+            }
+            catch (Exception writeException)
+                when (writeException is OperationCanceledException or System.IO.IOException)
+            {
+                this._logger.ClientDisconnectedDuringErrorResponse(writeException);
+            }
         }
     }
 }
