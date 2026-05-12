@@ -13,6 +13,7 @@ namespace Credfeto.Aur.Mirror.Server;
     WriteIndented = false,
     IncludeFields = false
 )]
+[JsonSerializable(typeof(ErrorDto))]
 [JsonSerializable(typeof(PongDto))]
 [JsonSerializable(typeof(RpcResponse))]
 [JsonSerializable(typeof(SearchResult))]
