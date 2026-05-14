@@ -10,6 +10,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 - Unhandled exception middleware returning HTTP 429 with Retry-After: 30 so clients back off during transient upstream failures
 ### Fixed
+- Fixed typo in UnitTests.props import path variable $(SolutonDir) → $(SolutionDir) in all test projects; also moved Cache.Tests import to directly after PropertyGroup for consistency
 ### Changed
 - Dependencies - Updated Figgle to 0.6.6
 - Dependencies - Updated Philips.CodeAnalysis.DuplicateCodeAnalyzer to 2.0.0
