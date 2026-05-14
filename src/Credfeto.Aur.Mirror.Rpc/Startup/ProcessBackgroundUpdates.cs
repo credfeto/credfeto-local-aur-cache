@@ -11,12 +11,11 @@ using Credfeto.Services.Startup.Interfaces;
 
 namespace Credfeto.Aur.Mirror.Rpc.Startup;
 
-public sealed class ProcessBackgroundUpdates : IRunOnStartup, IDisposable
+public sealed class ProcessBackgroundUpdates : IRunOnStartup
 {
     private readonly IAurRpc _aurRpc;
     private readonly IBackgroundMetadataUpdater _backgroundMetadataUpdater;
     private readonly ILocalAurMetadata _localAurMetadata;
-    private IDisposable? _subscription;
 
     public ProcessBackgroundUpdates(
         IBackgroundMetadataUpdater backgroundMetadataUpdater,
@@ -29,15 +28,9 @@ public sealed class ProcessBackgroundUpdates : IRunOnStartup, IDisposable
         this._localAurMetadata = localAurMetadata;
     }
 
-    public void Dispose()
-    {
-        this._subscription?.Dispose();
-    }
-
     public ValueTask StartAsync(CancellationToken cancellationToken)
     {
-        this._subscription = this
-            ._backgroundMetadataUpdater.GetAsync(cancellationToken)
+        this._backgroundMetadataUpdater.GetAsync(cancellationToken)
             .ToObservable()
             .Select(request =>
                 Observable.FromAsync(ct =>
@@ -45,7 +38,7 @@ public sealed class ProcessBackgroundUpdates : IRunOnStartup, IDisposable
                 )
             )
             .Concat()
-            .Subscribe();
+            .Subscribe(cancellationToken);
 
         return ValueTask.CompletedTask;
     }
