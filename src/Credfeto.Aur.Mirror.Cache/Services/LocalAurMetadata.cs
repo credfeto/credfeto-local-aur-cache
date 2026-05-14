@@ -29,7 +29,6 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
     private readonly ConcurrentDictionary<string, Package> _metadata;
     private readonly Channel<Package> _saveQueue;
     private readonly ServerConfig _serverConfig;
-    private readonly IDisposable _subscription;
     private readonly IUpdateLock _updateLock;
 
     public LocalAurMetadata(
@@ -46,14 +45,14 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
         this._metadata = new(StringComparer.OrdinalIgnoreCase);
         this._saveQueue = Channel.CreateUnbounded<Package>();
 
-        this._subscription = this.SubscribeToPackageSaveQueue();
+        this.SubscribeToPackageSaveQueue();
 
         // TASK: Store local config in a DB that's quick to search rather than filesystem or memory
     }
 
     public void Dispose()
     {
-        this._subscription.Dispose();
+        this._saveQueue.Writer.Complete();
     }
 
     public async ValueTask LoadAsync(CancellationToken cancellationToken)
@@ -121,10 +120,9 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
         return this.QueueUpdateAsync(packageToSave: package, cancellationToken: cancellationToken);
     }
 
-    private IDisposable SubscribeToPackageSaveQueue()
+    private void SubscribeToPackageSaveQueue()
     {
-        return this
-            ._saveQueue.Reader.ReadAllAsync(DoNotCancelEarly)
+        this._saveQueue.Reader.ReadAllAsync(DoNotCancelEarly)
             .ToObservable()
             .Select(package =>
                 Observable.FromAsync(cancellationToken =>
@@ -132,7 +130,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
                 )
             )
             .Concat()
-            .Subscribe();
+            .Subscribe(DoNotCancelEarly);
     }
 
     private Package ShouldIssueUpdate(SearchResult package, out bool issueUpdate, out bool changed)
