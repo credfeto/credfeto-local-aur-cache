@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Server.Helpers;
+using Credfeto.Aur.Mirror.Server.Middleware;
 using Credfeto.Docker.HealthCheck.Http.Client;
 using Microsoft.AspNetCore.Builder;
 
@@ -101,6 +102,8 @@ public static class Program
     private static WebApplication AddMiddleware(WebApplication application)
     {
         WebApplication app = (WebApplication)application.UseForwardedHeaders();
+
+        app.UseMiddleware<UnhandledExceptionMiddleware>();
 
         return app.ConfigureEndpoints();
     }

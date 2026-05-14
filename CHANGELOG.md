@@ -8,6 +8,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+- Unhandled exception middleware returning HTTP 429 with Retry-After: 30 so clients back off during transient upstream failures
 ### Fixed
 ### Changed
 - Dependencies - Updated Figgle to 0.6.6
@@ -19,6 +20,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated System.Interactive.Async to 7.0.1
 - Dependencies - Updated Microsoft.Extensions to 10.0.7
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.124.1183
+- Dependencies - Updated FunFair.Test.Common to 6.2.23.2204
 - Dependencies - Updated SonarAnalyzer.CSharp to 10.25.0.139117
 - Dependencies - Updated Credfeto.Date to 1.1.151.1695
 - Dependencies - Updated Credfeto.Docker.HealthCheck.Http.Client to 0.0.64.749
