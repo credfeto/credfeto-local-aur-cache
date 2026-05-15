@@ -8,6 +8,15 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+### Fixed
+### Changed
+### Removed
+### Deployment Changes
+<!--
+Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
+-->
+## [0.0.11] - 2026-05-15
+### Added
 - Unhandled exception middleware returning HTTP 429 with Retry-After: 30 so clients back off during transient upstream failures
 ### Fixed
 - Fixed typo in UnitTests.props import path variable $(SolutonDir) → $(SolutionDir) in all test projects; also moved Cache.Tests import to directly after PropertyGroup for consistency
@@ -31,11 +40,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated FunFair.CodeAnalysis to 7.1.42.1940
 - Dependencies - Updated FunFair.Test.Common to 6.2.23.2204
 - Dependencies - Updated Meziantou.Analyzer to 3.0.74
-### Removed
-### Deployment Changes
-<!--
-Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
--->
+
 ## [0.0.10] - 2026-03-15
 ### Changed
 - SDK - Updated DotNet SDK to 10.0.200
