@@ -323,6 +323,9 @@ src/Data
 # Editor-based HTTP Client requests
 /src/.idea/**/httpRequests/*
 
+# Copilot data migration files
+/src/.idea/**/copilot.data.migration.*.xml
+
 # settings updater
 !/src/.idea/*/projectSettingsUpdater.xml
 
@@ -338,7 +341,7 @@ src/Data
 # Mac files
 .DS_Store
 
-# Dotnet 
+# Dotnet
 .dotnet/
 
 # Jetbrains
