@@ -56,4 +56,7 @@ internal static partial class GitServerLoggingExtensions
         string message,
         Exception exception
     );
+
+    [LoggerMessage(LogLevel.Error, EventId = 10, Message = "Git command failed with exit code {exitCode}: {arguments}")]
+    public static partial void FailedToExecuteCommand(this ILogger<GitServer> logger, int exitCode, string arguments);
 }
