@@ -14,9 +14,9 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - EnsureNotLocked now detects bare (mirror) repos and checks the correct lock file path (<workingDir>/index.lock instead of <workingDir>/.git/index.lock)
 ### Changed
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.125.1199
-- Dependencies - Updated Meziantou.Analyzer to 3.0.85
 - Dependencies - Updated Credfeto.Enumeration to 1.2.143.1876
 - Dependencies - Updated FunFair.CodeAnalysis to 7.2.0.1978
+- Dependencies - Updated Meziantou.Analyzer to 3.0.93
 ### Removed
 ### Deployment Changes
 <!--
