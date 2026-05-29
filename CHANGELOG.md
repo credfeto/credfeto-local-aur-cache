@@ -22,6 +22,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Credfeto.Extensions.Linq to 1.0.149.1594
 - Dependencies - Updated Credfeto.Services.Startup to 1.1.147.1632
 - Dependencies - Updated FunFair.Test.Common to 6.2.25.2243
+- Dependencies - Updated FunFair.Test.Source.Generator to 6.2.25.2243
 ### Removed
 ### Deployment Changes
 <!--
