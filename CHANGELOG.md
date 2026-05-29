@@ -19,6 +19,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Meziantou.Analyzer to 3.0.96
 - Dependencies - Updated SonarAnalyzer.CSharp to 10.27.0.140913
 - Dependencies - Updated Credfeto.Docker.HealthCheck.Http.Client to 0.0.65.765
+- Dependencies - Updated Credfeto.Extensions.Linq to 1.0.149.1594
 ### Removed
 ### Deployment Changes
 <!--
