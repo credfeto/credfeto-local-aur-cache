@@ -319,7 +319,7 @@ internal static partial class Endpoints
     private static IDictionary<string, StringValues> ExtractForm(HttpContext httpContext)
     {
         return httpContext
-            .Request.Form.Keys.Select(key => (Key: key, Value: httpContext.Request.Query[key]))
+            .Request.Form.Keys.Select(key => (Key: key, Value: httpContext.Request.Form[key]))
             .ToDictionary(k => k.Key, v => v.Value, StringComparer.OrdinalIgnoreCase);
     }
 
