@@ -12,6 +12,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Use EphemeralKeySet when loading HTTPS certificate to fix Docker container startup failure
 - ExecuteResultAsync now checks git process exit code after WaitForExitAsync and throws GitException on non-zero exit, preventing silent HTTP 200 responses on git failures
 - EnsureNotLocked now detects bare (mirror) repos and checks the correct lock file path (<workingDir>/index.lock instead of <workingDir>/.git/index.lock)
+- ExtractForm was reading values from Request.Query instead of Request.Form, causing legacy POST RPC calls to silently fail
+- Publish size reporting step no longer fails when glob matches no files
 ### Changed
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.125.1199
 - Dependencies - Updated Credfeto.Enumeration to 1.2.143.1876
