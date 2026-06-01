@@ -27,6 +27,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated FunFair.Test.Source.Generator to 6.2.25.2243
 - Dependencies - Updated Microsoft.Extensions to 10.0.8
 - Enable publish trimming on server binary, reducing self-contained linux-x64 single-file size from 100MB to 22MB
+- Remove Serilog.Enrichers.Demystifier — it uses trim-unsafe reflection (StackFrame, Type.GetMethods, Module.ResolveMember) incompatible with PublishTrimmed
 ### Removed
 ### Deployment Changes
 <!--
