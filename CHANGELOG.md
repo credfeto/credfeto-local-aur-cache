@@ -13,6 +13,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Changed
 - Dependencies - Updated Credfeto.Enumeration to 1.2.144.1906
 - Dependencies - Updated Meziantou.Analyzer to 3.0.98
+- Enable publish trimming on server binary, reducing self-contained linux-x64 single-file size from 100MB to 22MB
 ### Removed
 ### Deployment Changes
 <!--
