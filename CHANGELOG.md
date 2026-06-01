@@ -11,6 +11,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Fixed
 ### Changed
 - Enable publish trimming on server binary, reducing self-contained linux-x64 single-file size from 100MB to 22MB
+- Remove Serilog.Enrichers.Demystifier — it uses trim-unsafe reflection (StackFrame, Type.GetMethods, Module.ResolveMember) incompatible with PublishTrimmed
 ### Removed
 ### Deployment Changes
 <!--
