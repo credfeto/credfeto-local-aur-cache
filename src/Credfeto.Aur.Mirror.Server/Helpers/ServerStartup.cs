@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -140,7 +140,6 @@ internal static class ServerStartup
     private static Logger CreateLogger()
     {
         return new LoggerConfiguration()
-            .Enrich.WithDemystifiedStackTraces()
             .Enrich.FromLogContext()
             .Enrich.WithMachineName()
             .Enrich.WithProcessId()
@@ -176,7 +175,11 @@ internal static class ServerStartup
     private static void SetHttpsListenOptions(ListenOptions listenOptions, string certFile)
     {
         listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-        X509Certificate2 cert = X509CertificateLoader.LoadPkcs12FromFile(certFile, password: null, keyStorageFlags: X509KeyStorageFlags.EphemeralKeySet);
+        X509Certificate2 cert = X509CertificateLoader.LoadPkcs12FromFile(
+            certFile,
+            password: null,
+            keyStorageFlags: X509KeyStorageFlags.EphemeralKeySet
+        );
         listenOptions.UseHttps(cert);
     }
 
