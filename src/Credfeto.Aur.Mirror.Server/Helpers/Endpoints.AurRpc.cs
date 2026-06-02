@@ -318,6 +318,11 @@ internal static partial class Endpoints
 
     private static IDictionary<string, StringValues> ExtractForm(HttpContext httpContext)
     {
+        if (!httpContext.Request.HasFormContentType)
+        {
+            return new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+        }
+
         return httpContext
             .Request.Form.Keys.Select(key => (Key: key, Value: httpContext.Request.Form[key]))
             .ToDictionary(k => k.Key, v => v.Value, StringComparer.OrdinalIgnoreCase);
