@@ -9,6 +9,14 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 ### Added
 ### Fixed
+### Changed
+### Removed
+### Deployment Changes
+<!--
+Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
+-->
+## [0.0.12] - 2026-06-02
+### Fixed
 - Use EphemeralKeySet when loading HTTPS certificate to fix Docker container startup failure
 - ExecuteResultAsync now checks git process exit code after WaitForExitAsync and throws GitException on non-zero exit, preventing silent HTTP 200 responses on git failures
 - EnsureNotLocked now detects bare (mirror) repos and checks the correct lock file path (<workingDir>/index.lock instead of <workingDir>/.git/index.lock)
@@ -24,11 +32,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated FunFair.Test.Common to 6.2.25.2243
 - Dependencies - Updated FunFair.Test.Source.Generator to 6.2.25.2243
 - Dependencies - Updated Microsoft.Extensions to 10.0.8
-### Removed
-### Deployment Changes
-<!--
-Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
--->
+
 ## [0.0.11] - 2026-05-15
 ### Added
 - Unhandled exception middleware returning HTTP 429 with Retry-After: 30 so clients back off during transient upstream failures
