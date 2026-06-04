@@ -11,31 +11,31 @@
 "Config Change":
  - any: [ 'src/**/*.json', '!src/global.json' ]
 "credfeto-aur-mirror-cache":
- - any: [ 'src/$Credfeto.Aur.Mirror.Cache/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Cache/**/*' ]
 "credfeto-aur-mirror-cache-interfaces":
- - any: [ 'src/$Credfeto.Aur.Mirror.Cache.Interfaces/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Cache.Interfaces/**/*' ]
 "credfeto-aur-mirror-cache-tests":
- - any: [ 'src/$Credfeto.Aur.Mirror.Cache.Tests/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Cache.Tests/**/*' ]
 "credfeto-aur-mirror-config":
- - any: [ 'src/$Credfeto.Aur.Mirror.Config/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Config/**/*' ]
 "credfeto-aur-mirror-git":
- - any: [ 'src/$Credfeto.Aur.Mirror.Git/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Git/**/*' ]
 "credfeto-aur-mirror-git-interfaces":
- - any: [ 'src/$Credfeto.Aur.Mirror.Git.Interfaces/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Git.Interfaces/**/*' ]
 "credfeto-aur-mirror-git-tests":
- - any: [ 'src/$Credfeto.Aur.Mirror.Git.Tests/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Git.Tests/**/*' ]
 "credfeto-aur-mirror-interfaces":
- - any: [ 'src/$Credfeto.Aur.Mirror.Interfaces/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Interfaces/**/*' ]
 "credfeto-aur-mirror-models":
- - any: [ 'src/$Credfeto.Aur.Mirror.Models/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Models/**/*' ]
 "credfeto-aur-mirror-rpc":
- - any: [ 'src/$Credfeto.Aur.Mirror.Rpc/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Rpc/**/*' ]
 "credfeto-aur-mirror-rpc-interfaces":
- - any: [ 'src/$Credfeto.Aur.Mirror.Rpc.Interfaces/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Rpc.Interfaces/**/*' ]
 "credfeto-aur-mirror-rpc-tests":
- - any: [ 'src/$Credfeto.Aur.Mirror.Rpc.Tests/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Rpc.Tests/**/*' ]
 "credfeto-aur-mirror-server":
- - any: [ 'src/$Credfeto.Aur.Mirror.Server/**/*' ]
+ - any: [ 'src/Credfeto.Aur.Mirror.Server/**/*' ]
 "dotnet":
  - any: [ 'src/**/*.csproj' ]
 "Editorconfig":
