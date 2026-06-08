@@ -18,6 +18,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Meziantou.Analyzer to 3.0.98
 - Dependencies - Updated actions/checkout to v6.0.3
 - Remove Serilog.Enrichers.Demystifier — it uses trim-unsafe reflection (StackFrame, Type.GetMethods, Module.ResolveMember)
+- Replace RecyclableMemoryStream with standard MemoryStream — removes the Microsoft.IO.RecyclableMemoryStream dependency
 ### Removed
 ### Deployment Changes
 <!--
