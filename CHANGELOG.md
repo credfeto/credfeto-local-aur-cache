@@ -16,6 +16,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Credfeto.Enumeration to 1.2.144.1906
 - Dependencies - Updated Meziantou.Analyzer to 3.0.98
 - Remove Serilog.Enrichers.Demystifier — it uses trim-unsafe reflection (StackFrame, Type.GetMethods, Module.ResolveMember)
+- Replace RecyclableMemoryStream with standard MemoryStream — removes the Microsoft.IO.RecyclableMemoryStream dependency
 ### Removed
 ### Deployment Changes
 <!--
