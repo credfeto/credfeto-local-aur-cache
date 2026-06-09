@@ -9,10 +9,11 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 ### Added
 ### Fixed
-- GitHub Actions: on_new_pr workflow now checks out the repository before using local composite actions
+- GitHub Actions: Fixed on_new_pr.yml CI failures by inlining composite action logic directly, as pull_request_target workflows cannot resolve local action paths before steps run
 ### Changed
 - Dependencies - Updated Credfeto.Enumeration to 1.2.144.1906
 - Dependencies - Updated Meziantou.Analyzer to 3.0.98
+- Dependencies - Updated actions/checkout to v6.0.3
 ### Removed
 ### Deployment Changes
 <!--
