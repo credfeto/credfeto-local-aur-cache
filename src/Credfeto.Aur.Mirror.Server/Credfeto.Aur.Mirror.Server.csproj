@@ -10,7 +10,7 @@
     <EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>true</EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
-    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Features>strict;flow-analysis</Features>
     <GenerateNeutralResourcesLanguageAttribute>true</GenerateNeutralResourcesLanguageAttribute>
@@ -21,7 +21,7 @@
     <IsPackable>false</IsPackable>
     <IsPublishable>true</IsPublishable>
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
-    <IsTrimmable>false</IsTrimmable>
+    <IsTrimmable>true</IsTrimmable>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <LangVersion>latest</LangVersion>
     <NeutralLanguage>en</NeutralLanguage>
@@ -33,6 +33,7 @@
     <OptimizationPreference>speed</OptimizationPreference>
     <OutputType>Exe</OutputType>
     <PackageTags>Nuget Caching Proxy</PackageTags>
+    <PublishAot>false</PublishAot>
     <PublishTrimmed>false</PublishTrimmed>
     <RepositoryUrl>https://github.com/credfeto/credfeto-nuget-porxy</RepositoryUrl>
     <RunAOTCompilation>false</RunAOTCompilation>
@@ -78,7 +79,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.8" />
     <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Serilog.Enrichers.Demystifier" Version="1.0.3" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />

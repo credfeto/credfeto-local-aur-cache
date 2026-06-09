@@ -15,13 +15,11 @@ using Credfeto.Aur.Mirror.Models.Git;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IO;
 
 namespace Credfeto.Aur.Mirror.Git.Services;
 
 public sealed class GitServer : IGitServer
 {
-    private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
     private readonly ILocallyInstalled _locallyInstalled;
     private readonly ILogger<GitServer> _logger;
 
@@ -112,7 +110,7 @@ public sealed class GitServer : IGitServer
         CancellationToken cancellationToken
     )
     {
-        await using (RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream())
+        await using (MemoryStream memoryStream = new())
         {
             if (options.AdvertiseRefs)
             {
@@ -224,7 +222,7 @@ public sealed class GitServer : IGitServer
         string repoBasePath = this.GetRepoBasePath(repoName);
         string fileName = Path.Combine(path1: repoBasePath, path2: path);
 
-        await using (RecyclableMemoryStream memoryStream = MemoryStreamManager.GetStream())
+        await using (MemoryStream memoryStream = new())
         {
             await using (Stream file = File.OpenRead(fileName))
             {

@@ -10,10 +10,15 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 ### Fixed
 - GitHub Actions: Fixed on_new_pr.yml CI failures by inlining composite action logic directly, as pull_request_target workflows cannot resolve local action paths before steps run
+- GitHub Actions: on_new_pr workflow now checks out the repository before using local composite actions
+- ExtractForm was reading values from Request.Query instead of Request.Form, causing legacy POST RPC calls to silently fail
+- ExtractForm now returns empty collection for non-form POST requests instead of throwing InvalidOperationException
 ### Changed
 - Dependencies - Updated Credfeto.Enumeration to 1.2.144.1906
 - Dependencies - Updated Meziantou.Analyzer to 3.0.98
 - Dependencies - Updated actions/checkout to v6.0.3
+- Remove Serilog.Enrichers.Demystifier — it uses trim-unsafe reflection (StackFrame, Type.GetMethods, Module.ResolveMember)
+- Replace RecyclableMemoryStream with standard MemoryStream — removes the Microsoft.IO.RecyclableMemoryStream dependency
 ### Removed
 ### Deployment Changes
 <!--
