@@ -9,6 +9,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 ### Added
 ### Fixed
+- Fixed on_new_pr.yml workflow to inline composite actions to avoid pull_request_target local action resolution failure
 ### Changed
 ### Removed
 ### Deployment Changes
