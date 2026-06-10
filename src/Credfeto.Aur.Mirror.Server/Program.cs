@@ -103,6 +103,7 @@ public static class Program
     {
         WebApplication app = (WebApplication)application.UseForwardedHeaders();
 
+        app.UseMiddleware<ServerHeaderMiddleware>();
         app.UseMiddleware<UnhandledExceptionMiddleware>();
 
         return app.ConfigureEndpoints();
