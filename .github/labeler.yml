@@ -36,6 +36,8 @@
  - any: [ 'src/Credfeto.Aur.Mirror.Rpc.Tests/**/*' ]
 "credfeto-aur-mirror-server":
  - any: [ 'src/Credfeto.Aur.Mirror.Server/**/*' ]
+"credfeto-aur-mirror-server-tests":
+ - any: [ 'src/Credfeto.Aur.Mirror.Server.Tests/**/*' ]
 "dotnet":
  - any: [ 'src/**/*.csproj' ]
 "Editorconfig":
