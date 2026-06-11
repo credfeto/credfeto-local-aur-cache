@@ -10,12 +10,15 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 ### Fixed
 ### Changed
-- SDK - Updated DotNet SDK to 10.0.301
 ### Removed
 ### Deployment Changes
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
 -->
+## [0.0.14] - 2026-06-11
+### Changed
+- SDK - Updated DotNet SDK to 10.0.301
+
 ## [0.0.13] - 2026-06-09
 ### Fixed
 - GitHub Actions: Fixed on_new_pr.yml CI failures by inlining composite action logic directly, as pull_request_target workflows cannot resolve local action paths before steps run
