@@ -8,6 +8,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+- X-Server response header containing the hostname of the serving node, making it easy to identify which instance handled a request behind a load balancer
 ### Fixed
 ### Changed
 ### Removed
