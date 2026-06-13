@@ -92,4 +92,43 @@ internal static partial class AurRpcLoggingExtensions
     {
         logger.UsingLocalCache(string.Join(separator: ", ", values: packages));
     }
+
+    [LoggerMessage(
+        LogLevel.Warning,
+        EventId = 9,
+        Message = "Failed to sync upstream repos after search for: {keyword} by {by} => {message}"
+    )]
+    public static partial void FailedToSyncUpstreamReposForSearch(
+        this ILogger<AurRpc> logger,
+        string keyword,
+        string by,
+        string message,
+        Exception exception
+    );
+
+    [LoggerMessage(
+        LogLevel.Warning,
+        EventId = 10,
+        Message = "Failed to sync upstream repos after info for: {packages} => {message}"
+    )]
+    private static partial void FailedToSyncUpstreamReposForInfo(
+        this ILogger<AurRpc> logger,
+        string packages,
+        string message,
+        Exception exception
+    );
+
+    public static void FailedToSyncUpstreamReposForInfo(
+        this ILogger<AurRpc> logger,
+        IReadOnlyList<string> packages,
+        string message,
+        Exception exception
+    )
+    {
+        logger.FailedToSyncUpstreamReposForInfo(
+            string.Join(separator: ", ", values: packages),
+            message: message,
+            exception: exception
+        );
+    }
 }

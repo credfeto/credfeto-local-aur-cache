@@ -56,7 +56,19 @@ public sealed class AurRpc : IAurRpc
                 cancellationToken: cancellationToken
             );
 
-            await this._localAurRpc.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent);
+            try
+            {
+                await this._localAurRpc.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent);
+            }
+            catch (Exception syncException)
+            {
+                this._logger.FailedToSyncUpstreamReposForSearch(
+                    keyword: keyword,
+                    by: by,
+                    message: syncException.Message,
+                    exception: syncException
+                );
+            }
 
             return upstream;
         }
@@ -116,7 +128,18 @@ public sealed class AurRpc : IAurRpc
                 cancellationToken: cancellationToken
             );
 
-            await this._localAurRpc.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent);
+            try
+            {
+                await this._localAurRpc.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent);
+            }
+            catch (Exception syncException)
+            {
+                this._logger.FailedToSyncUpstreamReposForInfo(
+                    packages: packages,
+                    message: syncException.Message,
+                    exception: syncException
+                );
+            }
 
             return upstream;
         }
