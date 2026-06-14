@@ -10,6 +10,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 - X-Server response header containing the hostname of the serving node, making it easy to identify which instance handled a request behind a load balancer
 ### Fixed
+- GitException from SyncUpstreamReposAsync no longer escapes the HttpRequestException catch block in AurRpc SearchAsync and InfoAsync
 ### Changed
 ### Removed
 ### Deployment Changes
