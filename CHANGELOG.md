@@ -18,6 +18,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Meziantou.Analyzer to 3.0.102
 - Dependencies - Updated Credfeto.Extensions.Linq to 1.0.151.1637
 - Dependencies - Updated Credfeto.Services.Startup to 1.1.149.1669
+- Dependencies - Updated Microsoft.Extensions to 10.0.9
 ### Removed
 ### Deployment Changes
 <!--
