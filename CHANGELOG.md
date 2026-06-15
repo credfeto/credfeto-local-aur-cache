@@ -12,6 +12,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Fixed
 - GitException from SyncUpstreamReposAsync no longer escapes the HttpRequestException catch block in AurRpc SearchAsync and InfoAsync
 ### Changed
+- Dependencies - Updated Credfeto.Enumeration to 1.2.145.1962
 ### Removed
 ### Deployment Changes
 <!--
