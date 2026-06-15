@@ -11,6 +11,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - X-Server response header containing the hostname of the serving node, making it easy to identify which instance handled a request behind a load balancer
 ### Fixed
 - GitException from SyncUpstreamReposAsync no longer escapes the HttpRequestException catch block in AurRpc SearchAsync and InfoAsync
+- Passed required logger parameter to HealthCheckClient.ExecuteAsync after API change in Credfeto.Docker.HealthCheck.Http.Client 0.0.67.857
 ### Changed
 - Dependencies - Updated Credfeto.Enumeration to 1.2.145.1962
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.127.1265
