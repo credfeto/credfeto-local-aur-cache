@@ -1,14 +1,6 @@
-using System;
+using System.ComponentModel;
 
 namespace Credfeto.Aur.Mirror.Git.Exceptions;
 
-public sealed class GitRepositoryLockedException : Exception
-{
-    public GitRepositoryLockedException() { }
-
-    public GitRepositoryLockedException(string? message)
-        : base(message) { }
-
-    public GitRepositoryLockedException(string? message, Exception? innerException)
-        : base(message: message, innerException: innerException) { }
-}
+[Description("Git repository is locked.")]
+public sealed partial class GitRepositoryLockedException : global::System.Exception;

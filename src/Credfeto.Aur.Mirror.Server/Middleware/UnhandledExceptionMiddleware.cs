@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Credfeto.Aur.Mirror.Git.Exceptions;
 using Credfeto.Aur.Mirror.Server.Middleware.LoggingExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -29,19 +30,28 @@ public sealed class UnhandledExceptionMiddleware
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            this._logger.UnhandledException(exception);
-
             if (context.Response.HasStarted)
             {
                 return;
             }
 
             context.Response.Clear();
-            context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-            context.Response.Headers.Append(
-                key: "Retry-After",
-                value: RetryAfterSeconds.ToString(CultureInfo.InvariantCulture)
-            );
+
+            if (exception is GitException)
+            {
+                this._logger.GitServerUnavailable(exception);
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            }
+            else
+            {
+                this._logger.UnhandledException(exception);
+                context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                context.Response.Headers.Append(
+                    key: "Retry-After",
+                    value: RetryAfterSeconds.ToString(CultureInfo.InvariantCulture)
+                );
+            }
+
             context.Response.ContentType = "application/json";
 
             byte[] body = JsonSerializer.SerializeToUtf8Bytes(

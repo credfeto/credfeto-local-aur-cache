@@ -58,6 +58,9 @@
     <PackageReference Include="NonBlocking" Version="2.1.2" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Credfeto.Exceptions.SourceGenerator" Version="0.0.3.85" PrivateAssets="All" ExcludeAssets="runtime" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="codecracker.CSharp" Version="1.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Credfeto.Enumeration.Source.Generation" Version="1.2.145.1962" PrivateAssets="All" ExcludeAssets="runtime" />

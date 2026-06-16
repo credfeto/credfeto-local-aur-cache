@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -77,7 +76,7 @@ public sealed class GitServer : IGitServer
             {
                 this._logger.FailedToStartGit(exe: this._serverConfig.Git.Executable, arguments: arguments);
 
-                throw new DataException("Git could not be started.");
+                throw new GitException("Git could not be started.");
             }
 
             await source.CopyToAsync(
