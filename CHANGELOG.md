@@ -21,6 +21,7 @@ Releases that have at least been deployed to staging, BUT NOT necessarily releas
 ### Fixed
 - GitException from SyncUpstreamReposAsync no longer escapes the HttpRequestException catch block in AurRpc SearchAsync and InfoAsync
 - Passed required logger parameter to HealthCheckClient.ExecuteAsync after API change in Credfeto.Docker.HealthCheck.Http.Client 0.0.67.857
+- GetFileAsync now returns 404 Not Found when the requested file does not exist, instead of throwing FileNotFoundException and returning 500
 ### Changed
 - Dependencies - Updated Credfeto.Enumeration to 1.2.145.1962
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.127.1265

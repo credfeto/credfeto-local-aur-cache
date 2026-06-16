@@ -206,7 +206,7 @@ public sealed class GitServer : IGitServer
         return this._serverConfig.Upstream.Repos + "/" + repoName + ".git";
     }
 
-    public async ValueTask<GitCommandResponse> GetFileAsync(
+    public async ValueTask<GitCommandResponse?> GetFileAsync(
         string repoName,
         string path,
         CancellationToken cancellationToken
@@ -221,6 +221,13 @@ public sealed class GitServer : IGitServer
 
         string repoBasePath = this.GetRepoBasePath(repoName);
         string fileName = Path.Combine(path1: repoBasePath, path2: path);
+
+        if (!File.Exists(fileName))
+        {
+            this._logger.FileNotFound(repo: repoName, path: path);
+
+            return null;
+        }
 
         await using (MemoryStream memoryStream = new())
         {

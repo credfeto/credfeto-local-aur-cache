@@ -502,13 +502,18 @@ internal static partial class Endpoints
         CancellationToken cancellationToken
     )
     {
-        GitCommandResponse result = await gitServer.GetFileAsync(
+        GitCommandResponse? result = await gitServer.GetFileAsync(
             repoName: repoName,
             path: path,
             cancellationToken: cancellationToken
         );
 
-        return NoCacheResult(httpContext: httpContext, commandResponse: result);
+        if (result is null)
+        {
+            return Results.NotFound();
+        }
+
+        return NoCacheResult(httpContext: httpContext, commandResponse: result.Value);
     }
 
     private static ValueTask<IResult> GitUploadPackAsync(
@@ -557,13 +562,18 @@ internal static partial class Endpoints
     {
         if (string.IsNullOrEmpty(service))
         {
-            GitCommandResponse result = await gitServer.GetFileAsync(
+            GitCommandResponse? result = await gitServer.GetFileAsync(
                 repoName: repoName,
                 path: "info/refs",
                 cancellationToken: cancellationToken
             );
 
-            return NoCacheResult(httpContext: httpContext, commandResponse: result);
+            if (result is null)
+            {
+                return Results.NotFound();
+            }
+
+            return NoCacheResult(httpContext: httpContext, commandResponse: result.Value);
         }
 
         return await GitCommandAsync(
