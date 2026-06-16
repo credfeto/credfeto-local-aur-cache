@@ -10,4 +10,7 @@ internal static partial class UnhandledExceptionMiddlewareLoggingExtensions
 
     [LoggerMessage(LogLevel.Debug, EventId = 2, Message = "Client disconnected before error response could be sent")]
     public static partial void ClientDisconnectedDuringErrorResponse(this ILogger logger, Exception exception);
+
+    [LoggerMessage(LogLevel.Warning, EventId = 3, Message = "Git server unavailable")]
+    public static partial void GitServerUnavailable(this ILogger logger, Exception exception);
 }

@@ -10,6 +10,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 ### Fixed
 - GetFileAsync now returns 404 Not Found when the requested file does not exist, instead of throwing FileNotFoundException and returning 500
+- GitException and DataException from git server operations now return 503 Service Unavailable instead of propagating as an unhandled 500
 ### Changed
 ### Removed
 ### Deployment Changes
