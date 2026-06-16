@@ -8,6 +8,15 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+### Fixed
+### Changed
+### Removed
+### Deployment Changes
+<!--
+Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
+-->
+## [0.0.15] - 2026-06-16
+### Added
 - X-Server response header containing the hostname of the serving node, making it easy to identify which instance handled a request behind a load balancer
 ### Fixed
 - GitException from SyncUpstreamReposAsync no longer escapes the HttpRequestException catch block in AurRpc SearchAsync and InfoAsync
@@ -21,11 +30,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Credfeto.Extensions.Linq to 1.0.151.1637
 - Dependencies - Updated Credfeto.Services.Startup to 1.1.149.1669
 - Dependencies - Updated Microsoft.Extensions to 10.0.9
-### Removed
-### Deployment Changes
-<!--
-Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
--->
+
 ## [0.0.14] - 2026-06-11
 ### Changed
 - SDK - Updated DotNet SDK to 10.0.301
