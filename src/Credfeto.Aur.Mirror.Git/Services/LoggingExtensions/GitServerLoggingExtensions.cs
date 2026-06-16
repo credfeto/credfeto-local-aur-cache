@@ -59,4 +59,7 @@ internal static partial class GitServerLoggingExtensions
 
     [LoggerMessage(LogLevel.Error, EventId = 10, Message = "Git command failed with exit code {exitCode}: {arguments}")]
     public static partial void FailedToExecuteCommand(this ILogger<GitServer> logger, int exitCode, string arguments);
+
+    [LoggerMessage(LogLevel.Warning, EventId = 11, Message = "File not found: {repo} -> {path}")]
+    public static partial void FileNotFound(this ILogger<GitServer> logger, string repo, string path);
 }

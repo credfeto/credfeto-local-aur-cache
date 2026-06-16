@@ -9,6 +9,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 ### Added
 ### Fixed
+- GetFileAsync now returns 404 Not Found when the requested file does not exist, instead of throwing FileNotFoundException and returning 500
 ### Changed
 ### Removed
 ### Deployment Changes
