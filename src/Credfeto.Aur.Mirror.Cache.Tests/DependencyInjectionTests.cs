@@ -1,9 +1,10 @@
+using System;
 using Credfeto.Aur.Mirror.Cache.Interfaces;
 using Credfeto.Aur.Mirror.Cache.Startup;
 using Credfeto.Aur.Mirror.Interfaces;
-using Credfeto.Date.Interfaces;
 using Credfeto.Services.Startup.Interfaces;
 using FunFair.Test.Common;
+using FunFair.Test.Common.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -16,7 +17,10 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
 
     private static IServiceCollection Configure(IServiceCollection services)
     {
-        return services.AddMockedService<ICurrentTimeSource>().AddMockedService<IUpdateLock>().AddMetadataCache();
+        return services
+            .AddSingleton<TimeProvider>(MockDateTimeSources.Past)
+            .AddMockedService<IUpdateLock>()
+            .AddMetadataCache();
     }
 
     [Fact]

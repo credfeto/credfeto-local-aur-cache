@@ -6,30 +6,29 @@ using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Cache.Interfaces;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Models.Cache;
-using Credfeto.Date.Interfaces;
 
 namespace Credfeto.Aur.Mirror.Git.Services;
 
 public sealed class LocallyInstalled : ILocallyInstalled
 {
     private readonly IBackgroundMetadataUpdater _backgroundMetadataUpdater;
-    private readonly ICurrentTimeSource _dateTimeSource;
     private readonly ILocalAurMetadata _localAurMetadata;
+    private readonly TimeProvider _timeProvider;
 
     public LocallyInstalled(
-        ICurrentTimeSource dateTimeSource,
+        TimeProvider timeProvider,
         IBackgroundMetadataUpdater backgroundMetadataUpdater,
         ILocalAurMetadata localAurMetadata
     )
     {
-        this._dateTimeSource = dateTimeSource;
+        this._timeProvider = timeProvider;
         this._backgroundMetadataUpdater = backgroundMetadataUpdater;
         this._localAurMetadata = localAurMetadata;
     }
 
     public ValueTask MarkAsClonedAsync(string packageName, CancellationToken cancellationToken)
     {
-        DateTimeOffset whenCloned = this._dateTimeSource.UtcNow();
+        DateTimeOffset whenCloned = this._timeProvider.GetUtcNow();
 
         return this._backgroundMetadataUpdater.RequestUpdateAsync(
             packageName: packageName,
@@ -50,7 +49,12 @@ public sealed class LocallyInstalled : ILocallyInstalled
 
     private static RepoCloneInfo BuildRepoEntry(Package package)
     {
-        // ! Last cloned should already be non null at this point
-        return new(repo: package.PackageName, lastCloned: package.LastCloned!.Value);
+        // ! LastCloned is not null here — we filtered for packages where LastCloned is not null
+        return new(
+            Repo: package.PackageName,
+            LastCloned: package.LastCloned!.Value,
+            LastAccessed: package.LastAccessed,
+            LastModifiedUpstream: package.LastModified
+        );
     }
 }

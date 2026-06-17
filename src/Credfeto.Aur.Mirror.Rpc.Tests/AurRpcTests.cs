@@ -7,8 +7,8 @@ using Credfeto.Aur.Mirror.Git.Exceptions;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Services;
-using Credfeto.Date.Interfaces;
 using FunFair.Test.Common;
+using FunFair.Test.Common.Mocks;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
@@ -26,13 +26,12 @@ public sealed class AurRpcTests : LoggingTestBase
     {
         this._remoteAurRpc = GetSubstitute<IRemoteAurRpc>();
         this._localAurRpc = GetSubstitute<ILocalAurRpc>();
-        ICurrentTimeSource currentTimeSource = GetSubstitute<ICurrentTimeSource>();
         ILogger<AurRpc> logger = this.GetTypedLogger<AurRpc>();
 
         this._sut = new AurRpc(
             remoteAurRpc: this._remoteAurRpc,
             localAurRpc: this._localAurRpc,
-            currentTimeSource: currentTimeSource,
+            timeProvider: MockDateTimeSources.Past,
             logger: logger
         );
     }

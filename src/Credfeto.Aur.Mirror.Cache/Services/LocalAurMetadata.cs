@@ -14,7 +14,6 @@ using Credfeto.Aur.Mirror.Cache.Services.LoggingExtensions;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
-using Credfeto.Date.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NonBlocking;
@@ -24,8 +23,8 @@ namespace Credfeto.Aur.Mirror.Cache.Services;
 public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
 {
     private static readonly CancellationToken DoNotCancelEarly = CancellationToken.None;
-    private readonly ICurrentTimeSource _currentTimeSource;
     private readonly ILogger<LocalAurMetadata> _logger;
+    private readonly TimeProvider _timeProvider;
     private readonly ConcurrentDictionary<string, Package> _metadata;
     private readonly Channel<Package> _saveQueue;
     private readonly ServerConfig _serverConfig;
@@ -34,12 +33,12 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
     public LocalAurMetadata(
         IOptions<ServerConfig> config,
         IUpdateLock updateLock,
-        ICurrentTimeSource currentTimeSource,
+        TimeProvider timeProvider,
         ILogger<LocalAurMetadata> logger
     )
     {
         this._updateLock = updateLock;
-        this._currentTimeSource = currentTimeSource;
+        this._timeProvider = timeProvider;
         this._logger = logger;
         this._serverConfig = config.Value;
         this._metadata = new(StringComparer.OrdinalIgnoreCase);
@@ -72,7 +71,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
 
         async Task<Package> QueueUpdateAndReturnAsync(Package item)
         {
-            item.LastAccessed = this._currentTimeSource.UtcNow();
+            item.LastAccessed = this._timeProvider.GetUtcNow();
 
             await this.QueueUpdateAsync(packageToSave: item, cancellationToken: cancellationToken);
 
@@ -87,7 +86,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
             return null;
         }
 
-        result.LastAccessed = this._currentTimeSource.UtcNow();
+        result.LastAccessed = this._timeProvider.GetUtcNow();
 
         return result;
     }
@@ -166,7 +165,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
 
     private Package Wrap(SearchResult package)
     {
-        DateTimeOffset now = this._currentTimeSource.UtcNow();
+        DateTimeOffset now = this._timeProvider.GetUtcNow();
 
         return new(
             lastSaved: now,
@@ -179,7 +178,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
 
     private Package OnPackageChanged(SearchResult candidate, Package existing, out bool issueUpdate, out bool changed)
     {
-        DateTimeOffset now = this._currentTimeSource.UtcNow();
+        DateTimeOffset now = this._timeProvider.GetUtcNow();
         existing.LastRequestedUpstream = now;
         bool modified = existing.SearchResult.LastModified < candidate.LastModified;
 
@@ -215,7 +214,7 @@ public sealed class LocalAurMetadata : ILocalAurMetadata, IDisposable
         {
             EnsureDirectoryExists(this._serverConfig.Storage.Metadata);
 
-            package.LastSaved = this._currentTimeSource.UtcNow();
+            package.LastSaved = this._timeProvider.GetUtcNow();
             string json = JsonSerializer.Serialize<Package>(
                 value: package,
                 jsonTypeInfo: CacheJsonContext.Default.Package

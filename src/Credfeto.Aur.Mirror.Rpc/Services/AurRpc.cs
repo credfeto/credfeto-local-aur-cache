@@ -11,7 +11,6 @@ using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Constants;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
-using Credfeto.Date.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Aur.Mirror.Rpc.Services;
@@ -20,21 +19,21 @@ public sealed class AurRpc : IAurRpc
 {
     private static readonly TimeSpan MaxAgeAccess = TimeSpan.FromHours(7);
     private static readonly TimeSpan MaxAgeRequest = TimeSpan.FromHours(14);
-    private readonly ICurrentTimeSource _currentTimeSource;
     private readonly ILocalAurRpc _localAurRpc;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<AurRpc> _logger;
     private readonly IRemoteAurRpc _remoteAurRpc;
 
     public AurRpc(
         IRemoteAurRpc remoteAurRpc,
         ILocalAurRpc localAurRpc,
-        ICurrentTimeSource currentTimeSource,
+        TimeProvider timeProvider,
         ILogger<AurRpc> logger
     )
     {
         this._remoteAurRpc = remoteAurRpc;
         this._localAurRpc = localAurRpc;
-        this._currentTimeSource = currentTimeSource;
+        this._timeProvider = timeProvider;
         this._logger = logger;
     }
 
@@ -162,7 +161,7 @@ public sealed class AurRpc : IAurRpc
             return true;
         }
 
-        ConditionContext context = new(RequestedPackages: requestedPackages, this._currentTimeSource.UtcNow());
+        ConditionContext context = new(RequestedPackages: requestedPackages, this._timeProvider.GetUtcNow());
 
         return localPackages.Any(package => this.NeedsUpstreamQuery(package: package, context: context));
     }
