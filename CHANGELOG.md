@@ -8,6 +8,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+- packages-meta-ext-v1.json.gz: offline search combining local metadata and gz content, periodic 24h refresh, trigger-based refresh when upstream packages are newer, and GET /repos/packages-meta-ext-v1.json.gz endpoint
 ### Fixed
 ### Changed
 - Dependencies - Updated Credfeto.Enumeration to 1.2.147.2001

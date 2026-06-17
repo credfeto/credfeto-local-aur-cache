@@ -17,6 +17,7 @@ namespace Credfeto.Aur.Mirror.Rpc.Tests;
 
 public sealed class AurRpcTests : LoggingTestBase
 {
+    private readonly IAurMetadataGz _aurMetadataGz;
     private readonly ILocalAurRpc _localAurRpc;
     private readonly IRemoteAurRpc _remoteAurRpc;
     private readonly AurRpc _sut;
@@ -26,11 +27,13 @@ public sealed class AurRpcTests : LoggingTestBase
     {
         this._remoteAurRpc = GetSubstitute<IRemoteAurRpc>();
         this._localAurRpc = GetSubstitute<ILocalAurRpc>();
+        this._aurMetadataGz = GetSubstitute<IAurMetadataGz>();
         ILogger<AurRpc> logger = this.GetTypedLogger<AurRpc>();
 
         this._sut = new AurRpc(
             remoteAurRpc: this._remoteAurRpc,
             localAurRpc: this._localAurRpc,
+            aurMetadataGz: this._aurMetadataGz,
             timeProvider: MockDateTimeSources.Past,
             logger: logger
         );

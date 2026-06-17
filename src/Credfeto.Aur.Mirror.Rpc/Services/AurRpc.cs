@@ -19,6 +19,7 @@ public sealed class AurRpc : IAurRpc
 {
     private static readonly TimeSpan MaxAgeAccess = TimeSpan.FromHours(7);
     private static readonly TimeSpan MaxAgeRequest = TimeSpan.FromHours(14);
+    private readonly IAurMetadataGz _aurMetadataGz;
     private readonly ILocalAurRpc _localAurRpc;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AurRpc> _logger;
@@ -27,12 +28,14 @@ public sealed class AurRpc : IAurRpc
     public AurRpc(
         IRemoteAurRpc remoteAurRpc,
         ILocalAurRpc localAurRpc,
+        IAurMetadataGz aurMetadataGz,
         TimeProvider timeProvider,
         ILogger<AurRpc> logger
     )
     {
         this._remoteAurRpc = remoteAurRpc;
         this._localAurRpc = localAurRpc;
+        this._aurMetadataGz = aurMetadataGz;
         this._timeProvider = timeProvider;
         this._logger = logger;
     }
@@ -69,6 +72,11 @@ public sealed class AurRpc : IAurRpc
                 );
             }
 
+            await this.TriggerMetadataGzRefreshIfNeededAsync(
+                results: upstream.Results,
+                cancellationToken: cancellationToken
+            );
+
             return upstream;
         }
         catch (HttpRequestException exception)
@@ -80,14 +88,20 @@ public sealed class AurRpc : IAurRpc
                 exception: exception
             );
 
-            IReadOnlyList<Package> results = await this._localAurRpc.SearchAsync(
+            IReadOnlyList<Package> localResults = await this._localAurRpc.SearchAsync(
                 keyword: keyword,
                 by: by,
                 userAgent: userAgent,
                 cancellationToken: cancellationToken
             );
 
-            return PackagesAsSearch(results);
+            IReadOnlyList<SearchResult> gzResults = await this._aurMetadataGz.SearchAsync(
+                keyword: keyword,
+                by: by,
+                cancellationToken: cancellationToken
+            );
+
+            return MergeSearchResults(localPackages: localResults, gzResults: gzResults);
         }
     }
 
@@ -121,26 +135,11 @@ public sealed class AurRpc : IAurRpc
                 return PackagesAsInfo(localPackages);
             }
 
-            RpcResponse upstream = await this._remoteAurRpc.InfoAsync(
+            return await this.FetchUpstreamInfoAsync(
                 packages: packages,
                 userAgent: userAgent,
                 cancellationToken: cancellationToken
             );
-
-            try
-            {
-                await this._localAurRpc.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent);
-            }
-            catch (Exception syncException)
-            {
-                this._logger.FailedToSyncUpstreamReposForInfo(
-                    packages: packages,
-                    message: syncException.Message,
-                    exception: syncException
-                );
-            }
-
-            return upstream;
         }
         catch (HttpRequestException exception)
         {
@@ -152,6 +151,39 @@ public sealed class AurRpc : IAurRpc
 
             return PackagesAsInfo(localPackages ?? []);
         }
+    }
+
+    private async ValueTask<RpcResponse> FetchUpstreamInfoAsync(
+        IReadOnlyList<string> packages,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    )
+    {
+        RpcResponse upstream = await this._remoteAurRpc.InfoAsync(
+            packages: packages,
+            userAgent: userAgent,
+            cancellationToken: cancellationToken
+        );
+
+        try
+        {
+            await this._localAurRpc.SyncUpstreamReposAsync(upstream: upstream, userAgent: userAgent);
+        }
+        catch (Exception syncException)
+        {
+            this._logger.FailedToSyncUpstreamReposForInfo(
+                packages: packages,
+                message: syncException.Message,
+                exception: syncException
+            );
+        }
+
+        await this.TriggerMetadataGzRefreshIfNeededAsync(
+            results: upstream.Results,
+            cancellationToken: cancellationToken
+        );
+
+        return upstream;
     }
 
     private bool NeedsUpstreamQuery(IReadOnlyList<string> requestedPackages, IReadOnlyList<Package> localPackages)
@@ -223,14 +255,35 @@ public sealed class AurRpc : IAurRpc
         return true;
     }
 
-    private static RpcResponse PackagesAsSearch(IReadOnlyList<Package> packages)
+    private async ValueTask TriggerMetadataGzRefreshIfNeededAsync(
+        IReadOnlyList<SearchResult> results,
+        CancellationToken cancellationToken
+    )
     {
-        return new(
-            count: packages.Count,
-            [.. packages.Select(item => item.SearchResult)],
-            rpcType: "search",
-            version: RpcResults.RpcVersion
+        if (results is [])
+        {
+            return;
+        }
+
+        long maxLastModified = results.Max(r => r.LastModified);
+
+        await this._aurMetadataGz.TriggerRefreshIfNewerAsync(
+            lastModifiedUnixTimestamp: maxLastModified,
+            cancellationToken: cancellationToken
         );
+    }
+
+    private static RpcResponse MergeSearchResults(
+        IReadOnlyList<Package> localPackages,
+        IReadOnlyList<SearchResult> gzResults
+    )
+    {
+        HashSet<string> localNames = new(localPackages.Select(p => p.PackageName), StringComparer.OrdinalIgnoreCase);
+        IReadOnlyList<SearchResult> uniqueGzResults = [.. gzResults.Where(r => !localNames.Contains(r.Name))];
+
+        SearchResult[] allResults = [.. localPackages.Select(p => p.SearchResult), .. uniqueGzResults];
+
+        return new(count: allResults.Length, allResults, rpcType: "search", version: RpcResults.RpcVersion);
     }
 
     private static RpcResponse PackagesAsInfo(IReadOnlyList<Package> packages)
