@@ -13,10 +13,13 @@ public static class RpcSetup
         return services
             .AddRpcClient()
             .AddReposClient()
+            .AddMetadataGzClient()
             .AddSingleton<IAurRpc, AurRpc>()
             .AddSingleton<IAurRepos, AurRepos>()
+            .AddSingleton<IAurMetadataGz, AurMetadataGz>()
             .AddSingleton<ILocalAurRpc, LocalAurRpc>()
             .AddSingleton<IRemoteAurRpc, RemoteAurRpc>()
-            .AddRunOnStartupTask<ProcessBackgroundUpdates>();
+            .AddRunOnStartupTask<ProcessBackgroundUpdates>()
+            .AddRunOnStartupTask<RefreshMetadataGzPeriodically>();
     }
 }

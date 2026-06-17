@@ -34,6 +34,7 @@ internal static partial class Endpoints
     private static void RegisterRepoGroup(IEndpointRouteBuilder group)
     {
         RegisterPackagesGz(group);
+        RegisterPackagesMetaExtGz(group);
         RegisterGitUploadPack(group);
         RegisterGitReceivePack(group);
         RegisterInfoRefs(group);
@@ -394,6 +395,23 @@ internal static partial class Endpoints
         );
     }
 
+    private static void RegisterPackagesMetaExtGz(IEndpointRouteBuilder group)
+    {
+        group.MapGet(
+            pattern: "packages-meta-ext-v1.json.gz",
+            handler: static (
+                IAurMetadataGz aurMetadataGz,
+                HttpContext httpContext,
+                CancellationToken cancellationToken
+            ) =>
+                GetPackagesMetaExtGzAsync(
+                    httpContext: httpContext,
+                    aurMetadataGz: aurMetadataGz,
+                    cancellationToken: cancellationToken
+                )
+        );
+    }
+
     private static ValueTask<IResult> RetrieveFileAsync(
         string repoName,
         string file1,
@@ -596,6 +614,27 @@ internal static partial class Endpoints
         ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
 
         byte[]? result = await aurRepos.GetPackagesAsync(userAgent: userAgent, cancellationToken: cancellationToken);
+
+        if (result is null)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.File(fileContents: result, contentType: "application/gzip");
+    }
+
+    private static async ValueTask<IResult> GetPackagesMetaExtGzAsync(
+        HttpContext httpContext,
+        IAurMetadataGz aurMetadataGz,
+        CancellationToken cancellationToken
+    )
+    {
+        ProductInfoHeaderValue? userAgent = httpContext.GetUserAgent();
+
+        byte[]? result = await aurMetadataGz.GetPackagesAsync(
+            userAgent: userAgent,
+            cancellationToken: cancellationToken
+        );
 
         if (result is null)
         {
