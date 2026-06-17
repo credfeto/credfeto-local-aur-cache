@@ -50,6 +50,23 @@ internal static class HttpClientSetup
             .Services;
     }
 
+    public static IServiceCollection AddMetadataGzClient(this IServiceCollection services)
+    {
+        return services
+            .AddHttpClient(
+                nameof(AurMetadataGz),
+                configureClient: httpClient => InitializeContentClient(httpClient: httpClient, httpTimeout: HttpTimeout)
+            )
+            .SetHandlerLifetime(HandlerTimeout)
+            .ConfigurePrimaryHttpMessageHandler(configureHandler: _ => new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.All,
+            })
+            .AddPolicyHandler(Policy.BulkheadAsync<HttpResponseMessage>(CONCURRENT_ACTIONS * 2, QUEUED_ACTIONS * 2))
+            .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(PollyTimeout))
+            .Services;
+    }
+
     private static void InitializeContentClient(HttpClient httpClient, in TimeSpan httpTimeout)
     {
         httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;

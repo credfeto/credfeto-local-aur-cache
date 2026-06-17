@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -7,6 +6,7 @@ using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Cache.Interfaces;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
+using Credfeto.Aur.Mirror.Rpc.Helpers;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Credfeto.Extensions.Linq;
@@ -41,7 +41,7 @@ public sealed class LocalAurRpc : ILocalAurRpc
     )
     {
         return this._localAurMetadata.SearchAsync(
-            predicate: item => IsSearchMatch(existing: item.SearchResult, keyword: keyword, by: by),
+            predicate: item => SearchResultMatcher.IsMatch(result: item.SearchResult, keyword: keyword, by: by),
             cancellationToken: cancellationToken
         );
     }
@@ -83,36 +83,5 @@ public sealed class LocalAurRpc : ILocalAurRpc
             changed: changed,
             cancellationToken: DoNotCancelEarly
         );
-    }
-
-    private static bool IsSearchMatch(SearchResult existing, string keyword, string by)
-    {
-        return by switch
-        {
-            "name" => // (search by package name only)
-            existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
-            "name-desc" => // (search by package name and description)
-            existing.Name.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-                || existing.Description.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
-            "maintainer" => // (search by package maintainer)
-            existing.Maintainer.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase),
-            "depends" => // (search for packages that depend on keywords)
-            existing.Depends?.Any(depend =>
-                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-            ) == true,
-            "makedepends" => // (search for packages that makedepend on keywords)
-            existing.MakeDepends?.Any(depend =>
-                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-            ) == true,
-            "optdepends" => // (search for packages that optdepend on keywords)
-            existing.OptDepends?.Any(depend =>
-                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-            ) == true,
-            "checkdepends" => // (search for packages that checkdepend on keywords)
-            existing.CheckDepends?.Any(depend =>
-                depend.Contains(value: keyword, comparisonType: StringComparison.OrdinalIgnoreCase)
-            ) == true,
-            _ => false,
-        };
     }
 }
