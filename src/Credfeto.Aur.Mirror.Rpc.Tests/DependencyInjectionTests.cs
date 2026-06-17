@@ -36,4 +36,10 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     {
         this.RequireService<IAurRepos>();
     }
+
+    [Fact]
+    public void AurMetadataGzMustBeRegistered()
+    {
+        this.RequireService<IAurMetadataGz>();
+    }
 }

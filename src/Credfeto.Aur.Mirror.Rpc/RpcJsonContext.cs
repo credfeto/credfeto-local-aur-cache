@@ -11,5 +11,6 @@ namespace Credfeto.Aur.Mirror.Rpc;
     IncludeFields = false
 )]
 [JsonSerializable(typeof(SearchResult))]
+[JsonSerializable(typeof(SearchResult[]))]
 [JsonSerializable(typeof(RpcResponse))]
 internal sealed partial class RpcJsonContext : JsonSerializerContext;

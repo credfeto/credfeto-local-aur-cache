@@ -8,6 +8,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+- packages-meta-ext-v1.json.gz: offline search combining local metadata and gz content, periodic 24h refresh, trigger-based refresh when upstream packages are newer, and GET /repos/packages-meta-ext-v1.json.gz endpoint
 ### Fixed
 - GetFileAsync now returns 404 Not Found when the requested file does not exist, instead of throwing FileNotFoundException and returning 500
 - GitException and DataException from git server operations now return 503 Service Unavailable instead of propagating as an unhandled 500
