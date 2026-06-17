@@ -1,8 +1,9 @@
+using System;
 using Credfeto.Aur.Mirror.Cache.Interfaces;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Interfaces;
-using Credfeto.Date.Interfaces;
 using FunFair.Test.Common;
+using FunFair.Test.Common.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -16,7 +17,7 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     private static IServiceCollection Configure(IServiceCollection services)
     {
         return services
-            .AddMockedService<ICurrentTimeSource>()
+            .AddSingleton<TimeProvider>(MockDateTimeSources.Past)
             .AddMockedService<IBackgroundMetadataUpdater>()
             .AddMockedService<ILocalAurMetadata>()
             .AddGitRepos();

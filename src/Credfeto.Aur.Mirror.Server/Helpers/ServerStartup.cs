@@ -9,7 +9,6 @@ using Credfeto.Aur.Mirror.Cache;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Git;
 using Credfeto.Aur.Mirror.Rpc;
-using Credfeto.Date;
 using Credfeto.Services.Startup;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -82,7 +81,7 @@ internal static class ServerStartup
 
         builder
             .Services.Configure<ServerConfig>(section)
-            .AddDate()
+            .AddSingleton(TimeProvider.System)
             .AddRunOnStartupServices()
             .AddAurRpcApi()
             .AddGitRepos()

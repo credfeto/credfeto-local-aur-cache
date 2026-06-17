@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Cache.Interfaces;
@@ -8,8 +7,8 @@ using Credfeto.Aur.Mirror.Cache.Services;
 using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
-using Credfeto.Date.Interfaces;
 using FunFair.Test.Common;
+using FunFair.Test.Common.Mocks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -22,17 +21,10 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
     private readonly LocalAurMetadata _localAurMetadata;
     private readonly SemaphoreSlim _semaphore;
 
-    [SuppressMessage(
-        category: "FunFair.CodeAnalsys",
-        checkId: "FFS0004: Used mocked dates",
-        Justification = "Unit Test"
-    )]
     public LocalAurMetadataTests(ITestOutputHelper output)
         : base(output)
     {
         this._semaphore = new(1);
-        ICurrentTimeSource currentTimeSource = GetSubstitute<ICurrentTimeSource>();
-        _ = currentTimeSource.UtcNow().Returns(DateTimeOffset.Now);
 
         IUpdateLock updateLock = GetSubstitute<IUpdateLock>();
         _ = updateLock.GetLockAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(this._semaphore);
@@ -51,7 +43,7 @@ public sealed class LocalAurMetadataTests : LoggingFolderCleanupTestBase
         this._localAurMetadata = new(
             config: config,
             updateLock: updateLock,
-            currentTimeSource: currentTimeSource,
+            timeProvider: MockDateTimeSources.Past,
             logger: logger
         );
     }
