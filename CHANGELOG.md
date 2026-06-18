@@ -9,6 +9,14 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 ### Added
 ### Fixed
+### Changed
+### Removed
+### Deployment Changes
+<!--
+Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
+-->
+## [0.0.16] - 2026-06-18
+### Fixed
 - GetFileAsync now returns 404 Not Found when the requested file does not exist, instead of throwing FileNotFoundException and returning 500
 - GitException and DataException from git server operations now return 503 Service Unavailable instead of propagating as an unhandled 500
 ### Changed
@@ -17,11 +25,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Credfeto.Enumeration to 1.2.146.1978
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.129.1310
 - Dependencies - Updated Meziantou.Analyzer to 3.0.104
-### Removed
-### Deployment Changes
-<!--
-Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
--->
+
 ## [0.0.15] - 2026-06-16
 ### Added
 - X-Server response header containing the hostname of the serving node, making it easy to identify which instance handled a request behind a load balancer
