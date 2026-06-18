@@ -15,6 +15,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Extend /cache endpoint response with LastAccessed and LastModifiedUpstream metadata fields
 - Migrate ICurrentTimeSource to System.TimeProvider and remove Credfeto.Date dependency
 - Dependencies - Updated Credfeto.Enumeration to 1.2.146.1978
+- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.129.1310
 ### Removed
 ### Deployment Changes
 <!--
