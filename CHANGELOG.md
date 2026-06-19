@@ -10,13 +10,16 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 ### Fixed
 ### Changed
-- Dependencies - Updated Credfeto.Enumeration to 1.2.147.2001
-- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.130.1322
 ### Removed
 ### Deployment Changes
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
 -->
+## [0.0.17] - 2026-06-19
+### Changed
+- Dependencies - Updated Credfeto.Enumeration to 1.2.147.2001
+- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.130.1322
+
 ## [0.0.16] - 2026-06-18
 ### Fixed
 - GetFileAsync now returns 404 Not Found when the requested file does not exist, instead of throwing FileNotFoundException and returning 500
