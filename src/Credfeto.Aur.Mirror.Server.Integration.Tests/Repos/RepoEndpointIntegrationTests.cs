@@ -19,7 +19,7 @@ public sealed class RepoEndpointIntegrationTests : IntegrationTestBase
         : base(output) { }
 
     [Theory]
-    [InlineData("/repos/test-repo.git/objects/pack/test-file", "objects" + "/" + "pack" + "/" + "test-file")]
+    [InlineData("/repos/test-repo.git/objects/pack/test-file", "objects/pack/test-file")]
     [InlineData("/repos/test-repo.git/info/refs", "info/refs")]
     public async Task GetAsync_WhenGetFileAsyncReturnsNull_ShouldReturnNotFound(string requestUri, string expectedPath)
     {
