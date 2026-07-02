@@ -582,7 +582,7 @@ internal static partial class Endpoints
         {
             GitCommandResponse? result = await gitServer.GetFileAsync(
                 repoName: repoName,
-                path: "info/refs",
+                path: BuildPath("info", "refs"),
                 cancellationToken: cancellationToken
             );
 
