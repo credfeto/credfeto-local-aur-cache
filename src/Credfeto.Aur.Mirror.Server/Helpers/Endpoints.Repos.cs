@@ -507,6 +507,8 @@ internal static partial class Endpoints
         );
     }
 
+    private static readonly string InfoRefsPath = BuildPath("info", "refs");
+
     private static string BuildPath(params string[] files)
     {
         return string.Join(separator: Path.DirectorySeparatorChar, value: files);
@@ -582,7 +584,7 @@ internal static partial class Endpoints
         {
             GitCommandResponse? result = await gitServer.GetFileAsync(
                 repoName: repoName,
-                path: BuildPath("info", "refs"),
+                path: InfoRefsPath,
                 cancellationToken: cancellationToken
             );
 
