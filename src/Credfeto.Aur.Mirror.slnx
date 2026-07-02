@@ -25,6 +25,9 @@
   <Project Path="Credfeto.Aur.Mirror.Config/Credfeto.Aur.Mirror.Config.csproj" />
   <Project Path="Credfeto.Aur.Mirror.Interfaces/Credfeto.Aur.Mirror.Interfaces.csproj" />
   <Project Path="Credfeto.Aur.Mirror.Models/Credfeto.Aur.Mirror.Models.csproj" />
-  <Project Path="Credfeto.Aur.Mirror.Server.Tests/Credfeto.Aur.Mirror.Server.Tests.csproj" />
-  <Project Path="Credfeto.Aur.Mirror.Server/Credfeto.Aur.Mirror.Server.csproj" />
+  <Folder Name="/Server/">
+    <Project Path="Credfeto.Aur.Mirror.Server.Integration.Tests/Credfeto.Aur.Mirror.Server.Integration.Tests.csproj" />
+    <Project Path="Credfeto.Aur.Mirror.Server.Tests/Credfeto.Aur.Mirror.Server.Tests.csproj" />
+    <Project Path="Credfeto.Aur.Mirror.Server/Credfeto.Aur.Mirror.Server.csproj" />
+  </Folder>
 </Solution>
