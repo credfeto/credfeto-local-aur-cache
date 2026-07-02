@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Git.Interfaces;
 using FunFair.Test.Common;
-using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Xunit;
 
@@ -23,7 +22,7 @@ public sealed class RepoEndpointIntegrationTests : IntegrationTestBase
     {
         IGitServer gitServer = GetSubstitute<IGitServer>();
 
-        await using TestServerApplication factory = new(services => services.AddSingleton(gitServer));
+        await using TestServerApplication factory = new(gitServer: gitServer);
 
         using HttpClient client = factory.CreateClient();
 
