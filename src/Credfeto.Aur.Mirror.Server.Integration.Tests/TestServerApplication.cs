@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 
 namespace Credfeto.Aur.Mirror.Server.Integration.Tests;
 
@@ -18,15 +17,15 @@ internal sealed class TestServerApplication : WebApplicationFactory<ServerEntryP
 
     internal TestServerApplication(
         IGitServer gitServer,
-        ILocalAurMetadata? localAurMetadata = null,
-        IAurRepos? aurRepos = null,
-        IAurMetadataGz? aurMetadataGz = null
+        ILocalAurMetadata localAurMetadata,
+        IAurRepos aurRepos,
+        IAurMetadataGz aurMetadataGz
     )
     {
         this._gitServer = gitServer;
-        this._localAurMetadata = localAurMetadata ?? Substitute.For<ILocalAurMetadata>();
-        this._aurRepos = aurRepos ?? Substitute.For<IAurRepos>();
-        this._aurMetadataGz = aurMetadataGz ?? Substitute.For<IAurMetadataGz>();
+        this._localAurMetadata = localAurMetadata;
+        this._aurRepos = aurRepos;
+        this._aurMetadataGz = aurMetadataGz;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
