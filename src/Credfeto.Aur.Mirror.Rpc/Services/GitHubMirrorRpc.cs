@@ -54,7 +54,7 @@ public sealed class GitHubMirrorRpc : IGitHubMirrorRpc
     private async ValueTask<SearchResult?> FetchPackageAsync(string package, CancellationToken cancellationToken)
     {
         HttpClient client = this._httpClientFactory.CreateClient(nameof(GitHubMirrorRpc));
-        Uri requestUri = new($"{GitHubMirrorBaseUrl}/{package}/.SRCINFO", UriKind.Absolute);
+        Uri requestUri = new($"{GitHubMirrorBaseUrl}/{Uri.EscapeDataString(package)}/.SRCINFO", UriKind.Absolute);
 
         try
         {
