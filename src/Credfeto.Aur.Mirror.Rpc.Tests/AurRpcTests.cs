@@ -260,6 +260,55 @@ public sealed class AurRpcTests : LoggingTestBase
             );
     }
 
+    [Fact]
+    public async Task InfoAsync_WhenAurUnavailableInFallbackModeAndMirrorReturnsEmpty_FallsBackToLocalCacheAsync()
+    {
+        IReadOnlyList<string> packages = ["test-package"];
+        RpcResponse emptyMirrorResponse = new(count: 0, [], rpcType: "multiinfo", version: 5);
+
+        AurRpc fallbackSut = new(
+            remoteAurRpc: this._remoteAurRpc,
+            localAurRpc: this._localAurRpc,
+            aurMetadataGz: this._aurMetadataGz,
+            gitHubMirrorRpc: this._gitHubMirrorRpc,
+            config: Options.Create(new ServerConfig { Upstream = new UpstreamConfig { Mode = UpstreamMode.Fallback } }),
+            timeProvider: MockDateTimeSources.Past,
+            logger: this.GetTypedLogger<AurRpc>()
+        );
+
+        _ = this
+            ._localAurRpc.InfoAsync(
+                packages: Arg.Any<IReadOnlyList<string>>(),
+                userAgent: Arg.Any<ProductInfoHeaderValue?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            )
+            .Returns<IReadOnlyList<Package>>([]);
+
+        this._remoteAurRpc.When(async x =>
+                await x.InfoAsync(
+                    packages: Arg.Any<IReadOnlyList<string>>(),
+                    userAgent: Arg.Any<ProductInfoHeaderValue?>(),
+                    cancellationToken: Arg.Any<CancellationToken>()
+                )
+            )
+            .Do(_ => throw new HttpRequestException("AUR unavailable"));
+
+        _ = this
+            ._gitHubMirrorRpc.InfoAsync(
+                packages: Arg.Any<IReadOnlyList<string>>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            )
+            .Returns(emptyMirrorResponse);
+
+        RpcResponse result = await fallbackSut.InfoAsync(
+            packages: packages,
+            userAgent: null,
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Equal(expected: 0, actual: result.Count);
+    }
+
     private static SearchResult BuildSearchResult()
     {
         return new SearchResult(
