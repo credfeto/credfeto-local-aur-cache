@@ -10,6 +10,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 - packages-meta-ext-v1.json.gz: offline search combining local metadata and gz content, periodic 24h refresh, trigger-based refresh when upstream packages are newer, and GET /repos/packages-meta-ext-v1.json.gz endpoint
 - Integration tests for the server repository endpoints, verifying that missing files return 404 Not Found
+- Support getting package metadata from the GitHub AUR mirror (https://github.com/archlinux/aur) as a fallback when the main AUR is unavailable, configurable via Direct, Fallback, or MirrorOnly mode
 ### Fixed
 ### Changed
 - Enabled Native AOT compilation on the server binary
