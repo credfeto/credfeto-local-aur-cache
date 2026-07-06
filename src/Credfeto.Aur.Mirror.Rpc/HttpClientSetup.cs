@@ -67,6 +67,23 @@ internal static class HttpClientSetup
             .Services;
     }
 
+    public static IServiceCollection AddGitHubMirrorClient(this IServiceCollection services)
+    {
+        return services
+            .AddHttpClient(
+                nameof(GitHubMirrorRpc),
+                configureClient: httpClient => InitializeContentClient(httpClient: httpClient, httpTimeout: HttpTimeout)
+            )
+            .SetHandlerLifetime(HandlerTimeout)
+            .ConfigurePrimaryHttpMessageHandler(configureHandler: _ => new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.All,
+            })
+            .AddPolicyHandler(Policy.BulkheadAsync<HttpResponseMessage>(CONCURRENT_ACTIONS, QUEUED_ACTIONS))
+            .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(PollyTimeout))
+            .Services;
+    }
+
     private static void InitializeContentClient(HttpClient httpClient, in TimeSpan httpTimeout)
     {
         httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;

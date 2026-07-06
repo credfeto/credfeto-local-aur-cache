@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -19,6 +19,8 @@ namespace Credfeto.Aur.Mirror.Git.Services;
 
 public sealed class GitServer : IGitServer
 {
+    private const string GitHubMirrorRepoUrl = "https://github.com/archlinux/aur.git";
+
     private readonly ILocallyInstalled _locallyInstalled;
     private readonly ILogger<GitServer> _logger;
 
@@ -170,7 +172,8 @@ public sealed class GitServer : IGitServer
 
                 if (repoFolder is null)
                 {
-                    await this.CloneRepositoryAsync(
+                    await this.CloneRepositoryWithFallbackAsync(
+                        repoName: repoName,
                         upstreamRepo: upstreamRepo,
                         repoPath: repoBasePath,
                         cancellationToken: cancellationToken
@@ -187,7 +190,8 @@ public sealed class GitServer : IGitServer
             }
             else
             {
-                await this.CloneRepositoryAsync(
+                await this.CloneRepositoryWithFallbackAsync(
+                    repoName: repoName,
                     upstreamRepo: upstreamRepo,
                     repoPath: repoBasePath,
                     cancellationToken: cancellationToken
@@ -272,6 +276,46 @@ public sealed class GitServer : IGitServer
         }
     }
 
+    private async ValueTask CloneRepositoryWithFallbackAsync(
+        string repoName,
+        string upstreamRepo,
+        string repoPath,
+        CancellationToken cancellationToken
+    )
+    {
+        UpstreamMode mode = this._serverConfig.Upstream.Mode;
+
+        if (mode == UpstreamMode.MirrorOnly)
+        {
+            await this.CloneFromGitHubMirrorAsync(
+                repoName: repoName,
+                repoPath: repoPath,
+                cancellationToken: cancellationToken
+            );
+
+            return;
+        }
+
+        try
+        {
+            await this.CloneRepositoryAsync(
+                upstreamRepo: upstreamRepo,
+                repoPath: repoPath,
+                cancellationToken: cancellationToken
+            );
+        }
+        catch (GitException) when (mode == UpstreamMode.Fallback)
+        {
+            this._logger.FallingBackToGitHubMirror(repoName);
+
+            await this.CloneFromGitHubMirrorAsync(
+                repoName: repoName,
+                repoPath: repoPath,
+                cancellationToken: cancellationToken
+            );
+        }
+    }
+
     private async ValueTask CloneRepositoryAsync(
         string upstreamRepo,
         string repoPath,
@@ -292,6 +336,45 @@ public sealed class GitServer : IGitServer
             this._logger.FailedToCloneGit(upstream: upstreamRepo, path: repoPath, message: message);
 
             throw new GitException(message);
+        }
+    }
+
+    private async ValueTask CloneFromGitHubMirrorAsync(
+        string repoName,
+        string repoPath,
+        CancellationToken cancellationToken
+    )
+    {
+        this._logger.CloningFromGitHubMirror(repoName: repoName, path: repoPath);
+
+        (string[] cloneOutput, int cloneExitCode) = await GitCommandLine.ExecAsync(
+            gitExecutable: this._serverConfig.Git.Executable,
+            clonePath: GitHubMirrorRepoUrl,
+            workingDirectory: this._serverConfig.Storage.Repos,
+            $"clone --bare --single-branch --branch \"{repoName}\" \"{GitHubMirrorRepoUrl}\" \"{repoPath}\"",
+            cancellationToken: cancellationToken
+        );
+
+        if (cloneExitCode != 0)
+        {
+            string message = string.Join(separator: Environment.NewLine, value: cloneOutput);
+            this._logger.FailedToCloneGit(upstream: GitHubMirrorRepoUrl, path: repoPath, message: message);
+
+            throw new GitException(message);
+        }
+
+        (string[] refOutput, int refExitCode) = await GitCommandLine.ExecAsync(
+            gitExecutable: this._serverConfig.Git.Executable,
+            clonePath: repoPath,
+            workingDirectory: repoPath,
+            $"-C \"{repoPath}\" update-ref refs/heads/master refs/heads/{repoName}",
+            cancellationToken: cancellationToken
+        );
+
+        if (refExitCode != 0)
+        {
+            string message = string.Join(separator: Environment.NewLine, value: refOutput);
+            this._logger.FailedToUpdateMasterRef(repoName: repoName, path: repoPath, message: message);
         }
     }
 
