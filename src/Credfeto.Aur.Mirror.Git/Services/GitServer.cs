@@ -367,7 +367,7 @@ public sealed class GitServer : IGitServer
             gitExecutable: this._serverConfig.Git.Executable,
             clonePath: repoPath,
             workingDirectory: repoPath,
-            $"-C \"{repoPath}\" update-ref refs/heads/master refs/heads/{repoName}",
+            $"-C \"{repoPath}\" update-ref refs/heads/master \"refs/heads/{repoName}\"",
             cancellationToken: cancellationToken
         );
 
@@ -375,6 +375,8 @@ public sealed class GitServer : IGitServer
         {
             string message = string.Join(separator: Environment.NewLine, value: refOutput);
             this._logger.FailedToUpdateMasterRef(repoName: repoName, path: repoPath, message: message);
+
+            throw new GitException(message);
         }
     }
 
