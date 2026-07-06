@@ -7,11 +7,13 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Aur.Mirror.Cache.Interfaces;
+using Credfeto.Aur.Mirror.Config;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using Credfeto.Aur.Mirror.Rpc.Constants;
 using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Services.LoggingExtensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Credfeto.Aur.Mirror.Rpc.Services;
 
@@ -20,15 +22,19 @@ public sealed class AurRpc : IAurRpc
     private static readonly TimeSpan MaxAgeAccess = TimeSpan.FromHours(7);
     private static readonly TimeSpan MaxAgeRequest = TimeSpan.FromHours(14);
     private readonly IAurMetadataGz _aurMetadataGz;
+    private readonly IGitHubMirrorRpc _gitHubMirrorRpc;
     private readonly ILocalAurRpc _localAurRpc;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AurRpc> _logger;
     private readonly IRemoteAurRpc _remoteAurRpc;
+    private readonly UpstreamMode _upstreamMode;
 
     public AurRpc(
         IRemoteAurRpc remoteAurRpc,
         ILocalAurRpc localAurRpc,
         IAurMetadataGz aurMetadataGz,
+        IGitHubMirrorRpc gitHubMirrorRpc,
+        IOptions<ServerConfig> config,
         TimeProvider timeProvider,
         ILogger<AurRpc> logger
     )
@@ -36,6 +42,8 @@ public sealed class AurRpc : IAurRpc
         this._remoteAurRpc = remoteAurRpc;
         this._localAurRpc = localAurRpc;
         this._aurMetadataGz = aurMetadataGz;
+        this._gitHubMirrorRpc = gitHubMirrorRpc;
+        this._upstreamMode = config.Value.Upstream.Mode;
         this._timeProvider = timeProvider;
         this._logger = logger;
     }
@@ -48,6 +56,16 @@ public sealed class AurRpc : IAurRpc
     )
     {
         this._logger.SearchingFor(keyword: keyword, by: by);
+
+        if (this._upstreamMode == UpstreamMode.MirrorOnly)
+        {
+            return await this.SearchLocalAndGzAsync(
+                keyword: keyword,
+                by: by,
+                userAgent: userAgent,
+                cancellationToken: cancellationToken
+            );
+        }
 
         try
         {
@@ -88,20 +106,12 @@ public sealed class AurRpc : IAurRpc
                 exception: exception
             );
 
-            IReadOnlyList<Package> localResults = await this._localAurRpc.SearchAsync(
+            return await this.SearchLocalAndGzAsync(
                 keyword: keyword,
                 by: by,
                 userAgent: userAgent,
                 cancellationToken: cancellationToken
             );
-
-            IReadOnlyList<SearchResult> gzResults = await this._aurMetadataGz.SearchAsync(
-                keyword: keyword,
-                by: by,
-                cancellationToken: cancellationToken
-            );
-
-            return MergeSearchResults(localPackages: localResults, gzResults: gzResults);
         }
     }
 
@@ -112,6 +122,11 @@ public sealed class AurRpc : IAurRpc
     )
     {
         this._logger.PackageInfo(packages);
+
+        if (this._upstreamMode == UpstreamMode.MirrorOnly)
+        {
+            return await this._gitHubMirrorRpc.InfoAsync(packages: packages, cancellationToken: cancellationToken);
+        }
 
         IReadOnlyList<Package>? localPackages = null;
 
@@ -149,8 +164,44 @@ public sealed class AurRpc : IAurRpc
                 exception: exception
             );
 
+            if (this._upstreamMode == UpstreamMode.Fallback)
+            {
+                RpcResponse mirrorResponse = await this._gitHubMirrorRpc.InfoAsync(
+                    packages: packages,
+                    cancellationToken: cancellationToken
+                );
+
+                if (mirrorResponse.Count > 0)
+                {
+                    return mirrorResponse;
+                }
+            }
+
             return PackagesAsInfo(localPackages ?? []);
         }
+    }
+
+    private async ValueTask<RpcResponse> SearchLocalAndGzAsync(
+        string keyword,
+        string by,
+        ProductInfoHeaderValue? userAgent,
+        CancellationToken cancellationToken
+    )
+    {
+        IReadOnlyList<Package> localResults = await this._localAurRpc.SearchAsync(
+            keyword: keyword,
+            by: by,
+            userAgent: userAgent,
+            cancellationToken: cancellationToken
+        );
+
+        IReadOnlyList<SearchResult> gzResults = await this._aurMetadataGz.SearchAsync(
+            keyword: keyword,
+            by: by,
+            cancellationToken: cancellationToken
+        );
+
+        return MergeSearchResults(localPackages: localResults, gzResults: gzResults);
     }
 
     private async ValueTask<RpcResponse> FetchUpstreamInfoAsync(
