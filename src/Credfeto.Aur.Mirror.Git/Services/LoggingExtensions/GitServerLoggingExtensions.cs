@@ -62,4 +62,30 @@ internal static partial class GitServerLoggingExtensions
 
     [LoggerMessage(LogLevel.Warning, EventId = 11, Message = "File not found: {repo} -> {path}")]
     public static partial void FileNotFound(this ILogger<GitServer> logger, string repo, string path);
+
+    [LoggerMessage(
+        LogLevel.Information,
+        EventId = 12,
+        Message = "AUR unavailable — falling back to GitHub mirror for {repoName}"
+    )]
+    public static partial void FallingBackToGitHubMirror(this ILogger<GitServer> logger, string repoName);
+
+    [LoggerMessage(
+        LogLevel.Information,
+        EventId = 13,
+        Message = "Cloning {repoName} from GitHub AUR mirror into {path}"
+    )]
+    public static partial void CloningFromGitHubMirror(this ILogger<GitServer> logger, string repoName, string path);
+
+    [LoggerMessage(
+        LogLevel.Warning,
+        EventId = 14,
+        Message = "Failed to update master ref for {repoName} at {path}: {message}"
+    )]
+    public static partial void FailedToUpdateMasterRef(
+        this ILogger<GitServer> logger,
+        string repoName,
+        string path,
+        string message
+    );
 }

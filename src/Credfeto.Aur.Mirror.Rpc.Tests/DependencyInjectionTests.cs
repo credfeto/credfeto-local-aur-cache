@@ -42,4 +42,10 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     {
         this.RequireService<IAurMetadataGz>();
     }
+
+    [Fact]
+    public void GitHubMirrorRpcMustBeRegistered()
+    {
+        this.RequireService<IGitHubMirrorRpc>();
+    }
 }
