@@ -221,4 +221,3 @@ View [changelog](CHANGELOG.md)
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
