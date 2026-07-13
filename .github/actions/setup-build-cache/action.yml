@@ -1,11 +1,11 @@
---- # Configure NuGet and NPM cache env vars and check repo visibility
+--- # Configure NuGet and NPM cache env vars
 # Maintain in repo: funfair-server-template
 name: "Setup Build Cache"
-description: "Configures nuget/npm cache env vars and checks repo visibility"
+description: "Configures nuget/npm cache env vars"
 
 inputs:
   github-token:
-    description: "GitHub token for repo visibility check"
+    description: "GitHub token for runner details logging"
     required: true
   use-nuget-cache:
     description: "Whether to use nuget cache (true/false, or empty to disable)"
@@ -43,7 +43,7 @@ runs:
         echo "use-nuget-cache=${use_cache}" >> "$GITHUB_OUTPUT"
 
     - name: "Check Runner details"
-      uses: actions/github-script@v9.0.0
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         github-token: ${{inputs.github-token}}
         script: |
