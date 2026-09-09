@@ -15,15 +15,18 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Integration tests for the server repository endpoints, verifying that missing files return 404 Not Found
 - Support getting package metadata from the GitHub AUR mirror (https://github.com/archlinux/aur) as a fallback when the main AUR is unavailable, configurable via Direct, Fallback, or MirrorOnly mode
 ### Fixed
+- Fixed pre-commit-check failures: MSBuild backslash path separators, missing PackageReference IncludeAssets metadata, and upgraded xunit to the AOT/MTP-v2 package family (with its FunFair.Test.Common/NSubstitute floor dependencies) to satisfy the repo's build-check policy.
 ### Changed
 - Enabled Native AOT compilation on the server binary
 - SDK - Updated DotNet SDK to 10.0.400
 ### Deprecated
 ### Removed
 ### Deployment Changes
+
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
 -->
+
 ## [0.0.17] - 2026-06-19
 ### Changed
 - Dependencies - Updated Credfeto.Enumeration to 1.2.147.2001

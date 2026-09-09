@@ -51,13 +51,13 @@
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xhfc-gr8f-ffwc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Cache.Interfaces\Credfeto.Aur.Mirror.Cache.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Aur.Mirror.Cache.Interfaces/Credfeto.Aur.Mirror.Cache.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.149.1669" />
-    <PackageReference Include="NonBlocking" Version="2.1.2" />
-    <PackageReference Include="System.Interactive.Async" Version="7.0.1" />
-    <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.149.1669" IncludeAssets="compile;runtime" />
+    <PackageReference Include="NonBlocking" Version="2.1.2" IncludeAssets="compile;runtime" />
+    <PackageReference Include="System.Interactive.Async" Version="7.0.1" IncludeAssets="compile;runtime" />
+    <PackageReference Include="System.Reactive" Version="6.1.0" IncludeAssets="compile;runtime;analyzers" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />

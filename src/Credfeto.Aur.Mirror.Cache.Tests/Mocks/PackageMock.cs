@@ -1,6 +1,6 @@
 using System;
 using Credfeto.Aur.Mirror.Cache.Interfaces;
-using FunFair.Test.Common.Mocks;
+using FunFair.Test.Infrastructure.Mocks;
 
 namespace Credfeto.Aur.Mirror.Cache.Tests.Mocks;
 

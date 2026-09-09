@@ -19,7 +19,7 @@
   </Folder>
   <Folder Name="/RPC/">
     <Project Path="Credfeto.Aur.Mirror.Rpc.Interfaces/Credfeto.Aur.Mirror.Rpc.Interfaces.csproj" />
-    <Project Path="Credfeto.Aur.Mirror.Rpc.Tests\Credfeto.Aur.Mirror.Rpc.Tests.csproj" />
+    <Project Path="Credfeto.Aur.Mirror.Rpc.Tests/Credfeto.Aur.Mirror.Rpc.Tests.csproj" />
     <Project Path="Credfeto.Aur.Mirror.Rpc/Credfeto.Aur.Mirror.Rpc.csproj" />
   </Folder>
   <Project Path="Credfeto.Aur.Mirror.Config/Credfeto.Aur.Mirror.Config.csproj" />
