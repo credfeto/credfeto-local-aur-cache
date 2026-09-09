@@ -9,6 +9,7 @@ using Credfeto.Aur.Mirror.Interfaces;
 using Credfeto.Aur.Mirror.Models.AurRpc;
 using FunFair.Test.Common;
 using FunFair.Test.Common.Mocks;
+using FunFair.Test.Infrastructure.Mocks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;

@@ -1,6 +1,6 @@
 using System.Threading;
 using Credfeto.Aur.Mirror.Models.AurRpc;
-using FunFair.Test.Common.Mocks;
+using FunFair.Test.Infrastructure.Mocks;
 
 namespace Credfeto.Aur.Mirror.Cache.Tests.Mocks;
 

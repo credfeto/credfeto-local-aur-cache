@@ -4,6 +4,8 @@ using Credfeto.Aur.Mirror.Git.Interfaces;
 using Credfeto.Aur.Mirror.Interfaces;
 using FunFair.Test.Common;
 using FunFair.Test.Common.Mocks;
+using FunFair.Test.Infrastructure;
+using FunFair.Test.Infrastructure.Mocks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
