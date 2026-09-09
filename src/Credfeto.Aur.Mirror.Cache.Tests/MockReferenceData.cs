@@ -1,7 +1,7 @@
 using Credfeto.Aur.Mirror.Cache.Interfaces;
 using Credfeto.Aur.Mirror.Cache.Tests.Mocks;
 using Credfeto.Aur.Mirror.Models.AurRpc;
-using FunFair.Test.Common.Mocks;
+using FunFair.Test.Infrastructure.Mocks;
 
 namespace Credfeto.Aur.Mirror.Cache.Tests;
 

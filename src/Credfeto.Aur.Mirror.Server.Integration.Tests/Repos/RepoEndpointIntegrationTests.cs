@@ -21,7 +21,10 @@ public sealed class RepoEndpointIntegrationTests : IntegrationTestBase
     [Theory]
     [InlineData("/repos/test-repo.git/objects/pack/test-file", "objects/pack/test-file")]
     [InlineData("/repos/test-repo.git/info/refs", "info/refs")]
-    public async Task GetAsync_WhenGetFileAsyncReturnsNull_ShouldReturnNotFound(string requestUri, string expectedPath)
+    public async Task GetAsync_WhenGetFileAsyncReturnsNull_ShouldReturnNotFoundAsync(
+        string requestUri,
+        string expectedPath
+    )
     {
         IGitServer gitServer = GetSubstitute<IGitServer>();
         ILocalAurMetadata localAurMetadata = GetSubstitute<ILocalAurMetadata>();
