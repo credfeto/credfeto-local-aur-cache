@@ -12,6 +12,7 @@ using Credfeto.Aur.Mirror.Rpc.Interfaces;
 using Credfeto.Aur.Mirror.Rpc.Services;
 using FunFair.Test.Common;
 using FunFair.Test.Common.Mocks;
+using FunFair.Test.Infrastructure.Mocks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;

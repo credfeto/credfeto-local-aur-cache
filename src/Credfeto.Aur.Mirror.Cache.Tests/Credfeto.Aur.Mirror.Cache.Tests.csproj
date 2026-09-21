@@ -53,12 +53,12 @@
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-8g4q-xg66-9fp4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Aur.Mirror.Cache\Credfeto.Aur.Mirror.Cache.csproj" />
+    <ProjectReference Include="../Credfeto.Aur.Mirror.Cache/Credfeto.Aur.Mirror.Cache.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FunFair.Test.Common" Version="6.2.25.2243" />
-    <PackageReference Include="NSubstitute" Version="5.3.0" />
-    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />
+    <PackageReference Include="FunFair.Test.Common" Version="6.4.5.2739" IncludeAssets="compile;runtime" />
+    <PackageReference Include="NSubstitute" Version="6.2.0" IncludeAssets="compile;runtime" />
+    <PackageReference Include="xunit.v3.aot.mtp-v2" Version="4.0.0" IncludeAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
@@ -67,7 +67,7 @@
     <PackageReference Include="Credfeto.Version.Information.Generator" Version="1.0.130.1322" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="CSharpIsNullAnalyzer" Version="0.1.593" PrivateAssets="all" ExcludeAssets="runtime" />
     <PackageReference Include="FunFair.CodeAnalysis" Version="7.2.1.2035" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="FunFair.Test.Source.Generator" Version="6.2.25.2243" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="FunFair.Test.Source.Generator" Version="6.4.5.2739" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Meziantou.Analyzer" Version="3.0.104" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Sbom.Targets" Version="4.1.5" PrivateAssets="All" ExcludeAssets="runtime" Condition="$(EnableSbom)=='True'" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" PrivateAssets="All" ExcludeAssets="runtime" />
@@ -81,6 +81,6 @@
     <PackageReference Include="SonarAnalyzer.CSharp" Version="10.27.0.140913" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.3" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="ToStringWithoutOverrideAnalyzer" Version="0.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="xunit.analyzers" Version="1.27.0" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="xunit.analyzers" Version="2.0.0" PrivateAssets="All" ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>
