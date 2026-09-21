@@ -19,7 +19,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Fixed NativeAOT publish failing with a Serilog trim analysis error (IL2067) by allowing Serilog's build and buildTransitive assets to flow to the server project
 ### Changed
 - Enabled Native AOT compilation on the server binary
-- SDK - Updated DotNet SDK to 10.0.400
+- SDK - Updated DotNet SDK to 10.0.401
 ### Deprecated
 ### Removed
 ### Deployment Changes
