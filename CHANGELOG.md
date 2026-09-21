@@ -16,6 +16,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Support getting package metadata from the GitHub AUR mirror (https://github.com/archlinux/aur) as a fallback when the main AUR is unavailable, configurable via Direct, Fallback, or MirrorOnly mode
 ### Fixed
 - Fixed pre-commit-check failures: MSBuild backslash path separators, missing PackageReference IncludeAssets metadata, and upgraded xunit to the AOT/MTP-v2 package family (with its FunFair.Test.Common/NSubstitute floor dependencies) to satisfy the repo's build-check policy.
+- Fixed NativeAOT publish failing with a Serilog trim analysis error (IL2067) by allowing Serilog's build and buildTransitive assets to flow to the server project
 ### Changed
 - Enabled Native AOT compilation on the server binary
 - SDK - Updated DotNet SDK to 10.0.400
